@@ -39,6 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview as ComposePreview
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,8 +52,16 @@ fun ScanDetectionScreen(navController: NavController) {
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
 
+    // Track captured images
+    var kukuImageCaptured by remember { mutableStateOf(false) }
+    var lidahImageCaptured by remember { mutableStateOf(false) }
+
+    // Show capture feedback
+    var showCaptureSuccess by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
 
     // Launcher for camera permission
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -95,6 +105,34 @@ fun ScanDetectionScreen(navController: NavController) {
         }
     }
 
+    // Function to capture photo
+    fun capturePhoto() {
+        showCaptureSuccess = true
+
+        if (selectedTab == "Kuku") {
+            kukuImageCaptured = true
+        } else if (selectedTab == "Lidah") {
+            lidahImageCaptured = true
+        }
+
+        scope.launch {
+            delay(1000)
+            showCaptureSuccess = false
+            if (kukuImageCaptured && lidahImageCaptured) {
+                // Both images captured, navigate to results
+                cameraProvider?.unbindAll() // Unbind camera to prevent leaks
+                navController.navigate("scan_results")
+            } else {
+                // Switch to the other tab if it hasn't been captured
+                if (selectedTab == "Kuku" && !lidahImageCaptured) {
+                    selectedTab = "Lidah"
+                } else if (selectedTab == "Lidah" && !kukuImageCaptured) {
+                    selectedTab = "Kuku"
+                }
+            }
+        }
+    }
+
     // LaunchedEffect to rebind camera when isBackCamera changes
     LaunchedEffect(isBackCamera, isCameraActive, hasCameraPermission) {
         if (hasCameraPermission && isCameraActive) {
@@ -111,6 +149,13 @@ fun ScanDetectionScreen(navController: NavController) {
             else -> {
                 permissionLauncher.launch(Manifest.permission.CAMERA)
             }
+        }
+    }
+
+    // Clean up camera on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraProvider?.unbindAll()
         }
     }
 
@@ -252,7 +297,7 @@ fun ScanDetectionScreen(navController: NavController) {
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        // Tab Selection
+                        // Tab Selection with indicators
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -267,13 +312,15 @@ fun ScanDetectionScreen(navController: NavController) {
                             TabButton(
                                 text = "Kuku",
                                 isSelected = selectedTab == "Kuku",
-                                onClick = { selectedTab = "Kuku" },
+                                isCaptured = kukuImageCaptured,
+                                onClick = { if (!showCaptureSuccess) selectedTab = "Kuku" },
                                 modifier = Modifier.weight(1f)
                             )
                             TabButton(
                                 text = "Lidah",
                                 isSelected = selectedTab == "Lidah",
-                                onClick = { selectedTab = "Lidah" },
+                                isCaptured = lidahImageCaptured,
+                                onClick = { if (!showCaptureSuccess) selectedTab = "Lidah" },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -307,6 +354,34 @@ fun ScanDetectionScreen(navController: NavController) {
                                         modifier = Modifier.fillMaxSize()
                                     ) {
                                         drawScanGuide(selectedTab)
+                                    }
+
+                                    // Success overlay
+                                    if (showCaptureSuccess) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Black.copy(alpha = 0.6f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.CheckCircle,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF4CAF50),
+                                                    modifier = Modifier.size(48.dp)
+                                                )
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text(
+                                                    text = "Foto ${selectedTab} Berhasil!",
+                                                    color = Color.White,
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
                                     }
                                 } else {
                                     Box(
@@ -359,18 +434,24 @@ fun ScanDetectionScreen(navController: NavController) {
                                 // Main Camera Button
                                 IconButton(
                                     onClick = {
-                                        if (hasCameraPermission) {
-                                            isCameraActive = true
-                                        } else {
+                                        if (hasCameraPermission && isCameraActive && !showCaptureSuccess) {
+                                            capturePhoto()
+                                        } else if (!hasCameraPermission) {
                                             permissionLauncher.launch(Manifest.permission.CAMERA)
+                                        } else if (!isCameraActive) {
+                                            isCameraActive = true
                                         }
                                     },
                                     modifier = Modifier
                                         .size(80.dp)
-                                        .background(Color(0xFF00BFA5), CircleShape)
+                                        .background(
+                                            if (showCaptureSuccess) Color.Gray else Color(0xFF00BFA5),
+                                            CircleShape
+                                        ),
+                                    enabled = !showCaptureSuccess
                                 ) {
                                     Icon(
-                                        Icons.Default.PhotoCamera,
+                                        if (showCaptureSuccess) Icons.Default.Check else Icons.Default.PhotoCamera,
                                         contentDescription = "Take Photo",
                                         tint = Color.White,
                                         modifier = Modifier.size(32.dp)
@@ -380,16 +461,19 @@ fun ScanDetectionScreen(navController: NavController) {
                                 // Camera Flip Button
                                 IconButton(
                                     onClick = {
-                                        isBackCamera = !isBackCamera
+                                        if (!showCaptureSuccess) {
+                                            isBackCamera = !isBackCamera
+                                        }
                                     },
                                     modifier = Modifier
                                         .size(56.dp)
-                                        .background(Color.Gray.copy(alpha = 0.2f), CircleShape)
+                                        .background(Color.Gray.copy(alpha = 0.2f), CircleShape),
+                                    enabled = !showCaptureSuccess
                                 ) {
                                     Icon(
                                         Icons.Default.FlipCameraAndroid,
                                         contentDescription = "Flip Camera",
-                                        tint = Color.Gray
+                                        tint = if (showCaptureSuccess) Color.Gray.copy(alpha = 0.5f) else Color.Gray
                                     )
                                 }
                             }
@@ -456,6 +540,46 @@ fun ScanDetectionScreen(navController: NavController) {
     }
 }
 
+@Composable
+fun TabButton(
+    text: String,
+    isSelected: Boolean,
+    isCaptured: Boolean = false,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) Color(0xFF00BFA5) else Color.Transparent,
+            contentColor = if (isSelected) Color.White else Color(0xFF00BFA5)
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp),
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (isCaptured) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = if (isSelected) Color.White else Color(0xFF4CAF50)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+            Text(
+                text = text,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
 fun DrawScope.drawScanGuide(selectedTab: String) {
     val guideColor = Color(0xFF00B4A3)
     val strokeWidth = 3.dp.toPx()
@@ -518,40 +642,40 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
         }
 
     } else {
-        // Draw tongue guide - tongue-like shape
-        val guideWidth = size.width * 0.4f
-        val guideHeight = size.height * 0.5f
+        // Draw tongue guide - tongue-like shape (flipped vertically, larger, with rounded tip)
+        val guideWidth = size.width * 0.5f
+        val guideHeight = size.height * 0.6f
 
         val path = Path().apply {
-            // Start from top center (tip of tongue)
-            moveTo(centerX, centerY - guideHeight / 2)
-
-            // Right curve
+            moveTo(centerX - guideWidth / 4, centerY - guideHeight / 2)
             quadraticBezierTo(
-                centerX + guideWidth / 3, centerY - guideHeight / 4,
+                centerX, centerY - guideHeight / 2 - 5,
+                centerX + guideWidth / 4, centerY - guideHeight / 2
+            )
+            quadraticBezierTo(
+                centerX + guideWidth / 2, centerY - guideHeight / 4,
                 centerX + guideWidth / 2, centerY
             )
             quadraticBezierTo(
-                centerX + guideWidth / 2, centerY + guideHeight / 3,
-                centerX + guideWidth / 4, centerY + guideHeight / 2
+                centerX + guideWidth / 2, centerY + guideHeight / 4,
+                centerX + guideWidth / 4, centerY + guideHeight / 3
             )
-
-            // Bottom curve
             quadraticBezierTo(
-                centerX, centerY + guideHeight / 2 + 10,
-                centerX - guideWidth / 4, centerY + guideHeight / 2
+                centerX + guideWidth / 8, centerY + guideHeight / 2,
+                centerX, centerY + guideHeight / 2 + 8
             )
-
-            // Left curve
             quadraticBezierTo(
-                centerX - guideWidth / 2, centerY + guideHeight / 3,
+                centerX - guideWidth / 8, centerY + guideHeight / 2,
+                centerX - guideWidth / 4, centerY + guideHeight / 3
+            )
+            quadraticBezierTo(
+                centerX - guideWidth / 2, centerY + guideHeight / 4,
                 centerX - guideWidth / 2, centerY
             )
             quadraticBezierTo(
-                centerX - guideWidth / 3, centerY - guideHeight / 4,
-                centerX, centerY - guideHeight / 2
+                centerX - guideWidth / 2, centerY - guideHeight / 4,
+                centerX - guideWidth / 4, centerY - guideHeight / 2
             )
-
             close()
         }
 
@@ -561,11 +685,10 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
             style = Stroke(width = strokeWidth, pathEffect = pathEffect)
         )
 
-        // Add center line for tongue
         drawLine(
             color = guideColor.copy(alpha = 0.5f),
             start = Offset(centerX, centerY - guideHeight / 2),
-            end = Offset(centerX, centerY + guideHeight / 2),
+            end = Offset(centerX, centerY + guideHeight / 2 + 8),
             strokeWidth = strokeWidth / 2,
             pathEffect = pathEffect
         )
@@ -611,31 +734,6 @@ fun GuideStep(
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
-    }
-}
-
-@Composable
-fun TabButton(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color(0xFF00BFA5) else Color.Transparent,
-            contentColor = if (isSelected) Color.White else Color(0xFF00BFA5)
-        ),
-        elevation = ButtonDefaults.buttonElevation(0.dp),
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp
-        )
     }
 }
 

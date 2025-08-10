@@ -30,7 +30,12 @@ fun MainScreen() {
     Scaffold(
         bottomBar = {
             val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-            if (currentRoute != "progress" && !(currentRoute?.startsWith("historyDetail/") ?: false)) {
+            // Hide bottom navigation for specific screens
+            val hideBottomBar = currentRoute == "progress" ||
+                    currentRoute == "scan_results" ||
+                    currentRoute?.startsWith("historyDetail/") ?: false
+
+            if (!hideBottomBar) {
                 BottomNavigationBar(navController = navController)
             }
         }
@@ -44,6 +49,7 @@ fun MainScreen() {
             composable("history") { HistoryScreen(navController = navController) }
             composable("scan") { ScanDetectionScreen(navController = navController) }
             composable("chatbot") { ChatbotScreen(navController = navController) }
+            composable("scan_results") { ScanResultsScreen(navController = navController) }
             composable("profile") { ProfileScreen() }
             composable("progress") { ProgressTrackingScreen(navController = navController) }
             composable(

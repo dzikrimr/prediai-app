@@ -1,7 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+package com.example.prediai
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -20,10 +21,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScanResultsScreen() {
+fun ScanResultsScreen(navController: NavController) {
     val tealColor = Color(0xFF00BFA5)
 
     Column(
@@ -50,7 +53,9 @@ fun ScanResultsScreen() {
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { navController.navigateUp() }
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
@@ -82,7 +87,7 @@ fun ScanResultsScreen() {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Search,
+                                imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
                                 tint = Color.White,
                                 modifier = Modifier.size(20.dp)
@@ -136,11 +141,19 @@ fun ScanResultsScreen() {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
-                        onClick = { },
+                        onClick = {
+                            // Handle save result
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = tealColor),
                         shape = RoundedCornerShape(12.dp)
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Simpan Hasil Scan",
                             modifier = Modifier.padding(vertical = 8.dp),
@@ -150,7 +163,9 @@ fun ScanResultsScreen() {
                     }
 
                     OutlinedButton(
-                        onClick = { },
+                        onClick = {
+                            // Navigate to AI consultation
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = tealColor
@@ -176,7 +191,9 @@ fun ScanResultsScreen() {
                     }
 
                     OutlinedButton(
-                        onClick = { },
+                        onClick = {
+                            // Handle share result
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color(0xFF666666)
@@ -210,6 +227,14 @@ fun ScanResultsScreen() {
 
 @Composable
 fun QuestionnaireSection() {
+    var selectedAnswers by remember {
+        mutableStateOf(mapOf(
+            "haus" to "Ya",
+            "berat" to "Tidak",
+            "buang_air" to "Sering"
+        ))
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -223,7 +248,7 @@ fun QuestionnaireSection() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Lock,
+                    imageVector = Icons.Default.Assignment,
                     contentDescription = null,
                     tint = Color(0xFF00BFA5),
                     modifier = Modifier.size(20.dp)
@@ -241,8 +266,11 @@ fun QuestionnaireSection() {
             // Question 1
             QuestionItem(
                 question = "Apakah Anda sering merasa haus berlebihan?",
-                selectedAnswer = "Ya",
-                options = listOf("Ya", "Tidak")
+                selectedAnswer = selectedAnswers["haus"] ?: "",
+                options = listOf("Ya", "Tidak"),
+                onAnswerSelected = { answer ->
+                    selectedAnswers = selectedAnswers + ("haus" to answer)
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -250,8 +278,11 @@ fun QuestionnaireSection() {
             // Question 2
             QuestionItem(
                 question = "Apakah Anda mengalami penurunan berat badan tanpa sebab?",
-                selectedAnswer = "Tidak",
-                options = listOf("Ya", "Tidak")
+                selectedAnswer = selectedAnswers["berat"] ?: "",
+                options = listOf("Ya", "Tidak"),
+                onAnswerSelected = { answer ->
+                    selectedAnswers = selectedAnswers + ("berat" to answer)
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -272,12 +303,14 @@ fun QuestionnaireSection() {
             ) {
                 AnswerChip(
                     text = "Normal",
-                    isSelected = false,
+                    isSelected = selectedAnswers["buang_air"] == "Normal",
+                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Normal") },
                     modifier = Modifier.weight(1f)
                 )
                 AnswerChip(
                     text = "Sering",
-                    isSelected = true,
+                    isSelected = selectedAnswers["buang_air"] == "Sering",
+                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Sering") },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -291,12 +324,14 @@ fun QuestionnaireSection() {
             ) {
                 AnswerChip(
                     text = "Sangat Sering",
-                    isSelected = false,
+                    isSelected = selectedAnswers["buang_air"] == "Sangat Sering",
+                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Sangat Sering") },
                     modifier = Modifier.weight(1f)
                 )
                 AnswerChip(
                     text = "Jarang",
-                    isSelected = false,
+                    isSelected = selectedAnswers["buang_air"] == "Jarang",
+                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Jarang") },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -308,7 +343,8 @@ fun QuestionnaireSection() {
 fun QuestionItem(
     question: String,
     selectedAnswer: String,
-    options: List<String>
+    options: List<String>,
+    onAnswerSelected: (String) -> Unit
 ) {
     Column {
         Text(
@@ -327,6 +363,7 @@ fun QuestionItem(
                 AnswerChip(
                     text = option,
                     isSelected = option == selectedAnswer,
+                    onClick = { onAnswerSelected(option) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -338,6 +375,7 @@ fun QuestionItem(
 fun AnswerChip(
     text: String,
     isSelected: Boolean,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = if (isSelected) Color(0xFF00BFA5) else Color(0xFFF5F5F5)
@@ -346,6 +384,7 @@ fun AnswerChip(
     Box(
         modifier = modifier
             .background(backgroundColor, RoundedCornerShape(10.dp))
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -374,7 +413,7 @@ fun AnalysisResultsSection() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.BarChart,
+                    imageVector = Icons.Default.Analytics,
                     contentDescription = null,
                     tint = Color(0xFF4CAF50),
                     modifier = Modifier.size(20.dp)
@@ -442,7 +481,7 @@ fun AnalysisResultsSection() {
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 AnalysisDetail(
-                    icon = Icons.Default.Favorite,
+                    icon = Icons.Default.Fingerprint,
                     title = "Analisis Kuku",
                     description = "Warna dan tekstur normal",
                     iconColor = Color(0xFF00BFA5),
@@ -469,12 +508,23 @@ fun AnalysisResultsSection() {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    Text(
-                        text = "Kesimpulan",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1D4ED8)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color(0xFF1D4ED8),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Kesimpulan",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1D4ED8)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -549,7 +599,7 @@ fun RecommendationsSection() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.LocationOn,
+                    imageVector = Icons.Default.Recommend,
                     contentDescription = null,
                     tint = Color(0xFF2196F3),
                     modifier = Modifier.size(20.dp)
@@ -645,6 +695,7 @@ fun RecommendationItem(
 @Composable
 fun ScanResultsScreenPreview() {
     MaterialTheme {
-        ScanResultsScreen()
+        val navController = rememberNavController()
+        ScanResultsScreen(navController = navController)
     }
 }
