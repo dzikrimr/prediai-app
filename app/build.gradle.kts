@@ -41,6 +41,7 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.navigation.runtime.android)
     val nav_version = "2.8.0"
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -50,6 +51,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation("androidx.compose.material:material-icons-core:1.7.1")
     implementation("androidx.compose.material:material-icons-extended:1.7.1")
+    implementation ("androidx.core:core-splashscreen:1.0.1")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
