@@ -21,18 +21,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.prediai.ui.theme.PrediAITheme
 
 data class ScanDetail(
     val scanType: String,
     val date: String,
-    val duration: String,
-    val accuracy: String,
     val riskLevel: String,
     val riskPercentage: Int,
     val findings: List<String>,
@@ -43,7 +38,7 @@ data class ScanDetail(
 data class AdditionalInfo(
     val question: String,
     val answer: String,
-    val status: String // "Ya", "Tidak", "Normal"
+    val status: String // "Ya", "Tidak", "Normal", "Sering", "Sangat Sering", "Jarang"
 )
 
 data class Recommendation(
@@ -61,9 +56,7 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
     val scanDetail = when (scanId) {
         1 -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
-            date = "10 Aug 2025, 15:37", // Updated to current date and time
-            duration = "2 menit 15 detik",
-            accuracy = "96.8%",
+            date = "10 Aug 2025, 15:37",
             riskLevel = "Risiko Tinggi",
             riskPercentage = 85,
             findings = listOf(
@@ -72,9 +65,9 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
                 "Tekstur kuku menunjukkan tanda-tanda dehidrasi"
             ),
             additionalInfo = listOf(
-                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Ya, terutama malam hari", "Ya"),
-                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya, lebih dari biasanya", "Ya"),
-                AdditionalInfo("Merasa lelah tanpa sebab yang jelas?", "Tidak, energi normal", "Tidak")
+                AdditionalInfo("Sering merasa haus berlebihan?", "Ya, terutama malam hari", "Ya"),
+                AdditionalInfo("Penurunan berat badan tanpa sebab?", "Tidak, energi normal", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil?", "Sering", "Sering")
             ),
             recommendations = listOf(
                 Recommendation(
@@ -107,8 +100,6 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
         2 -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
             date = "9 Aug 2025, 09:15",
-            duration = "2 menit 10 detik",
-            accuracy = "95.2%",
             riskLevel = "Peringatan",
             riskPercentage = 65,
             findings = listOf(
@@ -116,9 +107,9 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
                 "Lapisan tipis pada lidah terdeteksi"
             ),
             additionalInfo = listOf(
-                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Tidak", "Tidak"),
-                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya", "Ya"),
-                AdditionalInfo("Merasa lelah tanpa sebab yang jelas?", "Tidak", "Tidak")
+                AdditionalInfo("Sering merasa haus berlebihan?", "Tidak", "Tidak"),
+                AdditionalInfo("Penurunan berat badan tanpa sebab?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil?", "Sering", "Sering")
             ),
             recommendations = listOf(
                 Recommendation(
@@ -138,14 +129,13 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
         3 -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
             date = "8 Aug 2025, 16:45",
-            duration = "2 menit 5 detik",
-            accuracy = "97.3%",
             riskLevel = "Normal",
             riskPercentage = 15,
             findings = listOf("Tidak ada indikasi abnormal"),
             additionalInfo = listOf(
-                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Tidak", "Tidak"),
-                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Tidak", "Tidak")
+                AdditionalInfo("Sering merasa haus berlebihan?", "Tidak", "Tidak"),
+                AdditionalInfo("Penurunan berat badan tanpa sebab?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil?", "Normal", "Normal")
             ),
             recommendations = listOf(
                 Recommendation(
@@ -159,14 +149,13 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
         4 -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
             date = "7 Aug 2025, 11:20",
-            duration = "2 menit 0 detik",
-            accuracy = "98.0%",
             riskLevel = "Normal",
             riskPercentage = 20,
             findings = listOf("Semua parameter normal"),
             additionalInfo = listOf(
-                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Tidak", "Tidak"),
-                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Tidak", "Tidak")
+                AdditionalInfo("Sering merasa haus berlebihan?", "Tidak", "Tidak"),
+                AdditionalInfo("Penurunan berat badan tanpa sebab?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil?", "Normal", "Normal")
             ),
             recommendations = listOf(
                 Recommendation(
@@ -179,9 +168,7 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
         )
         else -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
-            date = "10 Aug 2025, 15:37", // Updated to current date and time
-            duration = "2 menit 15 detik",
-            accuracy = "96.8%",
+            date = "10 Aug 2025, 15:37",
             riskLevel = "Potensi Risiko Sedang",
             riskPercentage = 65,
             findings = listOf(
@@ -189,8 +176,9 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
                 "Lapisan putih pada lidah mengindikasikan kemungkinan gangguan metabolisme"
             ),
             additionalInfo = listOf(
-                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Ya", "Ya"),
-                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya", "Ya")
+                AdditionalInfo("Sering merasa haus berlebihan?", "Ya", "Ya"),
+                AdditionalInfo("Penurunan berat badan tanpa sebab?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil?", "Sering", "Sering")
             ),
             recommendations = listOf(
                 Recommendation(
@@ -345,40 +333,7 @@ fun ScanInfoHeader(scanDetail: ScanDetail) {
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 4.dp)
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                InfoItem(
-                    label = "Waktu Scan",
-                    value = scanDetail.duration
-                )
-                InfoItem(
-                    label = "Akurasi",
-                    value = scanDetail.accuracy
-                )
-            }
         }
-    }
-}
-
-@Composable
-fun InfoItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = Color.Black
-        )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.Gray
-        )
     }
 }
 
@@ -783,7 +738,6 @@ fun RecommendationCard(recommendation: Recommendation) {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.halodoc.com/cari-dokter/spesialis/spesialis-penyakit-dalam-endokrin-metabolik-diabetes"))
                             context.startActivity(intent)
                         }
-                        // Add other actionText handlers here if needed
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = recommendation.color
@@ -844,45 +798,5 @@ fun ActionButtonsSection(navController: NavController) {
                 )
             }
         }
-
-        // Jadwalkan Scan Ulang
-        OutlinedButton(
-            onClick = { /* Schedule new scan */ },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = PrimaryColor
-            ),
-            border = ButtonDefaults.outlinedButtonBorder.copy(
-                width = 2.dp
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Schedule,
-                    contentDescription = "Schedule",
-                    tint = PrimaryColor,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Jadwalkan Scan Ulang",
-                    color = PrimaryColor,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
-                )
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HistoryDetailScreenPreview() {
-    PrediAITheme {
-        HistoryDetailScreen(scanId = 1, navController = rememberNavController())
     }
 }

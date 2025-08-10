@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -30,17 +32,20 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview as ComposePreview
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,17 +56,20 @@ fun ScanDetectionScreen(navController: NavController) {
     var isBackCamera by remember { mutableStateOf(true) }
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
+    var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
 
     // Track captured images
-    var kukuImageCaptured by remember { mutableStateOf(false) }
-    var lidahImageCaptured by remember { mutableStateOf(false) }
-
-    // Show capture feedback
+    var kukuImagePath by remember { mutableStateOf<String?>(null) }
+    var lidahImagePath by remember { mutableStateOf<String?>(null) }
     var showCaptureSuccess by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
+
+    // Camera executor for image capture
+    val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
 
     // Launcher for camera permission
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -70,6 +78,8 @@ fun ScanDetectionScreen(navController: NavController) {
         hasCameraPermission = isGranted
         if (isGranted) {
             isCameraActive = true
+        } else {
+            errorMessage = "Izin kamera diperlukan untuk melakukan scan."
         }
     }
 
@@ -78,28 +88,33 @@ fun ScanDetectionScreen(navController: NavController) {
         previewView?.let { pv ->
             val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
             cameraProviderFuture.addListener({
-                val provider = cameraProviderFuture.get()
-                cameraProvider = provider
-
-                val preview = Preview.Builder().build().also { previewBuilder ->
-                    previewBuilder.setSurfaceProvider(pv.surfaceProvider)
-                }
-
-                val cameraSelector = if (isBackCamera) {
-                    CameraSelector.DEFAULT_BACK_CAMERA
-                } else {
-                    CameraSelector.DEFAULT_FRONT_CAMERA
-                }
-
                 try {
+                    val provider = cameraProviderFuture.get()
+                    cameraProvider = provider
+
+                    val preview = Preview.Builder().build().also { previewBuilder ->
+                        previewBuilder.setSurfaceProvider(pv.surfaceProvider)
+                    }
+
+                    // Initialize ImageCapture
+                    imageCapture = ImageCapture.Builder().build()
+
+                    val cameraSelector = if (isBackCamera) {
+                        CameraSelector.DEFAULT_BACK_CAMERA
+                    } else {
+                        CameraSelector.DEFAULT_FRONT_CAMERA
+                    }
+
                     provider.unbindAll()
                     provider.bindToLifecycle(
                         lifecycleOwner,
                         cameraSelector,
-                        preview
+                        preview,
+                        imageCapture
                     )
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    errorMessage = "Gagal menginisialisasi kamera: ${e.message}"
+                    isCameraActive = false
                 }
             }, ContextCompat.getMainExecutor(context))
         }
@@ -107,33 +122,55 @@ fun ScanDetectionScreen(navController: NavController) {
 
     // Function to capture photo
     fun capturePhoto() {
-        showCaptureSuccess = true
+        if (imageCapture == null || showCaptureSuccess) return
 
-        if (selectedTab == "Kuku") {
-            kukuImageCaptured = true
-        } else if (selectedTab == "Lidah") {
-            lidahImageCaptured = true
-        }
+        val photoFile = File(
+            context.cacheDir,
+            "scan_${selectedTab.lowercase()}_${System.currentTimeMillis()}.jpg"
+        )
 
-        scope.launch {
-            delay(1000)
-            showCaptureSuccess = false
-            if (kukuImageCaptured && lidahImageCaptured) {
-                // Both images captured, navigate to results
-                cameraProvider?.unbindAll() // Unbind camera to prevent leaks
-                navController.navigate("scan_results")
-            } else {
-                // Switch to the other tab if it hasn't been captured
-                if (selectedTab == "Kuku" && !lidahImageCaptured) {
-                    selectedTab = "Lidah"
-                } else if (selectedTab == "Lidah" && !kukuImageCaptured) {
-                    selectedTab = "Kuku"
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture?.takePicture(
+            outputOptions,
+            cameraExecutor,
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    showCaptureSuccess = true
+
+                    if (selectedTab == "Kuku") {
+                        kukuImagePath = photoFile.absolutePath
+                    } else if (selectedTab == "Lidah") {
+                        lidahImagePath = photoFile.absolutePath
+                    }
+
+                    scope.launch {
+                        delay(1000)
+                        showCaptureSuccess = false
+                        if (kukuImagePath != null && lidahImagePath != null) {
+                            cameraProvider?.unbindAll()
+                            navController.navigate("questionnaire")
+                        } else {
+                            if (selectedTab == "Kuku" && lidahImagePath == null) {
+                                selectedTab = "Lidah"
+                            } else if (selectedTab == "Lidah" && kukuImagePath == null) {
+                                selectedTab = "Kuku"
+                            }
+                        }
+                    }
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    scope.launch {
+                        errorMessage = "Gagal mengambil foto: ${exception.message}"
+                        showCaptureSuccess = false
+                    }
                 }
             }
-        }
+        )
     }
 
-    // LaunchedEffect to rebind camera when isBackCamera changes
+    // LaunchedEffect to rebind camera when isBackCamera or isCameraActive changes
     LaunchedEffect(isBackCamera, isCameraActive, hasCameraPermission) {
         if (hasCameraPermission && isCameraActive) {
             bindCamera()
@@ -142,9 +179,10 @@ fun ScanDetectionScreen(navController: NavController) {
 
     // Request camera permission if not granted
     LaunchedEffect(Unit) {
-        when (PackageManager.PERMISSION_GRANTED) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) -> {
+        when (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)) {
+            PackageManager.PERMISSION_GRANTED -> {
                 hasCameraPermission = true
+                isCameraActive = true
             }
             else -> {
                 permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -152,10 +190,11 @@ fun ScanDetectionScreen(navController: NavController) {
         }
     }
 
-    // Clean up camera on dispose
+    // Clean up camera and executor on dispose
     DisposableEffect(Unit) {
         onDispose {
             cameraProvider?.unbindAll()
+            cameraExecutor.shutdown()
         }
     }
 
@@ -195,6 +234,48 @@ fun ScanDetectionScreen(navController: NavController) {
                 containerColor = Color.White
             )
         )
+
+        // Error Message
+        errorMessage?.let { error ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = { errorMessage = null },
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            }
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -312,14 +393,14 @@ fun ScanDetectionScreen(navController: NavController) {
                             TabButton(
                                 text = "Kuku",
                                 isSelected = selectedTab == "Kuku",
-                                isCaptured = kukuImageCaptured,
+                                isCaptured = kukuImagePath != null,
                                 onClick = { if (!showCaptureSuccess) selectedTab = "Kuku" },
                                 modifier = Modifier.weight(1f)
                             )
                             TabButton(
                                 text = "Lidah",
                                 isSelected = selectedTab == "Lidah",
-                                isCaptured = lidahImageCaptured,
+                                isCaptured = lidahImagePath != null,
                                 onClick = { if (!showCaptureSuccess) selectedTab = "Lidah" },
                                 modifier = Modifier.weight(1f)
                             )
@@ -642,7 +723,7 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
         }
 
     } else {
-        // Draw tongue guide - tongue-like shape (flipped vertically, larger, with rounded tip)
+        // Draw tongue guide - tongue-like shape
         val guideWidth = size.width * 0.5f
         val guideHeight = size.height * 0.6f
 
@@ -734,14 +815,5 @@ fun GuideStep(
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
-    }
-}
-
-@ComposePreview(showBackground = true)
-@Composable
-fun ScanDetectionPreview() {
-    MaterialTheme {
-        val navController = rememberNavController()
-        ScanDetectionScreen(navController = navController)
     }
 }

@@ -153,7 +153,7 @@ fun HeaderSection() {
                     .padding(20.dp)
             ) {
                 Text(
-                    text = "Selamat Datang, Sarah!",
+                    text = "Selamat Datang, John!",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp

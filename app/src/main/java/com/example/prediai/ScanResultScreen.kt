@@ -1,7 +1,7 @@
 package com.example.prediai
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,16 +18,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScanResultsScreen(navController: NavController) {
+fun ScanResultsScreen(
+    navController: NavController,
+    answersJson: String? = null
+) {
     val tealColor = Color(0xFF00BFA5)
+    val answers = answersJson?.let { Json.decodeFromString<QuestionnaireAnswers>(it) }
+
+    // Calculate risk level based on answers
+    val (riskLevel, riskPercentage, conclusion) = calculateRiskLevel(answers)
 
     Column(
         modifier = Modifier
@@ -120,14 +127,9 @@ fun ScanResultsScreen(navController: NavController) {
         ) {
             item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            // Questionnaire Section
-            item {
-                QuestionnaireSection()
-            }
-
             // Analysis Results Section
             item {
-                AnalysisResultsSection()
+                AnalysisResultsSection(riskLevel, riskPercentage, conclusion)
             }
 
             // Recommendations Section
@@ -164,13 +166,13 @@ fun ScanResultsScreen(navController: NavController) {
 
                     OutlinedButton(
                         onClick = {
-                            // Navigate to AI consultation
+                            navController.navigate("chatbot")
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = tealColor
                         ),
-                        border = androidx.compose.foundation.BorderStroke(
+                        border = BorderStroke(
                             width = 1.dp,
                             color = tealColor
                         ),
@@ -198,7 +200,7 @@ fun ScanResultsScreen(navController: NavController) {
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color(0xFF666666)
                         ),
-                        border = androidx.compose.foundation.BorderStroke(
+                        border = BorderStroke(
                             width = 1.dp,
                             color = Color(0xFFE0E0E0)
                         ),
@@ -226,180 +228,7 @@ fun ScanResultsScreen(navController: NavController) {
 }
 
 @Composable
-fun QuestionnaireSection() {
-    var selectedAnswers by remember {
-        mutableStateOf(mapOf(
-            "haus" to "Ya",
-            "berat" to "Tidak",
-            "buang_air" to "Sering"
-        ))
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Assignment,
-                    contentDescription = null,
-                    tint = Color(0xFF00BFA5),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Pertanyaan Tambahan",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Question 1
-            QuestionItem(
-                question = "Apakah Anda sering merasa haus berlebihan?",
-                selectedAnswer = selectedAnswers["haus"] ?: "",
-                options = listOf("Ya", "Tidak"),
-                onAnswerSelected = { answer ->
-                    selectedAnswers = selectedAnswers + ("haus" to answer)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Question 2
-            QuestionItem(
-                question = "Apakah Anda mengalami penurunan berat badan tanpa sebab?",
-                selectedAnswer = selectedAnswers["berat"] ?: "",
-                options = listOf("Ya", "Tidak"),
-                onAnswerSelected = { answer ->
-                    selectedAnswers = selectedAnswers + ("berat" to answer)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Question 3
-            Text(
-                text = "Seberapa sering Anda buang air kecil dalam sehari?",
-                fontSize = 14.sp,
-                color = Color(0xFF333333)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // First row of options
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AnswerChip(
-                    text = "Normal",
-                    isSelected = selectedAnswers["buang_air"] == "Normal",
-                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Normal") },
-                    modifier = Modifier.weight(1f)
-                )
-                AnswerChip(
-                    text = "Sering",
-                    isSelected = selectedAnswers["buang_air"] == "Sering",
-                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Sering") },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Second row of options
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AnswerChip(
-                    text = "Sangat Sering",
-                    isSelected = selectedAnswers["buang_air"] == "Sangat Sering",
-                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Sangat Sering") },
-                    modifier = Modifier.weight(1f)
-                )
-                AnswerChip(
-                    text = "Jarang",
-                    isSelected = selectedAnswers["buang_air"] == "Jarang",
-                    onClick = { selectedAnswers = selectedAnswers + ("buang_air" to "Jarang") },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun QuestionItem(
-    question: String,
-    selectedAnswer: String,
-    options: List<String>,
-    onAnswerSelected: (String) -> Unit
-) {
-    Column {
-        Text(
-            text = question,
-            fontSize = 14.sp,
-            color = Color(0xFF333333)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            options.forEach { option ->
-                AnswerChip(
-                    text = option,
-                    isSelected = option == selectedAnswer,
-                    onClick = { onAnswerSelected(option) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun AnswerChip(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = if (isSelected) Color(0xFF00BFA5) else Color(0xFFF5F5F5)
-    val textColor = if (isSelected) Color.White else Color(0xFF666666)
-
-    Box(
-        modifier = modifier
-            .background(backgroundColor, RoundedCornerShape(10.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-fun AnalysisResultsSection() {
+fun AnalysisResultsSection(riskLevel: String, riskPercentage: Float, conclusion: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -441,10 +270,15 @@ fun AnalysisResultsSection() {
                         color = Color(0xFF333333)
                     )
                     Text(
-                        text = "Rendah",
+                        text = riskLevel,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFFF8F00)
+                        color = when (riskLevel) {
+                            "Rendah" -> Color(0xFFFF8F00)
+                            "Sedang" -> Color(0xFFFF5722)
+                            "Tinggi" -> Color(0xFFD32F2F)
+                            else -> Color(0xFFFF8F00)
+                        }
                     )
                 }
 
@@ -459,16 +293,24 @@ fun AnalysisResultsSection() {
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.25f)
+                            .fillMaxWidth(riskPercentage)
                             .fillMaxHeight()
-                            .background(Color(0xFFFF8F00), RoundedCornerShape(4.dp))
+                            .background(
+                                when (riskLevel) {
+                                    "Rendah" -> Color(0xFFFF8F00)
+                                    "Sedang" -> Color(0xFFFF5722)
+                                    "Tinggi" -> Color(0xFFD32F2F)
+                                    else -> Color(0xFFFF8F00)
+                                },
+                                RoundedCornerShape(4.dp)
+                            )
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "25% kemungkinan gejala diabetes",
+                    text = "${(riskPercentage * 100).toInt()}% kemungkinan gejala diabetes",
                     fontSize = 12.sp,
                     color = Color(0xFF666666)
                 )
@@ -529,7 +371,7 @@ fun AnalysisResultsSection() {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Berdasarkan analisis citra kuku dan lidah, tidak ditemukan indikasi kuat diabetes. Namun, tetap lakukan pemeriksaan rutin untuk pencegahan.",
+                        text = conclusion,
                         fontSize = 14.sp,
                         color = Color(0xFF1D4ED8),
                         lineHeight = 20.sp
@@ -691,11 +533,35 @@ fun RecommendationItem(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ScanResultsScreenPreview() {
-    MaterialTheme {
-        val navController = rememberNavController()
-        ScanResultsScreen(navController = navController)
+private fun calculateRiskLevel(answers: QuestionnaireAnswers?): Triple<String, Float, String> {
+    if (answers == null) {
+        return Triple(
+            "Rendah",
+            0.25f,
+            "Berdasarkan analisis citra kuku dan lidah, tidak ditemukan indikasi kuat diabetes. Namun, tetap lakukan pemeriksaan rutin untuk pencegahan."
+        )
     }
+
+    var riskScore = 0
+    if (answers.haus == "Ya") riskScore += 2
+    if (answers.berat == "Ya") riskScore += 2
+    when (answers.buang_air) {
+        "Sering" -> riskScore += 2
+        "Sangat Sering" -> riskScore += 3
+    }
+
+    val (riskLevel, riskPercentage) = when (riskScore) {
+        in 0..2 -> "Rendah" to 0.25f
+        in 3..5 -> "Sedang" to 0.50f
+        else -> "Tinggi" to 0.75f
+    }
+
+    val conclusion = when (riskLevel) {
+        "Rendah" -> "Berdasarkan analisis citra kuku, lidah, dan kuesioner, risiko diabetes rendah. Tetap jaga pola hidup sehat dan lakukan pemeriksaan rutin."
+        "Sedang" -> "Analisis menunjukkan risiko diabetes sedang berdasarkan kuesioner dan citra. Konsultasikan dengan dokter untuk pemeriksaan lebih lanjut."
+        "Tinggi" -> "Hasil analisis dan kuesioner menunjukkan risiko diabetes tinggi. Segera konsultasikan dengan dokter untuk evaluasi menyeluruh."
+        else -> "Berdasarkan analisis citra kuku dan lidah, tidak ditemukan indikasi kuat diabetes. Namun, tetap lakukan pemeriksaan rutin untuk pencegahan."
+    }
+
+    return Triple(riskLevel, riskPercentage, conclusion)
 }

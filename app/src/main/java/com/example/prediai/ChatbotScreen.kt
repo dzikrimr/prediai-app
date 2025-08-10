@@ -293,20 +293,26 @@ fun ChatbotScreen(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatTopBar(navController: NavController) {
-    CenterAlignedTopAppBar(
+    TopAppBar(
         title = {
-            Column {
-                Text(
-                    text = "AI Assistant",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = "Online • Siap membantu",
-                    color = Color(0xFF00B4A3),
-                    fontSize = 12.sp
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "AI Assistant",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Text(
+                        text = "Online • Siap membantu",
+                        color = Color(0xFF00B4A3),
+                        fontSize = 12.sp
+                    )
+                }
             }
         },
         navigationIcon = {
