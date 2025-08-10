@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 data class ScanResult(
     val date: String,
@@ -43,7 +45,7 @@ data class ScanResult(
 )
 
 @Composable
-fun ProgressTrackingScreen() {
+fun ProgressTrackingScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) }
     var selectedChart by remember { mutableStateOf(0) } // 0: Line Chart, 1: Bar Chart
 
@@ -86,7 +88,7 @@ fun ProgressTrackingScreen() {
         TopAppBar(
             title = { Text("Progress Tracking") },
             navigationIcon = {
-                IconButton(onClick = {}) {
+                IconButton(onClick = { navController.popBackStack() }) { // Fungsi back
                     Icon(Icons.Filled.ArrowBack, contentDescription = null)
                 }
             },
@@ -530,6 +532,8 @@ fun ScanResultItem(
 @Composable
 fun ProgressTrackingPreview() {
     MaterialTheme {
-        ProgressTrackingScreen()
+        // Simulasi NavController untuk preview
+        val navController = rememberNavController()
+        ProgressTrackingScreen(navController = navController)
     }
 }

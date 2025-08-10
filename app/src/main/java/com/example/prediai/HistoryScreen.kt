@@ -18,8 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 // Data class untuk hasil scan
 data class ScanResult(
@@ -37,7 +40,7 @@ data class ScanResult(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen() {
+fun HistoryScreen(navController: NavController) {
     var selectedFilter by remember { mutableStateOf("Semua") }
 
     val scanResults = listOf(
@@ -45,10 +48,10 @@ fun HistoryScreen() {
             id = 1,
             status = "Risiko Tinggi",
             date = "Hari ini",
-            time = "14:30",
+            time = "11:52",
             description = "Hasil menunjukkan indikasi kuat diabetes. Segera konsultasi dengan dokter.",
             scanType = "Scan kuku & lidah",
-            duration = "2 menit yang lalu",
+            duration = "Baru saja",
             percentage = "85%",
             statusColor = DangerColor,
             icon = Icons.Filled.Warning
@@ -91,116 +94,129 @@ fun HistoryScreen() {
         )
     )
 
-    Scaffold(
-        topBar = {
-            HistoryTopBar()
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundColor),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            TopBarWithFilters(selectedFilter = selectedFilter) { filter ->
+                selectedFilter = filter
+            }
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundColor)
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                FilterSection(selectedFilter = selectedFilter) { filter ->
-                    selectedFilter = filter
-                }
-            }
 
-            item {
-                MonthlySummarySection()
-            }
+        item {
+            MonthlySummarySection()
+        }
 
-            item {
-                HistoryHeaderSection()
-            }
+        item {
+            HistoryHeaderSection()
+        }
 
-            items(scanResults.filter { result ->
-                when (selectedFilter) {
-                    "Normal" -> result.status == "Normal"
-                    "Peringatan" -> result.status == "Peringatan"
-                    "Tinggi" -> result.status == "Risiko Tinggi"
-                    else -> true
-                }
-            }) { scanResult ->
-                ScanResultCard(scanResult = scanResult)
+        items(scanResults.filter { result ->
+            when (selectedFilter) {
+                "Normal" -> result.status == "Normal"
+                "Peringatan" -> result.status == "Peringatan"
+                "Tinggi" -> result.status == "Risiko Tinggi"
+                else -> true
             }
+        }) { scanResult ->
+            ScanResultCard(scanResult = scanResult, navController = navController)
+        }
 
-            item {
-                LoadMoreButton()
-            }
+        item {
+            LoadMoreButton()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryTopBar() {
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = "Riwayat Scan",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
-        },
-        actions = {
-            IconButton(onClick = { /* Handle filter */ }) {
-                Icon(
-                    imageVector = Icons.Filled.FilterList,
-                    contentDescription = "Filter",
-                    tint = Color.White
-                )
-            }
-            IconButton(onClick = { /* Handle search */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search",
-                    tint = Color.White
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = PrimaryColor
-        )
-    )
-}
-
-@Composable
-fun FilterSection(selectedFilter: String, onFilterSelected: (String) -> Unit) {
+fun TopBarWithFilters(selectedFilter: String, onFilterSelected: (String) -> Unit) {
     val filters = listOf("Semua", "Normal", "Peringatan", "Tinggi")
 
-    LazyRow(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(vertical = 8.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = PrimaryColor),
+        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        items(filters) { filter ->
-            FilterChip(
-                selected = selectedFilter == filter,
-                onClick = { onFilterSelected(filter) },
-                label = {
-                    Text(
-                        text = filter,
-                        fontSize = 14.sp
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = PrimaryColor,
-                    containerColor = Color.White,
-                    selectedLabelColor = Color.White,
-                    labelColor = PrimaryColor
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = PrimaryColor,
-                    selectedBorderColor = PrimaryColor,
-                    enabled = true,
-                    selected = selectedFilter == filter
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // TopBar Section
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Riwayat Scan",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
-            )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IconButton(onClick = { /* Handle filter */ }) {
+                        Icon(
+                            imageVector = Icons.Filled.FilterList,
+                            contentDescription = "Filter",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = { /* Handle search */ }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Filter Section
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(filters) { filter ->
+                    FilterChip(
+                        selected = selectedFilter == filter,
+                        onClick = { onFilterSelected(filter) },
+                        label = {
+                            Text(
+                                text = filter,
+                                fontSize = 14.sp,
+                                color = Color.White,
+                                fontWeight = if (selectedFilter == filter) FontWeight.Medium else FontWeight.Normal
+                            )
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = Color.White.copy(alpha = 0.3f),
+                            containerColor = Color.White.copy(alpha = 0.2f),
+                            selectedLabelColor = Color.White,
+                            labelColor = Color.White
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            borderColor = Color.Transparent,
+                            selectedBorderColor = Color.Transparent,
+                            enabled = true,
+                            selected = selectedFilter == filter
+                        ),
+                        modifier = Modifier
+                            .height(46.dp)
+                            .clip(RoundedCornerShape(100.dp))
+                    )
+                }
+            }
         }
     }
 }
@@ -220,7 +236,7 @@ fun MonthlySummarySection() {
                 color = Color.Black
             )
             Text(
-                text = "Januari 2024",
+                text = "Agustus 2025", // Diperbarui ke bulan saat ini
                 color = Color.Gray,
                 fontSize = 14.sp
             )
@@ -311,12 +327,14 @@ fun HistoryHeaderSection() {
 }
 
 @Composable
-fun ScanResultCard(scanResult: ScanResult) {
+fun ScanResultCard(scanResult: ScanResult, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { /* Navigate to detail */ },
+            .clickable {
+                navController.navigate("historyDetail/${scanResult.id}")
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -439,5 +457,13 @@ fun LoadMoreButton() {
                 fontSize = 16.sp
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HistoryScreenPreview() {
+    MaterialTheme {
+        HistoryScreen(navController = rememberNavController())
     }
 }

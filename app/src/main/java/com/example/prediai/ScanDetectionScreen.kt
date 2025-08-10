@@ -1,5 +1,14 @@
 package com.example.prediai
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -13,18 +22,97 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview as ComposePreview
+import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanDetectionScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf("Kuku") }
+    var hasCameraPermission by remember { mutableStateOf(false) }
+    var isCameraActive by remember { mutableStateOf(false) }
+    var isBackCamera by remember { mutableStateOf(true) }
+    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+    var previewView by remember { mutableStateOf<PreviewView?>(null) }
+
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Launcher for camera permission
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        hasCameraPermission = isGranted
+        if (isGranted) {
+            isCameraActive = true
+        }
+    }
+
+    // Function to bind camera
+    fun bindCamera() {
+        previewView?.let { pv ->
+            val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+            cameraProviderFuture.addListener({
+                val provider = cameraProviderFuture.get()
+                cameraProvider = provider
+
+                val preview = Preview.Builder().build().also { previewBuilder ->
+                    previewBuilder.setSurfaceProvider(pv.surfaceProvider)
+                }
+
+                val cameraSelector = if (isBackCamera) {
+                    CameraSelector.DEFAULT_BACK_CAMERA
+                } else {
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                }
+
+                try {
+                    provider.unbindAll()
+                    provider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }, ContextCompat.getMainExecutor(context))
+        }
+    }
+
+    // LaunchedEffect to rebind camera when isBackCamera changes
+    LaunchedEffect(isBackCamera, isCameraActive, hasCameraPermission) {
+        if (hasCameraPermission && isCameraActive) {
+            bindCamera()
+        }
+    }
+
+    // Request camera permission if not granted
+    LaunchedEffect(Unit) {
+        when (PackageManager.PERMISSION_GRANTED) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) -> {
+                hasCameraPermission = true
+            }
+            else -> {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -197,25 +285,52 @@ fun ScanDetectionScreen(navController: NavController) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            // Camera Placeholder
+                            // Camera Preview with Overlay
                             Box(
                                 modifier = Modifier
-                                    .size(80.dp)
-                                    .background(Color.Gray.copy(alpha = 0.3f), CircleShape),
+                                    .size(240.dp)
+                                    .clip(RoundedCornerShape(12.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    Icons.Default.PhotoCamera,
-                                    contentDescription = null,
-                                    tint = Color.Gray,
-                                    modifier = Modifier.size(32.dp)
-                                )
+                                if (hasCameraPermission && isCameraActive) {
+                                    AndroidView(
+                                        factory = { context ->
+                                            PreviewView(context).also { pv ->
+                                                previewView = pv
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+
+                                    // Overlay Guide
+                                    Canvas(
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        drawScanGuide(selectedTab)
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.PhotoCamera,
+                                            contentDescription = null,
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(32.dp)
+                                        )
+                                    }
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Text(
-                                text = "Kamera akan aktif saat tombol scan ditekan",
+                                text = if (hasCameraPermission && isCameraActive)
+                                    "Posisikan ${selectedTab.lowercase()} dalam area panduan (${if(isBackCamera) "Kamera Belakang" else "Kamera Depan"})"
+                                else "Kamera akan aktif saat tombol scan ditekan",
                                 fontSize = 14.sp,
                                 color = Color.Gray,
                                 textAlign = TextAlign.Center
@@ -243,7 +358,13 @@ fun ScanDetectionScreen(navController: NavController) {
 
                                 // Main Camera Button
                                 IconButton(
-                                    onClick = { /* Handle camera */ },
+                                    onClick = {
+                                        if (hasCameraPermission) {
+                                            isCameraActive = true
+                                        } else {
+                                            permissionLauncher.launch(Manifest.permission.CAMERA)
+                                        }
+                                    },
                                     modifier = Modifier
                                         .size(80.dp)
                                         .background(Color(0xFF00BFA5), CircleShape)
@@ -256,15 +377,18 @@ fun ScanDetectionScreen(navController: NavController) {
                                     )
                                 }
 
+                                // Camera Flip Button
                                 IconButton(
-                                    onClick = { /* Handle refresh */ },
+                                    onClick = {
+                                        isBackCamera = !isBackCamera
+                                    },
                                     modifier = Modifier
                                         .size(56.dp)
                                         .background(Color.Gray.copy(alpha = 0.2f), CircleShape)
                                 ) {
                                     Icon(
-                                        Icons.Default.Refresh,
-                                        contentDescription = "Refresh",
+                                        Icons.Default.FlipCameraAndroid,
+                                        contentDescription = "Flip Camera",
                                         tint = Color.Gray
                                     )
                                 }
@@ -304,7 +428,8 @@ fun ScanDetectionScreen(navController: NavController) {
                             "Pastikan pencahayaan yang cukup",
                             "Hindari bayangan pada kuku dan lidah",
                             "Jaga kamera tetap stabil",
-                            "Pastikan kuku dan lidah terlihat jelas"
+                            "Pastikan kuku dan lidah terlihat jelas",
+                            "Ikuti panduan garis hijau pada kamera"
                         )
 
                         tips.forEach { tip ->
@@ -328,6 +453,122 @@ fun ScanDetectionScreen(navController: NavController) {
                 }
             }
         }
+    }
+}
+
+fun DrawScope.drawScanGuide(selectedTab: String) {
+    val guideColor = Color(0xFF00B4A3)
+    val strokeWidth = 3.dp.toPx()
+    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 10f), 0f)
+
+    val centerX = size.width / 2
+    val centerY = size.height / 2
+
+    if (selectedTab == "Kuku") {
+        // Draw nail guide - rectangular with rounded corners
+        val guideWidth = size.width * 0.6f
+        val guideHeight = size.height * 0.4f
+        val left = centerX - guideWidth / 2
+        val top = centerY - guideHeight / 2
+        val right = centerX + guideWidth / 2
+        val bottom = centerY + guideHeight / 2
+        val cornerRadius = 20f
+
+        val path = Path().apply {
+            moveTo(left + cornerRadius, top)
+            lineTo(right - cornerRadius, top)
+            quadraticBezierTo(right, top, right, top + cornerRadius)
+            lineTo(right, bottom - cornerRadius)
+            quadraticBezierTo(right, bottom, right - cornerRadius, bottom)
+            lineTo(left + cornerRadius, bottom)
+            quadraticBezierTo(left, bottom, left, bottom - cornerRadius)
+            lineTo(left, top + cornerRadius)
+            quadraticBezierTo(left, top, left + cornerRadius, top)
+            close()
+        }
+
+        drawPath(
+            path = path,
+            color = guideColor,
+            style = Stroke(width = strokeWidth, pathEffect = pathEffect)
+        )
+
+        // Add corner indicators
+        val cornerSize = 15f
+        val corners = listOf(
+            Pair(left, top),
+            Pair(right, top),
+            Pair(left, bottom),
+            Pair(right, bottom)
+        )
+
+        corners.forEach { (x, y) ->
+            drawLine(
+                color = guideColor,
+                start = Offset(x - cornerSize, y),
+                end = Offset(x + cornerSize, y),
+                strokeWidth = strokeWidth
+            )
+            drawLine(
+                color = guideColor,
+                start = Offset(x, y - cornerSize),
+                end = Offset(x, y + cornerSize),
+                strokeWidth = strokeWidth
+            )
+        }
+
+    } else {
+        // Draw tongue guide - tongue-like shape
+        val guideWidth = size.width * 0.4f
+        val guideHeight = size.height * 0.5f
+
+        val path = Path().apply {
+            // Start from top center (tip of tongue)
+            moveTo(centerX, centerY - guideHeight / 2)
+
+            // Right curve
+            quadraticBezierTo(
+                centerX + guideWidth / 3, centerY - guideHeight / 4,
+                centerX + guideWidth / 2, centerY
+            )
+            quadraticBezierTo(
+                centerX + guideWidth / 2, centerY + guideHeight / 3,
+                centerX + guideWidth / 4, centerY + guideHeight / 2
+            )
+
+            // Bottom curve
+            quadraticBezierTo(
+                centerX, centerY + guideHeight / 2 + 10,
+                centerX - guideWidth / 4, centerY + guideHeight / 2
+            )
+
+            // Left curve
+            quadraticBezierTo(
+                centerX - guideWidth / 2, centerY + guideHeight / 3,
+                centerX - guideWidth / 2, centerY
+            )
+            quadraticBezierTo(
+                centerX - guideWidth / 3, centerY - guideHeight / 4,
+                centerX, centerY - guideHeight / 2
+            )
+
+            close()
+        }
+
+        drawPath(
+            path = path,
+            color = guideColor,
+            style = Stroke(width = strokeWidth, pathEffect = pathEffect)
+        )
+
+        // Add center line for tongue
+        drawLine(
+            color = guideColor.copy(alpha = 0.5f),
+            start = Offset(centerX, centerY - guideHeight / 2),
+            end = Offset(centerX, centerY + guideHeight / 2),
+            strokeWidth = strokeWidth / 2,
+            pathEffect = pathEffect
+        )
     }
 }
 
@@ -395,5 +636,14 @@ fun TabButton(
             fontWeight = FontWeight.Medium,
             fontSize = 14.sp
         )
+    }
+}
+
+@ComposePreview(showBackground = true)
+@Composable
+fun ScanDetectionPreview() {
+    MaterialTheme {
+        val navController = rememberNavController()
+        ScanDetectionScreen(navController = navController)
     }
 }

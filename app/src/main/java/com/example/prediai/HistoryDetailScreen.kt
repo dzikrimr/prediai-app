@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.prediai.ui.theme.PrediAITheme
 
 data class ScanDetail(
@@ -53,56 +55,156 @@ data class Recommendation(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryDetailScreen() {
-    val scanDetail = ScanDetail(
-        scanType = "Scan Kuku & Lidah",
-        date = "15 Januari 2024, 14:30",
-        duration = "2 menit 15 detik",
-        accuracy = "96.8%",
-        riskLevel = "Potensi Risiko Sedang",
-        riskPercentage = 65,
-        findings = listOf(
-            "Perubahan warna pada kuku menunjukkan sirkulasi darah kurang optimal",
-            "Lapisan putih pada lidah mengindikasikan kemungkinan gangguan metabolisme",
-            "Tekstur kuku menunjukkan tanda-tanda dehidrasi"
-        ),
-        additionalInfo = listOf(
-            AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Ya, terutama malam hari", "Ya"),
-            AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya, lebih dari biasanya", "Ya"),
-            AdditionalInfo("Merasa lelah tanpa sebab yang jelas?", "Tidak, energi normal", "Tidak")
-        ),
-        recommendations = listOf(
-            Recommendation(
-                title = "Konsultasi Medis",
-                description = "Segera lakukan pemeriksaan gula darah dan konsultasi dengan dokter untuk skrining lanjut.",
-                icon = Icons.Default.LocalHospital,
-                color = PrimaryColor,
-                actionText = "Cari Dokter"
+fun HistoryDetailScreen(scanId: Int, navController: NavController) {
+    // Simulasi data berdasarkan scanId (dalam praktik nyata, ambil dari database atau state)
+    val scanDetail = when (scanId) {
+        1 -> ScanDetail(
+            scanType = "Scan Kuku & Lidah",
+            date = "10 Aug 2025, 11:52",
+            duration = "2 menit 15 detik",
+            accuracy = "96.8%",
+            riskLevel = "Risiko Tinggi",
+            riskPercentage = 85,
+            findings = listOf(
+                "Perubahan warna pada kuku menunjukkan sirkulasi darah kurang optimal",
+                "Lapisan putih pada lidah mengindikasikan kemungkinan gangguan metabolisme",
+                "Tekstur kuku menunjukkan tanda-tanda dehidrasi"
             ),
-            Recommendation(
-                title = "Pola Makan",
-                description = "• Kurangi konsumsi makanan tinggi gula\n• Perbanyak sayuran hijau dan protein tanpa lemak\n• Makan dalam porsi kecil tapi sering",
-                icon = Icons.Default.Restaurant,
-                color = SecondaryColor
+            additionalInfo = listOf(
+                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Ya, terutama malam hari", "Ya"),
+                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya, lebih dari biasanya", "Ya"),
+                AdditionalInfo("Merasa lelah tanpa sebab yang jelas?", "Tidak, energi normal", "Tidak")
             ),
-            Recommendation(
-                title = "Aktivitas Fisik",
-                description = "• Olahraga ringan 30 menit setiap hari\n• Jalan kaki setelah makan\n• Yoga atau meditasi untuk mengelola stress",
-                icon = Icons.Default.FitnessCenter,
-                color = Color(0xFF2196F3)
-            ),
-            Recommendation(
-                title = "Monitoring Rutin",
-                description = "Lakukan scan ulang dalam 2 minggu untuk memantau perkembangan kondisi Anda.",
-                icon = Icons.Default.Schedule,
-                color = Color(0xFF9C27B0)
+            recommendations = listOf(
+                Recommendation(
+                    title = "Konsultasi Medis",
+                    description = "Segera lakukan pemeriksaan gula darah dan konsultasi dengan dokter untuk skrining lanjut.",
+                    icon = Icons.Default.LocalHospital,
+                    color = PrimaryColor,
+                    actionText = "Cari Dokter"
+                ),
+                Recommendation(
+                    title = "Pola Makan",
+                    description = "• Kurangi konsumsi makanan tinggi gula\n• Perbanyak sayuran hijau dan protein tanpa lemak\n• Makan dalam porsi kecil tapi sering",
+                    icon = Icons.Default.Restaurant,
+                    color = SecondaryColor
+                ),
+                Recommendation(
+                    title = "Aktivitas Fisik",
+                    description = "• Olahraga ringan 30 menit setiap hari\n• Jalan kaki setelah makan\n• Yoga atau meditasi untuk mengelola stress",
+                    icon = Icons.Default.FitnessCenter,
+                    color = Color(0xFF2196F3)
+                ),
+                Recommendation(
+                    title = "Monitoring Rutin",
+                    description = "Lakukan scan ulang dalam 2 minggu untuk memantau perkembangan kondisi Anda.",
+                    icon = Icons.Default.Schedule,
+                    color = Color(0xFF9C27B0)
+                )
             )
         )
-    )
+        2 -> ScanDetail(
+            scanType = "Scan Kuku & Lidah",
+            date = "9 Aug 2025, 09:15",
+            duration = "2 menit 10 detik",
+            accuracy = "95.2%",
+            riskLevel = "Peringatan",
+            riskPercentage = 65,
+            findings = listOf(
+                "Sirkulasi darah sedikit terganggu",
+                "Lapisan tipis pada lidah terdeteksi"
+            ),
+            additionalInfo = listOf(
+                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya", "Ya"),
+                AdditionalInfo("Merasa lelah tanpa sebab yang jelas?", "Tidak", "Tidak")
+            ),
+            recommendations = listOf(
+                Recommendation(
+                    title = "Pola Makan",
+                    description = "Perbanyak sayuran hijau dan kurangi gula.",
+                    icon = Icons.Default.Restaurant,
+                    color = SecondaryColor
+                ),
+                Recommendation(
+                    title = "Aktivitas Fisik",
+                    description = "Lakukan olahraga ringan 20 menit sehari.",
+                    icon = Icons.Default.FitnessCenter,
+                    color = Color(0xFF2196F3)
+                )
+            )
+        )
+        3 -> ScanDetail(
+            scanType = "Scan Kuku & Lidah",
+            date = "8 Aug 2025, 16:45",
+            duration = "2 menit 5 detik",
+            accuracy = "97.3%",
+            riskLevel = "Normal",
+            riskPercentage = 15,
+            findings = listOf("Tidak ada indikasi abnormal"),
+            additionalInfo = listOf(
+                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Tidak", "Tidak")
+            ),
+            recommendations = listOf(
+                Recommendation(
+                    title = "Pola Hidup Sehat",
+                    description = "Jaga pola makan dan olahraga rutin.",
+                    icon = Icons.Default.FitnessCenter,
+                    color = SecondaryColor
+                )
+            )
+        )
+        4 -> ScanDetail(
+            scanType = "Scan Kuku & Lidah",
+            date = "7 Aug 2025, 11:20",
+            duration = "2 menit 0 detik",
+            accuracy = "98.0%",
+            riskLevel = "Normal",
+            riskPercentage = 20,
+            findings = listOf("Semua parameter normal"),
+            additionalInfo = listOf(
+                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Tidak", "Tidak"),
+                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Tidak", "Tidak")
+            ),
+            recommendations = listOf(
+                Recommendation(
+                    title = "Pola Hidup Sehat",
+                    description = "Terus jaga kesehatan Anda.",
+                    icon = Icons.Default.FitnessCenter,
+                    color = SecondaryColor
+                )
+            )
+        )
+        else -> ScanDetail(
+            scanType = "Scan Kuku & Lidah",
+            date = "10 Aug 2025, 12:17", // Diperbarui ke waktu saat ini
+            duration = "2 menit 15 detik",
+            accuracy = "96.8%",
+            riskLevel = "Potensi Risiko Sedang",
+            riskPercentage = 65,
+            findings = listOf(
+                "Perubahan warna pada kuku menunjukkan sirkulasi darah kurang optimal",
+                "Lapisan putih pada lidah mengindikasikan kemungkinan gangguan metabolisme"
+            ),
+            additionalInfo = listOf(
+                AdditionalInfo("Apakah Anda sering merasa haus berlebihan?", "Ya", "Ya"),
+                AdditionalInfo("Frekuensi buang air kecil meningkat?", "Ya", "Ya")
+            ),
+            recommendations = listOf(
+                Recommendation(
+                    title = "Konsultasi Medis",
+                    description = "Segera lakukan pemeriksaan gula darah.",
+                    icon = Icons.Default.LocalHospital,
+                    color = PrimaryColor
+                )
+            )
+        )
+    }
 
     Scaffold(
         topBar = {
-            DetailTopBar()
+            DetailTopBar(navController = navController)
         }
     ) { paddingValues ->
         LazyColumn(
@@ -152,7 +254,7 @@ fun HistoryDetailScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailTopBar() {
+fun DetailTopBar(navController: NavController) {
     TopAppBar(
         title = {
             Text(
@@ -163,7 +265,7 @@ fun DetailTopBar() {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /* Handle back */ }) {
+            IconButton(onClick = { navController.popBackStack() }) { // Fungsi back
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
@@ -382,7 +484,7 @@ fun AnalysisResultsSection(scanDetail: ScanDetail) {
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = "Analysis",
-                    tint = WarningColor,
+                    tint = if (scanDetail.riskLevel.contains("Tinggi")) DangerColor else WarningColor,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -396,7 +498,7 @@ fun AnalysisResultsSection(scanDetail: ScanDetail) {
 
             Text(
                 text = scanDetail.riskLevel,
-                color = WarningColor,
+                color = if (scanDetail.riskLevel.contains("Tinggi")) DangerColor else WarningColor,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(top = 4.dp)
@@ -422,7 +524,7 @@ fun AnalysisResultsSection(scanDetail: ScanDetail) {
                     Box(
                         modifier = Modifier
                             .size(6.dp)
-                            .background(WarningColor, CircleShape)
+                            .background(if (scanDetail.riskLevel.contains("Tinggi")) DangerColor else WarningColor, CircleShape)
                             .offset(y = 6.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -469,7 +571,7 @@ fun RiskLevelSection(scanDetail: ScanDetail) {
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp)),
-                color = WarningColor,
+                color = if (scanDetail.riskLevel.contains("Tinggi")) DangerColor else WarningColor,
                 trackColor = Color.Gray.copy(alpha = 0.2f)
             )
 
@@ -483,12 +585,12 @@ fun RiskLevelSection(scanDetail: ScanDetail) {
                     text = "${scanDetail.riskPercentage}%",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
-                    color = WarningColor
+                    color = if (scanDetail.riskLevel.contains("Tinggi")) DangerColor else WarningColor
                 )
             }
 
             Text(
-                text = "Risiko sedang - disarankan pemeriksaan lebih lanjut",
+                text = "Risiko ${if (scanDetail.riskLevel.contains("Tinggi")) "tinggi" else "sedang"} - disarankan pemeriksaan lebih lanjut",
                 color = Color.Gray,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(top = 4.dp)
@@ -764,6 +866,8 @@ fun ActionButtonsSection() {
 @Composable
 fun HistoryDetailScreenPreview() {
     PrediAITheme {
-        HistoryDetailScreen()
+        // Untuk preview, kita perlu simulasi NavController
+        val navController = rememberNavController()
+        HistoryDetailScreen(scanId = 1, navController = navController)
     }
 }

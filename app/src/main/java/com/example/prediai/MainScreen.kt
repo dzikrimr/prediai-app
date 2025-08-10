@@ -1,5 +1,6 @@
 package com.example.prediai
 
+import ProgressTrackingScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -15,10 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 
 @Composable
 fun MainScreen() {
@@ -26,7 +29,10 @@ fun MainScreen() {
 
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+            if (currentRoute != "progress" && !(currentRoute?.startsWith("historyDetail/") ?: false)) {
+                BottomNavigationBar(navController = navController)
+            }
         }
     ) { paddingValues ->
         NavHost(
@@ -34,11 +40,19 @@ fun MainScreen() {
             startDestination = "home",
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable("home") { HomeScreen() }
-            composable("history") { HistoryScreen() }
+            composable("home") { HomeScreen(navController = navController) }
+            composable("history") { HistoryScreen(navController = navController) }
             composable("scan") { ScanDetectionScreen(navController = navController) }
             composable("chatbot") { ChatbotScreen() }
             composable("profile") { ProfileScreen() }
+            composable("progress") { ProgressTrackingScreen(navController = navController) }
+            composable(
+                "historyDetail/{scanId}",
+                arguments = listOf(navArgument("scanId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val scanId = backStackEntry.arguments?.getInt("scanId") ?: 0
+                HistoryDetailScreen(scanId = scanId, navController = navController)
+            }
         }
     }
 }

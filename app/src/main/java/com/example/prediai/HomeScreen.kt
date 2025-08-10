@@ -15,13 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -40,7 +44,7 @@ fun HomeScreen() {
 
         item {
             // Progress Tracking Section
-            ProgressTrackingSection()
+            ProgressTrackingSection(navController)
         }
 
         item {
@@ -57,124 +61,153 @@ fun HomeScreen() {
 
 @Composable
 fun HeaderSection() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = PrimaryColor),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
+    Column {
+        // Container putih untuk header info (full-width tanpa padding)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = 0.dp,
+                bottomEnd = 0.dp
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .background(Color.White, CircleShape),
+                            .size(40.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "P",
-                            color = PrimaryColor,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
+                        Icon(
+                            painter = painterResource(id = R.drawable.prediailogo),
+                            contentDescription = "App Logo",
+                            modifier = Modifier.size(40.dp),
+                            tint = Color.Unspecified
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
                             text = "PrediAI",
-                            color = Color.White,
+                            color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
                         Text(
                             text = "Deteksi Dini Diabetes",
-                            color = Color.White.copy(alpha = 0.9f),
+                            color = Color.Gray,
                             fontSize = 12.sp
                         )
                     }
                 }
 
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notifications",
-                        tint = Color.White,
+                        tint = Color.Gray,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(Color.White, CircleShape),
+                            .background(Color.Gray.copy(alpha = 0.2f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "S",
-                            color = PrimaryColor,
+                            color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                     }
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Selamat Datang, Sarah!",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
-            )
-
-            Text(
-                text = "Mari jaga kesehatan Anda dengan deteksi dini diabetes",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 14.sp,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+        // Card hijau yang menyambung (hanya radius bawah)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = PrimaryColor),
+            shape = RoundedCornerShape(
+                topStart = 0.dp,
+                topEnd = 0.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Scan Terakhir",
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 12.sp
-                    )
-                    Text(
-                        text = "15 Jan 2024",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp
-                    )
-                }
+                Text(
+                    text = "Selamat Datang, Sarah!",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
 
-                Box(
-                    modifier = Modifier
-                        .background(SecondaryColor, RoundedCornerShape(20.dp))
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                Text(
+                    text = "Mari jaga kesehatan Anda dengan deteksi dini diabetes",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Card putih dengan opacity untuk scan terakhir
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = "Normal",
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Scan Terakhir",
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontSize = 12.sp
+                            )
+                            Text(
+                                text = "11 Aug 2025, 11:33", // Diperbarui ke waktu saat ini
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .background(SecondaryColor, RoundedCornerShape(20.dp))
+                                .padding(horizontal = 16.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "Normal",
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -245,7 +278,7 @@ fun ScanCard() {
 }
 
 @Composable
-fun ProgressTrackingSection() {
+fun ProgressTrackingSection(navController: NavController) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -264,7 +297,9 @@ fun ProgressTrackingSection() {
                 color = PrimaryColor,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.clickable { /* Navigate to progress */ }
+                modifier = Modifier.clickable {
+                    navController.navigate("progress")
+                }
             )
         }
 
@@ -287,7 +322,7 @@ fun ProgressTrackingSection() {
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Januari 2024",
+                        text = "Agustus 2025",
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
@@ -296,13 +331,13 @@ fun ProgressTrackingSection() {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 LinearProgressIndicator(
-                    progress = 0.75f,
+                    progress = { 0.75f },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
                     color = PrimaryColor,
-                    trackColor = Color.Gray.copy(alpha = 0.2f)
+                    trackColor = Color.Gray.copy(alpha = 0.2f),
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -312,7 +347,7 @@ fun ProgressTrackingSection() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Scan berikutnya: 1 Feb 2024",
+                        text = "Scan berikutnya: 11 Sep 2025",
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
@@ -402,7 +437,7 @@ fun LatestResultsSection() {
         // Normal Result
         ResultCard(
             scanNumber = "Scan #12",
-            date = "15 Jan 2024, 14:30",
+            date = "11 Aug 2025, 11:33", // Diperbarui ke waktu saat ini
             status = "Normal",
             statusColor = SecondaryColor,
             description = "Tidak terdeteksi indikasi diabetes. Pertahankan pola hidup sehat.",
@@ -414,7 +449,7 @@ fun LatestResultsSection() {
         // Warning Result
         ResultCard(
             scanNumber = "Scan #11",
-            date = "12 Jan 2024, 09:15",
+            date = "10 Aug 2025, 09:15",
             status = "Perhatian",
             statusColor = WarningColor,
             description = "Terdeteksi beberapa indikator. Disarankan konsultasi dokter.",
@@ -493,7 +528,7 @@ fun ResultCard(
                 }
 
                 Text(
-                    text = date,
+                    date,
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
@@ -501,7 +536,7 @@ fun ResultCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = description,
+                    description,
                     color = Color.Gray,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
@@ -560,5 +595,13 @@ fun HealthTipsSection() {
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    MaterialTheme {
+        HomeScreen(navController = rememberNavController()) // Gunakan NavController dummy untuk preview
     }
 }
