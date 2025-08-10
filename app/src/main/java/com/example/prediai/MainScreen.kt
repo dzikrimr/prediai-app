@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -22,6 +24,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+
+// Sealed class to represent either a Material Icon or a Drawable Resource
+sealed class NavIcon {
+    data class MaterialIcon(val imageVector: ImageVector) : NavIcon()
+    data class DrawableIcon(val resourceId: Int) : NavIcon()
+}
 
 @Composable
 fun MainScreen() {
@@ -66,11 +74,11 @@ fun MainScreen() {
 @Composable
 fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
-        NavItem("Beranda", Icons.Default.Home, "home"),
-        NavItem("Riwayat", Icons.Default.History, "history"),
-        NavItem("Scan", Icons.Default.CameraAlt, "scan"),
-        NavItem("Chatbot", Icons.Default.Chat, "chatbot"),
-        NavItem("Profil", Icons.Default.Person, "profile")
+        NavItem("Beranda", NavIcon.MaterialIcon(Icons.Default.Home), "home"),
+        NavItem("Riwayat", NavIcon.MaterialIcon(Icons.Default.History), "history"),
+        NavItem("Scan", NavIcon.MaterialIcon(Icons.Default.CameraAlt), "scan"),
+        NavItem("Chatbot", NavIcon.DrawableIcon(R.drawable.chatbot_ic), "chatbot"),
+        NavItem("Profil", NavIcon.MaterialIcon(Icons.Default.Person), "profile")
     )
 
     NavigationBar(
@@ -82,7 +90,7 @@ fun BottomNavigationBar(navController: NavController) {
         items.forEach { item ->
             NavigationBarItem(
                 icon = {
-                    if (item.route == "scan") { // Scan button
+                    if (item.route == "scan") { // Scan button with circular background
                         Box(
                             modifier = Modifier
                                 .size(56.dp)
@@ -90,15 +98,22 @@ fun BottomNavigationBar(navController: NavController) {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = item.icon,
+                                imageVector = (item.icon as NavIcon.MaterialIcon).imageVector,
                                 contentDescription = item.label,
                                 tint = Color.White,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-                    } else {
+                    } else if (item.route == "chatbot") { // Custom drawable for Chatbot
                         Icon(
-                            imageVector = item.icon,
+                            painter = painterResource(id = (item.icon as NavIcon.DrawableIcon).resourceId),
+                            contentDescription = item.label,
+                            modifier = Modifier.size(24.dp),
+                            tint = if (currentRoute == item.route) PrimaryColor else Color.Gray
+                        )
+                    } else { // Other Material Icons
+                        Icon(
+                            imageVector = (item.icon as NavIcon.MaterialIcon).imageVector,
                             contentDescription = item.label,
                             modifier = Modifier.size(24.dp)
                         )
@@ -134,6 +149,6 @@ fun BottomNavigationBar(navController: NavController) {
 
 data class NavItem(
     val label: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: NavIcon,
     val route: String
 )
