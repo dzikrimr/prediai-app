@@ -1,6 +1,5 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+package com.example.prediai
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,17 +8,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -220,7 +216,7 @@ fun ProfileScreen() {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedButton(
-                    onClick = { },
+                    onClick = { /* Handle logout */ },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color(0xFFE53E3E)
@@ -246,8 +242,6 @@ fun ProfileScreen() {
 
             item { Spacer(modifier = Modifier.height(24.dp)) }
         }
-
-
     }
 }
 
@@ -363,19 +357,9 @@ fun MenuItemRow(item: MenuItem) {
     }
 }
 
-
-
 data class MenuItem(
     val title: String,
     val subtitle: String,
     val icon: ImageVector,
     val iconColor: Color
 )
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    MaterialTheme {
-        ProfileScreen()
-    }
-}
