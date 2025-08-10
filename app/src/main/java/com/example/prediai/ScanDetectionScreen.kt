@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+package com.example.prediai
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,20 +17,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
-@Preview(showBackground = true, heightDp = 800)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScanDetectionPreview() {
-    MaterialTheme {
-        ScanDetectionScreen()
-    }
-}
-
-@Composable
-fun ScanDetectionScreen() {
+fun ScanDetectionScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf("Kuku") }
 
     Column(
@@ -48,7 +41,7 @@ fun ScanDetectionScreen() {
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { }) {
+                IconButton(onClick = { navController.navigateUp() }) {
                     Icon(
                         Icons.Default.ArrowBack,
                         contentDescription = "Back",
@@ -57,7 +50,7 @@ fun ScanDetectionScreen() {
                 }
             },
             actions = {
-                IconButton(onClick = { }) {
+                IconButton(onClick = { /* Handle help */ }) {
                     Icon(
                         Icons.Default.Help,
                         contentDescription = "Help",
@@ -236,7 +229,7 @@ fun ScanDetectionScreen() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 IconButton(
-                                    onClick = { },
+                                    onClick = { /* Handle gallery */ },
                                     modifier = Modifier
                                         .size(56.dp)
                                         .background(Color.Gray.copy(alpha = 0.2f), CircleShape)
@@ -250,7 +243,7 @@ fun ScanDetectionScreen() {
 
                                 // Main Camera Button
                                 IconButton(
-                                    onClick = { },
+                                    onClick = { /* Handle camera */ },
                                     modifier = Modifier
                                         .size(80.dp)
                                         .background(Color(0xFF00BFA5), CircleShape)
@@ -264,7 +257,7 @@ fun ScanDetectionScreen() {
                                 }
 
                                 IconButton(
-                                    onClick = { },
+                                    onClick = { /* Handle refresh */ },
                                     modifier = Modifier
                                         .size(56.dp)
                                         .background(Color.Gray.copy(alpha = 0.2f), CircleShape)
@@ -334,15 +327,7 @@ fun ScanDetectionScreen() {
                     }
                 }
             }
-
-            // Bottom spacing for navigation
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
-            }
         }
-
-        // Bottom Navigation
-        BottomNavigation()
     }
 }
 
@@ -412,68 +397,3 @@ fun TabButton(
         )
     }
 }
-
-@Composable
-fun BottomNavigation() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
-        shadowElevation = 8.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val items = listOf(
-                BottomNavItem("Beranda", Icons.Default.Home),
-                BottomNavItem("Riwayat", Icons.Default.History),
-                BottomNavItem("", Icons.Default.PhotoCamera), // Camera center
-                BottomNavItem("Chatbot", Icons.Default.SmartToy),
-                BottomNavItem("Profil", Icons.Default.Person)
-            )
-
-            items.forEachIndexed { index, item ->
-                if (index == 2) { // Camera button
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(Color(0xFF00BFA5), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            item.icon,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                } else {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Icon(
-                            item.icon,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(
-                            item.label,
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-data class BottomNavItem(
-    val label: String,
-    val icon: ImageVector
-)
