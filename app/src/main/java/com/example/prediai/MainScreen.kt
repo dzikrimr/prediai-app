@@ -30,7 +30,12 @@ fun MainScreen() {
     Scaffold(
         bottomBar = {
             val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-            if (currentRoute != "progress" && !(currentRoute?.startsWith("historyDetail/") ?: false)) {
+            // Hide bottom navigation for specific screens
+            val hideBottomBar = currentRoute == "progress" ||
+                    currentRoute == "scan_results" ||
+                    currentRoute?.startsWith("historyDetail/") ?: false
+
+            if (!hideBottomBar) {
                 BottomNavigationBar(navController = navController)
             }
         }
