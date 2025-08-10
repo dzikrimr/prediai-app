@@ -1,11 +1,12 @@
 package com.example.prediai
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,7 +61,7 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
     val scanDetail = when (scanId) {
         1 -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
-            date = "10 Aug 2025, 11:52",
+            date = "10 Aug 2025, 15:37", // Updated to current date and time
             duration = "2 menit 15 detik",
             accuracy = "96.8%",
             riskLevel = "Risiko Tinggi",
@@ -178,7 +179,7 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
         )
         else -> ScanDetail(
             scanType = "Scan Kuku & Lidah",
-            date = "10 Aug 2025, 12:17", // Diperbarui ke waktu saat ini
+            date = "10 Aug 2025, 15:37", // Updated to current date and time
             duration = "2 menit 15 detik",
             accuracy = "96.8%",
             riskLevel = "Potensi Risiko Sedang",
@@ -196,7 +197,8 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
                     title = "Konsultasi Medis",
                     description = "Segera lakukan pemeriksaan gula darah.",
                     icon = Icons.Default.LocalHospital,
-                    color = PrimaryColor
+                    color = PrimaryColor,
+                    actionText = "Cari Dokter"
                 )
             )
         )
@@ -246,7 +248,7 @@ fun HistoryDetailScreen(scanId: Int, navController: NavController) {
 
             item {
                 // Action Buttons
-                ActionButtonsSection()
+                ActionButtonsSection(navController = navController)
             }
         }
     }
@@ -265,7 +267,7 @@ fun DetailTopBar(navController: NavController) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) { // Fungsi back
+            IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
@@ -724,6 +726,7 @@ fun RecommendationsSection(recommendations: List<Recommendation>) {
 
 @Composable
 fun RecommendationCard(recommendation: Recommendation) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -775,7 +778,13 @@ fun RecommendationCard(recommendation: Recommendation) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
-                    onClick = { /* Handle action */ },
+                    onClick = {
+                        if (actionText == "Cari Dokter") {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.halodoc.com/cari-dokter/spesialis/spesialis-penyakit-dalam-endokrin-metabolik-diabetes"))
+                            context.startActivity(intent)
+                        }
+                        // Add other actionText handlers here if needed
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = recommendation.color
                     ),
@@ -794,7 +803,7 @@ fun RecommendationCard(recommendation: Recommendation) {
 }
 
 @Composable
-fun ActionButtonsSection() {
+fun ActionButtonsSection(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -803,7 +812,15 @@ fun ActionButtonsSection() {
     ) {
         // Konsultasi dengan AI Chatbot
         Button(
-            onClick = { /* Navigate to chatbot */ },
+            onClick = {
+                navController.navigate("chatbot") {
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
             shape = RoundedCornerShape(12.dp)
@@ -866,8 +883,6 @@ fun ActionButtonsSection() {
 @Composable
 fun HistoryDetailScreenPreview() {
     PrediAITheme {
-        // Untuk preview, kita perlu simulasi NavController
-        val navController = rememberNavController()
-        HistoryDetailScreen(scanId = 1, navController = navController)
+        HistoryDetailScreen(scanId = 1, navController = rememberNavController())
     }
 }

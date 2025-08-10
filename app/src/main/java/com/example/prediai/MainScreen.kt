@@ -43,7 +43,7 @@ fun MainScreen() {
             composable("home") { HomeScreen(navController = navController) }
             composable("history") { HistoryScreen(navController = navController) }
             composable("scan") { ScanDetectionScreen(navController = navController) }
-            composable("chatbot") { ChatbotScreen() }
+            composable("chatbot") { ChatbotScreen(navController = navController) }
             composable("profile") { ProfileScreen() }
             composable("progress") { ProgressTrackingScreen(navController = navController) }
             composable(

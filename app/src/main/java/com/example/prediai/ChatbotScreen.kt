@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -51,7 +51,7 @@ data class QuickReply(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatbotScreen() {
+fun ChatbotScreen(navController: NavController) {
     var messages by remember {
         mutableStateOf(
             listOf(
@@ -102,7 +102,7 @@ fun ChatbotScreen() {
 
     Scaffold(
         topBar = {
-            ChatTopBar()
+            ChatTopBar(navController = navController)
         },
         bottomBar = {
             Column {
@@ -170,7 +170,7 @@ fun ChatbotScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatTopBar() {
+fun ChatTopBar(navController: NavController) {
     CenterAlignedTopAppBar(
         title = {
             Column {
@@ -188,7 +188,7 @@ fun ChatTopBar() {
             }
         },
         navigationIcon = {
-            IconButton(onClick = { /* Handle back */ }) {
+            IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Back",
@@ -197,21 +197,12 @@ fun ChatTopBar() {
             }
         },
         actions = {
-            Row {
-                IconButton(onClick = { /* Handle call */ }) {
-                    Icon(
-                        imageVector = Icons.Filled.Call,
-                        contentDescription = "Call",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                IconButton(onClick = { /* Handle more options */ }) {
-                    Icon(
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = "More",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+            IconButton(onClick = { /* Handle more options */ }) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "More",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -468,16 +459,6 @@ fun ChatInputSection(
                 .padding(8.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            IconButton(
-                onClick = { /* Handle attachment */ }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.AttachFile,
-                    contentDescription = "Attach",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
             OutlinedTextField(
                 value = messageText,
                 onValueChange = onMessageChange,
@@ -509,16 +490,6 @@ fun ChatInputSection(
                 ),
                 maxLines = 4
             )
-
-            IconButton(
-                onClick = { /* Handle emoji */ }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.EmojiEmotions,
-                    contentDescription = "Emoji",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
 
             IconButton(
                 onClick = onSendMessage,

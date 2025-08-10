@@ -39,7 +39,7 @@ fun HomeScreen(navController: NavController) {
 
         item {
             // Scan Card
-            ScanCard()
+            ScanCard(navController = navController)
         }
 
         item {
@@ -188,7 +188,7 @@ fun HeaderSection() {
                                 fontSize = 12.sp
                             )
                             Text(
-                                text = "11 Aug 2025, 11:33", // Diperbarui ke waktu saat ini
+                                text = "11 Aug 2025, 11:33",
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
@@ -215,12 +215,12 @@ fun HeaderSection() {
 }
 
 @Composable
-fun ScanCard() {
+fun ScanCard(navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { /* Navigate to scan */ },
+            .clickable { navController.navigate("scan") },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -437,7 +437,7 @@ fun LatestResultsSection() {
         // Normal Result
         ResultCard(
             scanNumber = "Scan #12",
-            date = "11 Aug 2025, 11:33", // Diperbarui ke waktu saat ini
+            date = "11 Aug 2025, 11:33",
             status = "Normal",
             statusColor = SecondaryColor,
             description = "Tidak terdeteksi indikasi diabetes. Pertahankan pola hidup sehat.",
@@ -602,6 +602,6 @@ fun HealthTipsSection() {
 @Composable
 fun HomeScreenPreview() {
     MaterialTheme {
-        HomeScreen(navController = rememberNavController()) // Gunakan NavController dummy untuk preview
+        HomeScreen(navController = rememberNavController())
     }
 }
