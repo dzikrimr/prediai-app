@@ -85,13 +85,13 @@ fun ProfileScreen() {
 
                     Column {
                         Text(
-                            text = "Sarah Wijaya",
+                            text = "John Santoso",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "sarah.wijaya@email.com",
+                            text = "john.santoso@email.com",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 14.sp
                         )

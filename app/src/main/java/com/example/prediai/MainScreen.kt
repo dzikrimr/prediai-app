@@ -41,6 +41,7 @@ fun MainScreen() {
             // Hide bottom navigation for specific screens
             val hideBottomBar = currentRoute == "progress" ||
                     currentRoute == "scan_results" ||
+                    currentRoute == "questionnaire" ||
                     currentRoute?.startsWith("historyDetail/") ?: false
 
             if (!hideBottomBar) {
@@ -57,7 +58,14 @@ fun MainScreen() {
             composable("history") { HistoryScreen(navController = navController) }
             composable("scan") { ScanDetectionScreen(navController = navController) }
             composable("chatbot") { ChatbotScreen(navController = navController) }
-            composable("scan_results") { ScanResultsScreen(navController = navController) }
+            composable("questionnaire") { QuestionnaireScreen(navController = navController) }
+            composable(
+                "scan_results/{answersJson}",
+                arguments = listOf(navArgument("answersJson") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val answersJson = backStackEntry.arguments?.getString("answersJson")
+                ScanResultsScreen(navController = navController, answersJson = answersJson)
+            }
             composable("profile") { ProfileScreen() }
             composable("progress") { ProgressTrackingScreen(navController = navController) }
             composable(
