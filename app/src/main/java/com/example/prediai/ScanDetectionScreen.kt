@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview as ComposePreview
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,6 +61,7 @@ fun ScanDetectionScreen(navController: NavController) {
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
 
     // Launcher for camera permission
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -105,26 +107,28 @@ fun ScanDetectionScreen(navController: NavController) {
 
     // Function to capture photo
     fun capturePhoto() {
-        // Simulate photo capture process
         showCaptureSuccess = true
 
-        // Mark current tab as captured
         if (selectedTab == "Kuku") {
             kukuImageCaptured = true
-            // Auto switch to Lidah tab after 1 second
-            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                kotlinx.coroutines.delay(1000)
-                selectedTab = "Lidah"
-                showCaptureSuccess = false
-            }
         } else if (selectedTab == "Lidah") {
             lidahImageCaptured = true
-            // Navigate to results screen after 1 second
-            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                kotlinx.coroutines.delay(1000)
-                showCaptureSuccess = false
-                // Navigate to ScanResults screen (you need to define this route in your navigation)
+        }
+
+        scope.launch {
+            delay(1000)
+            showCaptureSuccess = false
+            if (kukuImageCaptured && lidahImageCaptured) {
+                // Both images captured, navigate to results
+                cameraProvider?.unbindAll() // Unbind camera to prevent leaks
                 navController.navigate("scan_results")
+            } else {
+                // Switch to the other tab if it hasn't been captured
+                if (selectedTab == "Kuku" && !lidahImageCaptured) {
+                    selectedTab = "Lidah"
+                } else if (selectedTab == "Lidah" && !kukuImageCaptured) {
+                    selectedTab = "Kuku"
+                }
             }
         }
     }
@@ -145,6 +149,13 @@ fun ScanDetectionScreen(navController: NavController) {
             else -> {
                 permissionLauncher.launch(Manifest.permission.CAMERA)
             }
+        }
+    }
+
+    // Clean up camera on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraProvider?.unbindAll()
         }
     }
 
@@ -632,23 +643,15 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
 
     } else {
         // Draw tongue guide - tongue-like shape (flipped vertically, larger, with rounded tip)
-        val guideWidth = size.width * 0.5f  // Increased from 0.4f
-        val guideHeight = size.height * 0.6f  // Increased from 0.5f
+        val guideWidth = size.width * 0.5f
+        val guideHeight = size.height * 0.6f
 
         val path = Path().apply {
-            // Start from top center (base of tongue) - now with rounded top
-            val topRadius = guideWidth / 6
-
-            // Start from top-left curve
             moveTo(centerX - guideWidth / 4, centerY - guideHeight / 2)
-
-            // Top curve (base of tongue) - rounded
             quadraticBezierTo(
                 centerX, centerY - guideHeight / 2 - 5,
                 centerX + guideWidth / 4, centerY - guideHeight / 2
             )
-
-            // Right curve going down
             quadraticBezierTo(
                 centerX + guideWidth / 2, centerY - guideHeight / 4,
                 centerX + guideWidth / 2, centerY
@@ -657,8 +660,6 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
                 centerX + guideWidth / 2, centerY + guideHeight / 4,
                 centerX + guideWidth / 4, centerY + guideHeight / 3
             )
-
-            // Bottom tip - rounded instead of sharp
             quadraticBezierTo(
                 centerX + guideWidth / 8, centerY + guideHeight / 2,
                 centerX, centerY + guideHeight / 2 + 8
@@ -667,8 +668,6 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
                 centerX - guideWidth / 8, centerY + guideHeight / 2,
                 centerX - guideWidth / 4, centerY + guideHeight / 3
             )
-
-            // Left curve going up
             quadraticBezierTo(
                 centerX - guideWidth / 2, centerY + guideHeight / 4,
                 centerX - guideWidth / 2, centerY
@@ -677,7 +676,6 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
                 centerX - guideWidth / 2, centerY - guideHeight / 4,
                 centerX - guideWidth / 4, centerY - guideHeight / 2
             )
-
             close()
         }
 
@@ -687,7 +685,6 @@ fun DrawScope.drawScanGuide(selectedTab: String) {
             style = Stroke(width = strokeWidth, pathEffect = pathEffect)
         )
 
-        // Add center line for tongue (flipped direction)
         drawLine(
             color = guideColor.copy(alpha = 0.5f),
             start = Offset(centerX, centerY - guideHeight / 2),
@@ -737,31 +734,6 @@ fun GuideStep(
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
-    }
-}
-
-@Composable
-fun TabButton(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) Color(0xFF00BFA5) else Color.Transparent,
-            contentColor = if (isSelected) Color.White else Color(0xFF00BFA5)
-        ),
-        elevation = ButtonDefaults.buttonElevation(0.dp),
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.Medium,
-            fontSize = 14.sp
-        )
     }
 }
 
