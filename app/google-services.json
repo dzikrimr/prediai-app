@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "186516812845",
+    "project_id": "prediai",
+    "storage_bucket": "prediai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186516812845:android:92d1c65ba6da597197b4a4",
+        "android_client_info": {
+          "package_name": "com.example.prediai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4txm-e1fvbyAKCoKV3iencbfjTyjZKTI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
