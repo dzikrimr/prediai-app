@@ -46,7 +46,8 @@ fun LoginForm(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -55,35 +56,35 @@ fun LoginForm(
             painter = painterResource(id = R.drawable.prediailogo),
             contentDescription = "PrediAI Logo",
             modifier = Modifier
-                .size(120.dp)
+                .size(110.dp)
         )
         // ✅ Teks PrediAI
         Text(
             text = "PrediAI",
             fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
+            fontSize = 24.sp,
             color = Color(0xFF2D3748)
         )
         // Form Container (semua komponen di dalam Card ini)
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(15.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Title
                 Text(
                     text = "Masuk",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2D3748),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1F2937),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -94,19 +95,19 @@ fun LoginForm(
                         text = "Email",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF4A5568)
+                        color = Color(0xFF374151)
                     )
 
                     OutlinedTextField(
                         value = email,
                         onValueChange = onEmailChange,
                         placeholder = {
-                            Text("Masukkan email Anda", color = Color(0xFFA0AEC0), fontSize = 14.sp)
+                            Text("Masukkan email Anda", color = Color(0xFFADAEBC), fontSize = 16.sp)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         leadingIcon = {
-                            Icon(Icons.Default.Email, contentDescription = "Email", tint = Color(0xFFA0AEC0))
+                            Icon(Icons.Default.Email, contentDescription = "Email", tint = Color(0xFFADAEBC))
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -124,19 +125,19 @@ fun LoginForm(
                         text = "Password",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF4A5568)
+                        color = Color(0xFF374151)
                     )
 
                     OutlinedTextField(
                         value = password,
                         onValueChange = onPasswordChange,
                         placeholder = {
-                            Text("Masukkan password", color = Color(0xFFA0AEC0), fontSize = 14.sp)
+                            Text("Masukkan password", color = Color(0xFFADAEBC), fontSize = 16.sp)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         leadingIcon = {
-                            Icon(Icons.Default.Lock, contentDescription = "Password", tint = Color(0xFFA0AEC0))
+                            Icon(Icons.Default.Lock, contentDescription = "Password", tint = Color(0xFFADAEBC))
                         },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -244,9 +245,20 @@ fun LoginForm(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Belum punya akun? ", color = Color(0xFF718096), fontSize = 14.sp)
-                    TextButton(onClick = onRegisterClick, contentPadding = PaddingValues(0.dp)) {
-                        Text("Daftar", color = primaryColor, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = "Belum punya akun? ",
+                        color = Color(0xFF718096),
+                        fontSize = 14.sp
+                    )
+                    TextButton(
+                        onClick = onRegisterClick,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(text = "Daftar",
+                            color = primaryColor,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }

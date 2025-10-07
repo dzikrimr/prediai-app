@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "186516812845",
+    "firebase_url": "https://prediai-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "prediai",
     "storage_bucket": "prediai.firebasestorage.app"
   },
@@ -12,7 +13,28 @@
           "package_name": "com.example.prediai"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "186516812845-22j7fvdrtud10824cg3dhe7gl39qp3qq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.prediai",
+            "certificate_hash": "97fb641e3b0ac33b19727c7e82fd20f7763ca41d"
+          }
+        },
+        {
+          "client_id": "186516812845-hk1hf3g0gfq89qtrhepvikpd0frk4pm3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.prediai",
+            "certificate_hash": "b155ca96e556ae878f47cf333e028e0396a3e3f4"
+          }
+        },
+        {
+          "client_id": "186516812845-okuuut32d6brap0otm3lmq2k29le9ic3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB4txm-e1fvbyAKCoKV3iencbfjTyjZKTI"
@@ -20,7 +42,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "186516812845-okuuut32d6brap0otm3lmq2k29le9ic3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

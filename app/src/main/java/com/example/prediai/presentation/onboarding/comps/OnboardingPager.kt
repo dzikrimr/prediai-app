@@ -52,26 +52,26 @@ fun OnboardingPager(
                     modifier = Modifier.size(300.dp)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(30.dp))
 
                 // ✅ Title
                 Text(
                     text = pages[page].title,
-                    fontSize = 25.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF111827),
+                    color = Color(0xFF1F2937),
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(15.dp))
 
                 // ✅ Description
                 Text(
                     text = pages[page].description,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF4B5563),
-                    modifier = Modifier.padding(horizontal = 32.dp),
+                    color = Color(0xFF6B7280),
+                    modifier = Modifier.padding(horizontal = 20.dp),
                     textAlign = TextAlign.Center
                 )
             }
