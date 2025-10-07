@@ -1,3 +1,4 @@
+// ChatRepositoryImpl.kt
 package com.example.prediai.data.repository
 
 import com.example.prediai.domain.model.Message
@@ -31,7 +32,7 @@ class ChatRepositoryImpl @Inject constructor(
                 Result.success(responseText)
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Gagal menghasilkan respons: ${e.message}"))
         }
     }
 
