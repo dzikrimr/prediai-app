@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
-    id("com.google.dagger.hilt.android") version "2.50"
+    id("com.google.dagger.hilt.android") version "2.51.1"
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
     id("com.google.gms.google-services")
 }
@@ -99,6 +99,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation(libs.androidx.compose.foundation)
 
     // Testing
     testImplementation(libs.junit)
@@ -118,6 +119,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager:0.32.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
 
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
     // firebase
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation("com.google.firebase:firebase-database-ktx:21.0.0")
@@ -126,4 +129,6 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }
