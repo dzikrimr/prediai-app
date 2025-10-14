@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">PREDIAI</string>
+    <string name="app_name">PrediAI</string>
+    <string name="default_web_client_id">186516812845-hk1hf3g0gfq89qtrhepvikpd0frk4pm3.apps.googleusercontent.com</string>
 </resources>

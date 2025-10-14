@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PREDIAI"
+rootProject.name = "PrediAI"
 include(":app")
  
