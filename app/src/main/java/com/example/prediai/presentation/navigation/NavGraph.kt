@@ -8,7 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.prediai.presentation.auth.LoginScreen
 import com.example.prediai.presentation.auth.QuestionnaireRoot
 import com.example.prediai.presentation.auth.RegisterScreen
-import com.example.prediai.presentation.main.HomeScreen
+import com.example.prediai.presentation.main.MainScreen
 import com.example.prediai.presentation.onboarding.OnboardingScreen
 import com.example.prediai.presentation.onboarding.OnboardingViewModel
 import com.example.prediai.presentation.splash.SplashScreen
@@ -24,42 +24,31 @@ fun AppNavGraph(navController: NavHostController) {
         }
 
         composable("onboarding") {
-            // Dapatkan instance ViewModel
             val viewModel: OnboardingViewModel = hiltViewModel()
-
             OnboardingScreen(
                 navController = navController,
-                // Berikan logika untuk onSkipClick
                 onSkipClick = {
-                    viewModel.completeOnboarding() // Simpan status
-                    navController.navigate("login") { // Navigasi
+                    viewModel.completeOnboarding()
+                    navController.navigate("login") {
                         popUpTo("onboarding") { inclusive = true }
                     }
                 },
-                // Berikan logika untuk onFinishClick
                 onFinishClick = {
-                    viewModel.completeOnboarding() // Simpan status
-                    navController.navigate("login") { // Navigasi
+                    viewModel.completeOnboarding()
+                    navController.navigate("login") {
                         popUpTo("onboarding") { inclusive = true }
                     }
                 }
             )
         }
 
-        composable("login") {
-            LoginScreen(navController)
-        }
+        composable("login") { LoginScreen(navController) }
+        composable("register") { RegisterScreen(navController) }
+        composable("questionnaire") { QuestionnaireRoot(navController) }
 
-        composable("register") {
-            RegisterScreen(navController)
-        }
-
-        composable("questionnaire") {
-            QuestionnaireRoot(navController)
-        }
-
-        composable("home") {
-            HomeScreen(navController)
+        // Semua halaman utama (beranda, riwayat, scan, dll)
+        composable("main") {
+            MainScreen(rootNavController = navController)
         }
     }
 }

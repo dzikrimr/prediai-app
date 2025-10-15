@@ -2,9 +2,9 @@ package com.example.prediai.presentation.quistionere.comps
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,11 +23,11 @@ fun OptionButton(
         onClick = onClick,
         modifier = modifier.height(44.dp),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (isSelected) Color(0xFF00B4A3) else Color(0xFFF5F5F5),
+            containerColor = if (isSelected) Color(0xFF00B4A3) else Color(0xFFF5F5F5),
             contentColor = if (isSelected) Color.White else Color(0xFF4B5563)
         ),
         shape = RoundedCornerShape(8.dp),
-        elevation = ButtonDefaults.elevation(
+        elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 0.dp
         )
     ) {

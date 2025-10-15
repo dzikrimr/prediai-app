@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.main.comps
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -14,33 +15,69 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
 import com.example.prediai.presentation.main.Reminder
+import com.example.prediai.presentation.theme.PrediAITheme
+
+// Definisikan warna agar mudah digunakan kembali
+private val primaryButtonColor = Color(0xFF157BBC)
+private val cardBorderColor = Color(0xFF93C5FD)
 
 @Composable
 fun UpcomingRemindersSection(reminders: List<Reminder>) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("Pengingat Mendatang", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text("Lihat Semua", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (reminders.isEmpty()) {
-            EmptyReminders()
-        } else {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(horizontal = 4.dp)
+    // DIUBAH: Seluruh section sekarang dibungkus dalam Card utama
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                items(reminders) { reminder ->
-                    ReminderItem(reminder = reminder)
+                Text(
+                    text = "Pengingat Mendatang",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = primaryButtonColor
+                )
+                Text(
+                    text = "Lihat Semua",
+                    color = primaryButtonColor,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (reminders.isEmpty()) {
+                EmptyReminders()
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        items(reminders) { reminder ->
+                            ReminderItem(reminder = reminder)
+                        }
+                    }
+                    Button(
+                        onClick = { /*TODO: Navigate to Add Schedule*/ },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = primaryButtonColor),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Tambahkan Jadwal", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -49,61 +86,87 @@ fun UpcomingRemindersSection(reminders: List<Reminder>) {
 
 @Composable
 private fun ReminderItem(reminder: Reminder) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .width(140.dp)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.CalendarToday,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+    // DIUBAH: Card dihilangkan, diganti dengan Column + border
+    Column(
+        modifier = Modifier
+            .width(140.dp)
+            .border(
+                width = 1.dp,
+                color = cardBorderColor,
+                shape = RoundedCornerShape(16.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(reminder.time, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(reminder.title, fontSize = 14.sp, color = Color.Gray)
-        }
+            .padding(16.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.CalendarToday,
+            contentDescription = null,
+            tint = primaryButtonColor,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = reminder.time,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
+            color = primaryButtonColor
+        )
+        Text(
+            text = reminder.title,
+            fontSize = 10.sp,
+            color = primaryButtonColor
+        )
     }
 }
 
 @Composable
 private fun EmptyReminders() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    // DIUBAH: Card dihilangkan, diganti dengan Column biasa
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp), // Beri padding vertikal agar tidak terlalu sempit
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Icon(
+            painter = painterResource(id = R.drawable.ic_calendar_empty),
+            contentDescription = null,
+            tint = Color.LightGray,
+            modifier = Modifier.size(64.dp)
+        )
+        Text(
+            text = "Anda belum memiliki jadwal",
+            color = primaryButtonColor,
+            textAlign = TextAlign.Center
+        )
+        Button(
+            onClick = { /*TODO: Navigate to Add Schedule*/ },
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = primaryButtonColor),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_calendar_empty),
-                contentDescription = null,
-                tint = Color.LightGray,
-                modifier = Modifier.size(64.dp)
-            )
-            Text(
-                text = "Anda belum memiliki jadwal",
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-            Button(
-                onClick = { /*TODO: Navigate to Add Schedule*/ },
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Tambahkan Jadwal", fontWeight = FontWeight.Bold)
-            }
+            Text("Tambahkan Jadwal", fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Reminders Filled")
+@Composable
+fun UpcomingRemindersSectionFilledPreview() {
+    PrediAITheme {
+        UpcomingRemindersSection(
+            reminders = listOf(
+                Reminder("Take a Medicine", "Today at 2:00 PM"),
+                Reminder("Take a Exercise", "Today at 2:00 PM"),
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Reminders Empty")
+@Composable
+fun UpcomingRemindersSectionEmptyPreview() {
+    PrediAITheme {
+        UpcomingRemindersSection(reminders = emptyList())
     }
 }

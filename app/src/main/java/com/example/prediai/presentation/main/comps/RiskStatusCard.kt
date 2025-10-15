@@ -1,4 +1,4 @@
-package com.example.prediai.presentation.main.components
+package com.example.prediai.presentation.main.comps
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,7 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
-import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun RiskStatusCard(
@@ -39,20 +38,20 @@ fun RiskStatusCard(
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .fillMaxWidth(), // Ukuran lebar fleksibel, tinggi menyesuaikan konten
+            .fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF00B4A3)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth() // Mengikuti lebar Card
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
         ) {
             Image(
                 painter = painterResource(id = R.drawable.sel_darah),
                 contentDescription = null,
-                modifier = Modifier.matchParentSize(), // Mengisi Box
+                modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.Crop
             )
 
@@ -139,13 +138,13 @@ fun RiskStatusCard(
                     textAlign = TextAlign.Center
                 )
 
+                Spacer(modifier = Modifier.height(height = 16.dp))
+
                 Button(
                     onClick = { /*TODO: Navigate to History*/ },
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    // DIUBAH: Spacer dihapus dan padding ditambahkan di sini
                     modifier = Modifier
-                        .padding(top = 24.dp) // Memberi jarak tetap dari atas
                         .size(width = 211.dp, height = 48.dp),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp),
                 ) {
@@ -165,11 +164,9 @@ fun RiskStatusCard(
 @Preview(showBackground = true)
 @Composable
 fun RiskStatusCardFilledPreview() {
-    PrediAITheme {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(16.dp)) {
-            RiskStatusCard(riskPercentage = 0, lastCheckDate = "15 Jan 2025", lastCheckResult = "Tidak ada kemungkinan gejala")
-            RiskStatusCard(riskPercentage = 60, lastCheckDate = "15 Jan 2025", lastCheckResult = "Terdeteksi beberapa indikator. Disarankan konsultasi dokter.")
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
+        RiskStatusCard(riskPercentage = 0, lastCheckDate = "15 Jan 2025", lastCheckResult = "Tidak ada kemungkinan gejala")
+        RiskStatusCard(riskPercentage = 60, lastCheckDate = "15 Jan 2025", lastCheckResult = "Terdeteksi beberapa indikator. Disarankan konsultasi dokter.")
     }
 }
 

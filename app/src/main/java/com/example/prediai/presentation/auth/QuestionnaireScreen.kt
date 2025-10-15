@@ -23,7 +23,6 @@ import com.example.prediai.presentation.auth.comps.DataFormStep
 import com.example.prediai.presentation.auth.comps.QuestionnaireStep
 import com.example.prediai.presentation.auth.comps.QuestionnaireStep2
 import com.example.prediai.presentation.auth.comps.QuestionnaireStep3
-import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun QuestionnaireScreen(
@@ -39,7 +38,6 @@ fun QuestionnaireScreen(
     onStep4Answer: (String, String) -> Unit,
     onNextClick: () -> Unit
 ) {
-    PrediAITheme {
         Scaffold { paddingValues ->
             Column(
                 modifier = Modifier
@@ -125,5 +123,4 @@ fun QuestionnaireScreen(
                 }
             }
         }
-    }
 }

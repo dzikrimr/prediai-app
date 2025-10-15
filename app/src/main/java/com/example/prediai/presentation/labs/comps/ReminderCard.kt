@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,8 +30,12 @@ fun ReminderCard() {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = 2.dp,
-        backgroundColor = Color(0xFFFFF9E6)
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFF9E6) // ganti backgroundColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp // ganti elevation
+        )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),

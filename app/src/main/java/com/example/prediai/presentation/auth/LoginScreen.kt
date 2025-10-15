@@ -43,7 +43,6 @@ fun LoginScreen(
         }
     }
 
-    PrediAITheme {
         Scaffold { paddingValues ->
             Box(
                 modifier = Modifier
@@ -68,6 +67,5 @@ fun LoginScreen(
                     }
                 )
             }
-        }
     }
 }

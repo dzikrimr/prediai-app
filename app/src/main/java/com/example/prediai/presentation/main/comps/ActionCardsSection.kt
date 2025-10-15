@@ -1,18 +1,23 @@
 package com.example.prediai.presentation.main.comps
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter // Import Painter
-import androidx.compose.ui.res.painterResource // Import painterResource
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
+import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun ActionCardsSection() {
@@ -25,17 +30,17 @@ fun ActionCardsSection() {
         ActionCard(
             title = "Mulai Skrining",
             subtitle = "PrediAI siap membantu memeriksa gula darahmu",
-            // UBAH INI: Gunakan painterResource untuk .png
             icon = painterResource(id = R.drawable.ic_screening),
-            backgroundColor = Color(0xFFFFE0E0),
+            // DIUBAH: Warna background card pertama
+            backgroundColor = Color(0xFFFFA4AE),
             onClick = { /*TODO: Navigate to Scan*/ }
         )
         ActionCard(
             title = "Butuh Bantuan Konsultasi",
             subtitle = "Konsultasi dengan chatbot untuk konsultasi kesehatan",
-            // UBAH INI: Gunakan painterResource untuk .png
             icon = painterResource(id = R.drawable.ic_chatbot),
-            backgroundColor = Color(0xFFD7F5D8),
+            // DIUBAH: Warna background card kedua
+            backgroundColor = Color(0xFF61DA65),
             onClick = { /*TODO: Navigate to Chatbot*/ }
         )
     }
@@ -46,15 +51,17 @@ fun ActionCardsSection() {
 private fun ActionCard(
     title: String,
     subtitle: String,
-    icon: Painter, // UBAH TIPE PARAMETER MENJADI Painter
+    icon: Painter,
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        // DIUBAH: Corner radius menjadi 24.dp
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -63,22 +70,46 @@ private fun ActionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text(subtitle, fontSize = 14.sp, color = Color.Gray)
+                // DIUBAH: Properti teks title
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
+                // DIUBAH: Properti teks subtitle
+                Text(
+                    text = subtitle,
+                    fontSize = 14.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Normal // Regular
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
+
+            // DIUBAH: Box untuk frame ikon
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp), // Padding di dalam Box agar ikon tidak terlalu besar
+                    .size(56.dp) // Ukuran frame lingkaran
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.2f)), // Background putih 20% opacity
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = icon, // Gunakan parameter painter
+                    painter = icon,
                     contentDescription = title,
-                    tint = Color.Unspecified // Gunakan Color.Unspecified agar warna asli .png ditampilkan
+                    tint = Color.White, // Ikon dibuat warna putih agar kontras
+                    modifier = Modifier.size(28.dp) // Ukuran ikon di dalam frame
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0F4F7)
+@Composable
+fun ActionCardsSectionPreview() {
+    PrediAITheme {
+        ActionCardsSection()
     }
 }

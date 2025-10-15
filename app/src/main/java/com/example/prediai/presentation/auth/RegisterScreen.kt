@@ -44,7 +44,6 @@ fun RegisterScreen(
         }
     }
 
-    PrediAITheme {
         Scaffold { paddingValues ->
             Box(
                 modifier = Modifier
@@ -70,6 +69,5 @@ fun RegisterScreen(
                     }
                 )
             }
-        }
     }
 }

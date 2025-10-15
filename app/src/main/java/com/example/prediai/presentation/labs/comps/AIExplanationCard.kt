@@ -11,11 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,8 +36,12 @@ fun AIExplanationCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = 2.dp,
-        backgroundColor = Color.White
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White // ganti backgroundColor -> containerColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp // ganti elevation = 2.dp
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -86,10 +91,12 @@ fun AIExplanationCard(
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFF00BFA5)
+                    containerColor = Color(0xFF00BFA5) // ganti backgroundColor -> containerColor
                 ),
                 shape = RoundedCornerShape(10.dp),
-                elevation = ButtonDefaults.elevation(0.dp)
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 0.dp // ganti elevation() -> buttonElevation()
+                )
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_consult),
