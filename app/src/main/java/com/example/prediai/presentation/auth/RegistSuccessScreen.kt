@@ -15,13 +15,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
-import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun RegistrationSuccessScreen(
     onStartClick: () -> Unit
 ) {
-    PrediAITheme {
         Scaffold { paddingValues ->
             Column(
                 modifier = Modifier
@@ -68,7 +66,6 @@ fun RegistrationSuccessScreen(
                 }
             }
         }
-    }
 }
 
 @Preview(showBackground = true)

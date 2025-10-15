@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.scan
 
+import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,19 +42,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.prediai.R
 import com.example.prediai.presentation.common.TopBar
+import com.example.prediai.presentation.scan.comps.CameraPreview
 import com.example.prediai.presentation.scan.comps.StepIndicator
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScreeningPage(
+fun ScanScreen(
     onBackClick: () -> Unit = {},
     onContinueClick: () -> Unit = {},
-    onRetakeClick: () -> Unit = {}
+    onRetakeClick: () -> Unit = {},
+    viewModel: ScanViewModel = viewModel()
 ) {
-    var currentStep by remember { mutableStateOf(1) } // 1 = Nail Scan, 2 = Tongue Scan
     var capturedImageUri by remember { mutableStateOf<String?>(null) }
+    val uiState by viewModel.uiState.collectAsState()
+    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
     Column(
         modifier = Modifier
@@ -71,8 +82,6 @@ fun ScreeningPage(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Step Indicator and Instruction in Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -97,8 +106,8 @@ fun ScreeningPage(
                         StepIndicator(
                             number = 1,
                             label = "Nail Scan",
-                            isActive = currentStep == 1,
-                            isCompleted = currentStep > 1
+                            isActive = uiState.currentStep == 1,
+                            isCompleted = uiState.currentStep > 1
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -109,7 +118,7 @@ fun ScreeningPage(
                                 .width(40.dp)
                                 .height(4.dp)
                                 .background(
-                                    if (currentStep > 1) Color(0xFF00B4A3) else Color(0xFFE0E0E0),
+                                    if (uiState.currentStep > 1) Color(0xFF00B4A3) else Color(0xFFE0E0E0),
                                     RoundedCornerShape(2.dp)
                                 )
                         )
@@ -119,23 +128,10 @@ fun ScreeningPage(
                         StepIndicator(
                             number = 2,
                             label = "Tongue Scan",
-                            isActive = currentStep == 2,
+                            isActive = uiState.currentStep == 2,
                             isCompleted = false
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Instruction Text
-                    Text(
-                        text = if (currentStep == 1)
-                            "Position your nails in the frame"
-                        else
-                            "Position your tongue in the frame",
-                        fontSize = 14.sp,
-                        color = Color(0xFF757575),
-                        textAlign = TextAlign.Center
-                    )
                 }
             }
 
@@ -145,48 +141,46 @@ fun ScreeningPage(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(0.80f)
+                    .aspectRatio(0.85f)
                     .clip(RoundedCornerShape(16.dp))
                     .background(Color(0xFF424242))
             ) {
-                if (capturedImageUri != null) {
-                    AsyncImage(
-                        model = capturedImageUri,
-                        contentDescription = "Captured Image",
+                if (cameraPermissionState.status.isGranted) {
+                    CameraPreview(
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        cameraLens = uiState.cameraLens,
+                        imageAnalyzer = viewModel.imageAnalyzer
                     )
                 } else {
-                    // Placeholder camera preview
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_camera),
-                        contentDescription = "Camera",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .align(Alignment.Center)
-                    )
+                    // Tampilkan pesan atau tombol untuk meminta izin
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Izin kamera diperlukan", color = Color.White)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
+                            Text("Beri Izin")
+                        }
+                    }
                 }
 
+                // Guide Frame
                 Icon(
                     painter = painterResource(
-                        id = if (currentStep == 1) R.drawable.guide_nail else R.drawable.guide_tongue
+                        id = if (uiState.currentStep == 1) R.drawable.guide_nail else R.drawable.guide_tongue
                     ),
                     contentDescription = "Guide Frame",
                     tint = Color.Unspecified,
                     modifier = Modifier
-                        .size(
-                            if (currentStep == 1) 300.dp else 250.dp  // ukuran bisa beda per step
-                        )
+                        .size(if (uiState.currentStep == 1) 300.dp else 250.dp)
                         .align(Alignment.Center)
                 )
 
-                // Refresh Button - Bottom Right Corner
+                // Flip Camera Button
                 FloatingActionButton(
-                    onClick = {
-                        // Simulate capture
-                        capturedImageUri = "captured_image_${System.currentTimeMillis()}"
-                    },
+                    onClick = { viewModel.flipCamera() },
                     containerColor = Color(0xFF00B4A3),
                     shape = CircleShape,
                     modifier = Modifier
@@ -195,15 +189,15 @@ fun ScreeningPage(
                         .size(56.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_refresh),
-                        contentDescription = "Capture",
+                        painter = painterResource(id = R.drawable.ic_refresh), // ganti dengan ikon flip camera
+                        contentDescription = "Flip Camera",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
 
 
             // Status Message and Buttons Card
@@ -232,17 +226,18 @@ fun ScreeningPage(
                             .padding(12.dp)
                     ) {
                         Text(
-                            text = if (capturedImageUri != null)
-                                "Posisi sudah tepat"
-                            else
-                                "Posisikan ${if (currentStep == 1) "kuku" else "lidah"} Anda",
+                            text = when {
+                                uiState.statusMessage.isNotEmpty() -> uiState.statusMessage
+                                capturedImageUri != null -> "Posisi sudah tepat"
+                                else -> "Posisikan ${if (uiState.currentStep == 1) "kuku" else "lidah"} Anda"
+                            },
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF00B4A3),
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
-                    }
+}
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -268,16 +263,17 @@ fun ScreeningPage(
                             )
                         }
 
-                        // Continue Button - Right
                         Button(
                             onClick = {
-                                if (currentStep == 1) {
-                                    currentStep = 2
-                                    capturedImageUri = null
-                                } else {
+                                if (uiState.currentStep == 1 && uiState.isDetectionSuccessful) {
+                                    // Reset kamera & lanjut step lidah
+                                    viewModel.proceedToNextStep()
+                                } else if (uiState.currentStep == 2 && uiState.isDetectionSuccessful) {
+                                    // Jika sudah selesai dua-duanya
                                     onContinueClick()
                                 }
                             },
+                            enabled = uiState.isDetectionSuccessful,
                             modifier = Modifier
                                 .weight(1f)
                                 .height(56.dp),
@@ -286,10 +282,9 @@ fun ScreeningPage(
                                 disabledContainerColor = Color(0xFFE0E0E0)
                             ),
                             shape = RoundedCornerShape(12.dp),
-                            enabled = capturedImageUri != null
                         ) {
                             Text(
-                                text = if (currentStep == 1) "Lanjutkan" else "Lihat Hasil",
+                                text = if (uiState.currentStep == 1) "Lanjutkan" else "Lihat Hasil",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (capturedImageUri != null) Color.White else Color(0xFF9E9E9E)
@@ -302,10 +297,13 @@ fun ScreeningPage(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
+    LaunchedEffect(Unit) {
+        cameraPermissionState.launchPermissionRequest()
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ScreeningPagePreview() {
-    ScreeningPage()
+fun ScanScreenPreview() {
+    ScanScreen()
 }

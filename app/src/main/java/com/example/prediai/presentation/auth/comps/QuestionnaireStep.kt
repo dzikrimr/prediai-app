@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun QuestionnaireStep(
-    answers: Map<Int, Boolean?>,
-    onAnswer: (Int, Boolean) -> Unit,
+    answers: Map<String, Boolean>,
+    onAnswer: (String, Boolean) -> Unit,
     onNextClick: () -> Unit,
     isLoading: Boolean
 ) {
@@ -25,7 +25,7 @@ fun QuestionnaireStep(
         "Apakah luka pada tubuh Anda lama sembuhnya?",
         "Apakah Anda sering mengalami penglihatan kabur?",
         "Apakah Anda sering merasa kesemutan di tangan atau kaki?",
-        "Apakah Anda sering merasa kesemutan di tangan atau kaki?"
+        "Apakah Anda sering merasa haus berlebihan?"
     )
 
     Column(
@@ -35,7 +35,6 @@ fun QuestionnaireStep(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Title
         Text(
             text = "Bantu Kami Kenali Kesehatan Gula Darah Anda",
             fontSize = 15.sp,
@@ -43,8 +42,7 @@ fun QuestionnaireStep(
             color = Color(0xFF2D3748)
         )
 
-        // Questions
-        questions.forEachIndexed { index, question ->
+        questions.forEach { question ->
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -61,24 +59,24 @@ fun QuestionnaireStep(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = { onAnswer(index, true) },
+                        onClick = { onAnswer(question, true) },
                         modifier = Modifier.weight(1f).height(42.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (answers[index] == true) primaryColor else Color(0xFFE2E8F0),
-                            contentColor = if (answers[index] == true) Color.White else Color(0xFF2D3748)
+                            containerColor = if (answers[question] == true) primaryColor else Color(0xFFE2E8F0),
+                            contentColor = if (answers[question] == true) Color.White else Color(0xFF2D3748)
                         )
                     ) {
                         Text("Ya", fontWeight = FontWeight.SemiBold)
                     }
 
                     Button(
-                        onClick = { onAnswer(index, false) },
+                        onClick = { onAnswer(question, false) },
                         modifier = Modifier.weight(1f).height(42.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (answers[index] == false) primaryColor else Color(0xFFE2E8F0),
-                            contentColor = if (answers[index] == false) Color.White else Color(0xFF2D3748)
+                            containerColor = if (answers[question] == false) primaryColor else Color(0xFFE2E8F0),
+                            contentColor = if (answers[question] == false) Color.White else Color(0xFF2D3748)
                         )
                     ) {
                         Text("Tidak", fontWeight = FontWeight.SemiBold)
@@ -87,7 +85,6 @@ fun QuestionnaireStep(
             }
         }
 
-        // Next Button
         Button(
             onClick = onNextClick,
             modifier = Modifier
@@ -112,5 +109,3 @@ fun QuestionnaireStep(
         }
     }
 }
-
-

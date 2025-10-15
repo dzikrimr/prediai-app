@@ -1,9 +1,11 @@
 package com.example.prediai.presentation.auth.comps
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +38,10 @@ fun DataFormStep(
     var expanded by remember { mutableStateOf(false) }
     val primaryColor = Color(0xFF00B4A3)
 
+    // 1. State untuk menampilkan/menyembunyikan DatePickerDialog
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -40,7 +49,6 @@ fun DataFormStep(
         verticalArrangement = Arrangement.spacedBy(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Title
         Text(
             text = "Bantu kami Kenali Kesehatan Gula Darah Anda",
             fontSize = 15.sp,
@@ -48,7 +56,6 @@ fun DataFormStep(
             color = Color(0xFF2D3748)
         )
 
-        // Nama
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Nama", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF4A5568))
             OutlinedTextField(
@@ -67,16 +74,26 @@ fun DataFormStep(
             )
         }
 
-        // Tanggal Lahir
+        // 2. Modifikasi TextField Tanggal Lahir
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Tanggal Lahir", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF4A5568))
             OutlinedTextField(
                 value = birthDate,
-                onValueChange = onBirthDateChange,
+                onValueChange = {}, // Dikosongkan karena tidak bisa diketik
+                readOnly = true,    // Dibuat read-only
                 placeholder = { Text("DD/MM/YYYY", color = Color(0xFFA0AEC0), fontSize = 14.sp) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePicker = true }, // Klik untuk membuka kalender
                 enabled = !isLoading,
                 shape = RoundedCornerShape(12.dp),
+                trailingIcon = { // Tambahkan ikon kalender untuk UX
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "Pilih Tanggal",
+                        modifier = Modifier.clickable { showDatePicker = true }
+                    )
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
                     unfocusedBorderColor = Color(0xFFE2E8F0),
@@ -86,7 +103,7 @@ fun DataFormStep(
             )
         }
 
-        // Tinggi Badan
+        // ... (Kode untuk Tinggi, Berat, Kota tidak berubah) ...
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Tinggi Badan (cm)", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF4A5568))
             OutlinedTextField(
@@ -105,7 +122,6 @@ fun DataFormStep(
             )
         }
 
-        // Berat Badan
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Berat Badan (kg)", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF4A5568))
             OutlinedTextField(
@@ -124,7 +140,6 @@ fun DataFormStep(
             )
         }
 
-        // Asal Kota
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Asal Kota", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF4A5568))
             ExposedDropdownMenuBox(
@@ -166,7 +181,6 @@ fun DataFormStep(
             }
         }
 
-        // Tombol Next
         Button(
             onClick = onNextClick,
             modifier = Modifier
@@ -190,4 +204,37 @@ fun DataFormStep(
             }
         }
     }
+
+    // 3. Tampilkan DatePickerDialog jika showDatePicker == true
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        val selectedDate = datePickerState.selectedDateMillis
+                        if (selectedDate != null) {
+                            onBirthDateChange(convertMillisToDate(selectedDate))
+                        }
+                    }
+                ) {
+                    Text("Pilih")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Batal")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+// Fungsi bantuan untuk mengubah timestamp (milidetik) menjadi string tanggal
+private fun convertMillisToDate(millis: Long): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
 }

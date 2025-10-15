@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,10 +69,12 @@ fun LabResultScreen(
                     .padding(horizontal = 16.dp)
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFA78BFA)
+                    containerColor = Color(0xFFA78BFA) // Ganti backgroundColor -> containerColor
                 ),
                 shape = RoundedCornerShape(8.dp),
-                elevation = ButtonDefaults.elevation(0.dp)
+                elevation = ButtonDefaults.buttonElevation( // Ganti elevation() -> buttonElevation()
+                    defaultElevation = 0.dp
+                )
             ) {
                 Text(
                     text = "Tanya ke AI",

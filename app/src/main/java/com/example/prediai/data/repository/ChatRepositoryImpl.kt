@@ -1,10 +1,13 @@
 package com.example.prediai.data.repository
 
 import com.example.prediai.domain.model.Message
-import com.example.prediai.domain.model.MessageType
+import com.example.prediai.domain.model.MessageType // Pastikan import ini ada
 import com.example.prediai.domain.repository.ChatRepository
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
@@ -31,7 +34,7 @@ class ChatRepositoryImpl @Inject constructor(
                 Result.success(responseText)
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception("Gagal menghasilkan respons: ${e.message}"))
         }
     }
 
@@ -41,13 +44,13 @@ class ChatRepositoryImpl @Inject constructor(
                 text = "Halo! Saya AI Assistant PrediAI. Saya siap membantu Anda dengan pertanyaan seputar diabetes, nutrisi, dan kesehatan. Ada yang ingin Anda tanyakan?",
                 isFromUser = false,
                 timestamp = getCurrentTime(),
-                messageType = MessageType.TEXT
+                messageType = MessageType.TEXT // Sekarang ini sudah valid
             )
         )
     }
 
     private fun getCurrentTime(): String {
-        val formatter = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-        return formatter.format(java.util.Date())
+        val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return formatter.format(Date())
     }
 }

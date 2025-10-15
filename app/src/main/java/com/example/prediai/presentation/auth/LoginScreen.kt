@@ -1,37 +1,48 @@
 package com.example.prediai.presentation.auth
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import android.app.Activity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.auth.comps.LoginForm
 import com.example.prediai.presentation.theme.PrediAITheme
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.prediai.data.google.getGoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.common.api.ApiException
 
-/**
- * Layar login utama untuk autentikasi pengguna.
- *
- * @param navController NavController untuk navigasi ke layar lain (misalnya, ke main screen setelah login berhasil).
- */
 @Composable
 fun LoginScreen(
     navController: NavController,
-    email: String,
-    password: String,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onLoginClick: () -> Unit,
-    isLoading: Boolean,
-    errorMessage: String?,
-    onDismissError: () -> Unit,
-    onRegisterClick: () -> Unit, // <-- Tambahkan
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
-    PrediAITheme {
+    val context = LocalContext.current
+    val googleSignInClient = getGoogleSignInClient(context)
+    val uiState by viewModel.uiState.collectAsState()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account?.idToken?.let { idToken ->
+                viewModel.signInWithGoogle(idToken, navController)
+            }
+        } catch (e: ApiException) {
+            e.printStackTrace()
+        }
+    }
+
         Scaffold { paddingValues ->
             Box(
                 modifier = Modifier
@@ -40,39 +51,21 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 LoginForm(
-                    email = email,
-                    password = password,
-                    onEmailChange = onEmailChange,
-                    onPasswordChange = onPasswordChange,
-                    onLoginClick = onLoginClick,
-                    isLoading = isLoading,
-                    errorMessage = errorMessage,
-                    onDismissError = onDismissError,
-                    onForgotPasswordClick = { /* TODO */ },
-                    onRegisterClick = onRegisterClick, // <-- Gunakan parameter
-                    onGoogleSignInClick = { /* TODO */ }
+                    email = uiState.email,
+                    password = uiState.password,
+                    onEmailChange = viewModel::onEmailChange,
+                    onPasswordChange = viewModel::onPasswordChange,
+                    onLoginClick = { viewModel.login(navController) },
+                    isLoading = uiState.isLoading,
+                    errorMessage = uiState.authErrorMessage,
+                    onDismissError = viewModel::clearError,
+                    onForgotPasswordClick = {},
+                    onRegisterClick = { navController.navigate("register") },
+                    onGoogleSignInClick = {
+                        val signInIntent = googleSignInClient.signInIntent
+                        launcher.launch(signInIntent)
+                    }
                 )
             }
-        }
-    }
-}
-
-@Preview()
-@Composable
-fun LoginScreenPreview() {
-    val navController = rememberNavController()
-    PrediAITheme { // ← Theme juga membungkus preview
-        LoginScreen(
-            navController = navController,
-            email = "preview@example.com",
-            password = "password",
-            onEmailChange = {},
-            onPasswordChange = {},
-            onLoginClick = {},
-            isLoading = false,
-            errorMessage = null,
-            onDismissError = {},
-            onRegisterClick = {} // <-- Gunakan parameter
-        )
     }
 }

@@ -10,6 +10,7 @@ activityCompose = "1.10.1"
 composeBom = "2024.04.01"
 navigationRuntimeAndroid = "2.9.3"
 foundation = "1.9.2"
+runtime = "1.9.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ hilt-navigation-compose = "androidx.hilt:hilt-navigation-compose:1.1.0-alpha01"
 androidx-hilt-common = "androidx.hilt:hilt-common:1.0.0"
 androidx-hilt-work = "androidx.hilt:hilt-work:1.0.0"
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
