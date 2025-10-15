@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,8 +37,19 @@ fun RecentScans(scanResults: List<ScanResult>) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Scan Terbaru", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("Lihat Lainnya", color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                // DIUBAH: Properti teks "Scan Terbaru"
+                Text(
+                    text = "Scan Terbaru",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp
+                )
+                // DIUBAH: Properti teks "Lihat Lainnya"
+                Text(
+                    text = "Lihat Lainnya",
+                    color = Color(0xFF00B4A3),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -56,15 +68,13 @@ fun RecentScans(scanResults: List<ScanResult>) {
 
 @Composable
 private fun ScanItem(scanResult: ScanResult) {
+    // DIUBAH: Menggunakan warna dinamis berdasarkan persentase
+    val dynamicRiskColor = getInterpolatedColor(scanResult.riskPercentage)
+
     val (icon, iconBgColor) = when (scanResult.status) {
-        ScanStatus.LOW -> Icons.Default.Check to Color(0xFFE8F5E9) // Light Green
-        ScanStatus.MEDIUM -> Icons.Default.PriorityHigh to Color(0xFFFFF8E1) // Light Yellow
-        ScanStatus.HIGH -> Icons.Default.PriorityHigh to Color(0xFFFFEBEE) // Light Red
-    }
-    val riskColor = when (scanResult.status) {
-        ScanStatus.LOW -> Color(0xFF4CAF50) // Green
-        ScanStatus.MEDIUM -> Color(0xFFFF9800) // Orange
-        ScanStatus.HIGH -> Color(0xFFE53935) // Red
+        ScanStatus.LOW -> Icons.Default.Check to Color(0xFFE8F5E9)
+        ScanStatus.MEDIUM -> Icons.Default.PriorityHigh to Color(0xFFFFF8E1)
+        ScanStatus.HIGH -> Icons.Default.PriorityHigh to Color(0xFFFFEBEE)
     }
 
     Row(
@@ -82,36 +92,66 @@ private fun ScanItem(scanResult: ScanResult) {
             Icon(
                 imageVector = icon,
                 contentDescription = scanResult.riskLevel,
-                tint = riskColor,
+                tint = dynamicRiskColor, // Tint ikon juga menggunakan warna dinamis
                 modifier = Modifier.size(20.dp)
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(scanResult.date, fontWeight = FontWeight.SemiBold)
-            Text(scanResult.riskLevel, fontSize = 14.sp, color = Color.Gray)
+            // DIUBAH: Properti teks tanggal
+            Text(
+                text = scanResult.date,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            )
+            // DIUBAH: Properti teks level risiko
+            Text(
+                text = scanResult.riskLevel,
+                fontSize = 12.sp,
+                color = Color.Gray,
+                fontWeight = FontWeight.Normal // Regular
+            )
         }
         Column(horizontalAlignment = Alignment.End) {
+            // DIUBAH: Properti teks persentase
             Text(
                 text = "${scanResult.riskPercentage}%",
-                fontWeight = FontWeight.Bold,
-                color = riskColor,
-                fontSize = 18.sp
+                fontWeight = FontWeight.SemiBold,
+                color = dynamicRiskColor, // Menggunakan warna dinamis
+                fontSize = 14.sp
             )
             Text(scanResult.time, fontSize = 12.sp, color = Color.Gray)
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RecentScansPreview() {
     PrediAITheme {
         RecentScans(
             scanResults = listOf(
                 ScanResult("15 Jan 2024", "Risiko Rendah", 25, "09:30", ScanStatus.LOW),
-                ScanResult("14 Jan 2024", "Risiko Sedang", 45, "14:20", ScanStatus.MEDIUM),
+                ScanResult("14 Jan 2024", "Risiko Sedang", 65, "14:20", ScanStatus.MEDIUM),
+                ScanResult("13 Jan 2024", "Risiko Tinggi", 85, "11:15", ScanStatus.HIGH)
             )
         )
+    }
+}
+
+// Fungsi bantuan untuk transisi warna, sama seperti di RiskStatusCard
+private fun getInterpolatedColor(percentage: Int): Color {
+    return when {
+        percentage <= 60 -> lerp(
+            start = Color(0xFF9CA3AF),
+            stop = Color(0xFFFFBE0A),
+            fraction = percentage / 60f
+        )
+        percentage <= 80 -> lerp(
+            start = Color(0xFFFFBE0A),
+            stop = Color(0xFFFC4D43),
+            fraction = (percentage - 60) / 20f
+        )
+        else -> Color(0xFFFC4D43)
     }
 }
