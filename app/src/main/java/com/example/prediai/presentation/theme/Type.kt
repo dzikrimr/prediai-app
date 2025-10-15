@@ -22,30 +22,34 @@ val PoppinsFontFamilyItalic = FontFamily(
     Font(R.font.poppins_mediumitalic, FontWeight.Medium),
     Font(R.font.poppins_semibolditalic, FontWeight.SemiBold)
 )
-
-// Set of Material typography styles to start with
 val Typography = Typography(
+    // Style default untuk Text() biasa
     bodyLarge = TextStyle(
         fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        fontSize = 16.sp
     ),
+    bodyMedium = TextStyle(
+        fontFamily = PoppinsFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
+    ),
+    // Style untuk Judul Besar
+    titleLarge = TextStyle(
+        fontFamily = PoppinsFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp
+    ),
+    // Style untuk Judul di App Bar
+    titleMedium = TextStyle(
+        fontFamily = PoppinsFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp
+    ),
+    // Style untuk label kecil atau caption
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = PoppinsFontFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        fontSize = 11.sp
     )
-    */
 )
