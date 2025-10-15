@@ -58,7 +58,6 @@ class MainActivity : ComponentActivity() {
         val googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         setContent {
-            PrediAITheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -89,7 +88,6 @@ class MainActivity : ComponentActivity() {
                         AppNavGraph(navController = navController)
                     }
                 }
-            }
         }
     }
 }

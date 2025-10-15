@@ -13,11 +13,8 @@ import androidx.navigation.NavController
 import com.example.prediai.presentation.onboarding.comps.OnboardingButtons
 import com.example.prediai.presentation.onboarding.comps.OnboardingPager
 import com.example.prediai.presentation.onboarding.comps.OnboardingPage
-import com.example.prediai.presentation.theme.PrediAITheme
-import com.google.accompanist.pager.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun OnboardingScreen(
     navController: NavController,
@@ -42,7 +39,9 @@ fun OnboardingScreen(
         )
     )
 
-    val pagerState = rememberPagerState()
+    // ✅ Wajib isi pageCount langsung (bukan lambda)
+    val pagerState = rememberPagerState(pageCount = { pages.size })
+
     val scope = rememberCoroutineScope()
 
     Column(
@@ -51,10 +50,11 @@ fun OnboardingScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        // Lewati button
+        // Tombol Lewati
         TextButton(onClick = onSkipClick, modifier = Modifier.align(Alignment.End)) {
             Text("Lewati", color = Color.Gray)
         }
+
         // Pager
         OnboardingPager(
             pagerState = pagerState,
@@ -66,19 +66,24 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Navigation buttons
         OnboardingButtons(
             onBackClick = {
                 scope.launch {
-                    pagerState.animateScrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
+                    if (!pagerState.isScrollInProgress) {
+                        val prevPage = (pagerState.currentPage - 1).coerceAtLeast(0)
+                        pagerState.animateScrollToPage(prevPage)
+                    }
                 }
             },
             onNextClick = {
                 scope.launch {
-                    if (pagerState.currentPage < pages.size - 1) {
-                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                    } else {
-                        onFinishClick()
+                    if (!pagerState.isScrollInProgress) {
+                        if (pagerState.currentPage < pages.size - 1) {
+                            val nextPage = pagerState.currentPage + 1
+                            pagerState.animateScrollToPage(nextPage)
+                        } else {
+                            onFinishClick()
+                        }
                     }
                 }
             }

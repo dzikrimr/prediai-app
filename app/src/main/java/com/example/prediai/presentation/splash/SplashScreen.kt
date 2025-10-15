@@ -3,15 +3,13 @@ package com.example.prediai.presentation.splash
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
 
 @Composable
 fun SplashScreen(
@@ -21,25 +19,32 @@ fun SplashScreen(
     val isOnboardingCompleted by viewModel.getOnboardingState().collectAsState(initial = null)
     val userUid by viewModel.getCachedUserUid().collectAsState(initial = null)
 
-    LaunchedEffect(isOnboardingCompleted, userUid) {
-        // Hanya jalankan jika kita sudah mendapat status onboarding
-        if (isOnboardingCompleted != null) {
-            if (isOnboardingCompleted == false) {
-                navController.navigate("onboarding") { popUpTo("splash") { inclusive = true } }
-            } else {
-                // Onboarding selesai, sekarang cek status login dari UID
-                if (userUid != null) { // Pengecekan selesai
-                    val destination = if (userUid!!.isNotEmpty()) "home" else "login"
-                    navController.navigate(destination) { popUpTo("splash") { inclusive = true } }
+    // ✅ Navigasi aman setelah data siap & layout attach
+    LaunchedEffect(Unit) {
+        snapshotFlow { isOnboardingCompleted to userUid }
+            .filter { (onboarding, _) -> onboarding != null } // tunggu data siap
+            .collect { (onboarding, uid) ->
+                delay(300) // beri waktu untuk transisi halus
+
+                if (onboarding == false) {
+                    // Belum pernah onboarding → ke onboarding
+                    navController.navigate("main") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                } else {
+                    // Sudah onboarding → cek apakah user login
+                    if (uid.isNullOrEmpty()) {
+                        // User belum login → tetap arahkan ke onboarding (bukan login)
+                        navController.navigate("main") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    } else {
+                        // User sudah login → ke home
+                        navController.navigate("main") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
                 }
             }
-        }
-    }
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
     }
 }
