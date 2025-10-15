@@ -1,20 +1,23 @@
 package com.example.prediai.presentation.main
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.prediai.presentation.main.components.RiskStatusCard
+import com.example.prediai.presentation.main.comps.RiskStatusCard
 import com.example.prediai.presentation.main.comps.*
 import com.example.prediai.presentation.theme.PrediAITheme
 
-// ✅ Komponen Stateful: Mengambil data dari ViewModel
+// 1. Komponen Stateful: Mengambil data dari ViewModel
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -22,25 +25,31 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Kirim data ke komponen tampilan
+    // Memanggil komponen stateless dengan data dari ViewModel
     HomeScreenContent(
         uiState = uiState,
         navController = navController
     )
 }
 
-// ✅ Komponen Stateless: Menampilkan UI berdasarkan data dari ViewModel
+// 2. Komponen Stateless: Hanya menampilkan UI berdasarkan data yang diterima
 @Composable
 fun HomeScreenContent(
     uiState: MainUiState,
     navController: NavController
 ) {
+    // DIUBAH: Scaffold dan BottomNavigationBar dihapus
     LazyColumn(
-        modifier = Modifier.padding()
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        item {
+            Spacer(modifier = Modifier.height(0.dp))
+        }
+
         item {
             HeaderSection(userName = uiState.userName)
         }
+
         item {
             RiskStatusCard(
                 riskPercentage = uiState.riskPercentage,
@@ -48,38 +57,50 @@ fun HomeScreenContent(
                 lastCheckResult = uiState.lastCheckResult
             )
         }
+
         item {
             ActionCardsSection()
         }
+
         item {
             UpcomingRemindersSection(reminders = uiState.reminders)
         }
+
         item {
             RecommendationsSection(recommendations = uiState.recommendations)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(0.dp))
         }
     }
 }
 
-// ✅ Preview dengan data dummy
+// 3. Preview: Memanggil komponen stateless dengan data palsu (mock)
 @Preview(showBackground = true, name = "Home Screen (Filled State)")
 @Composable
 fun HomeScreenFilledPreview() {
-    HomeScreenContent(
-        uiState = MainUiState(), // Default state
-        navController = rememberNavController()
-    )
+    PrediAITheme {
+        HomeScreenContent(
+            uiState = MainUiState(), // Menggunakan data default dari MainUiState
+            navController = rememberNavController()
+        )
+    }
 }
 
 @Preview(showBackground = true, name = "Home Screen (Empty State)")
 @Composable
 fun HomeScreenEmptyPreview() {
-    HomeScreenContent(
-        uiState = MainUiState(
-            riskPercentage = null,
-            lastCheckDate = null,
-            lastCheckResult = null,
-            reminders = emptyList()
-        ),
-        navController = rememberNavController()
-    )
+    PrediAITheme {
+        HomeScreenContent(
+            // Data palsu untuk kondisi kosong
+            uiState = MainUiState(
+                riskPercentage = null,
+                lastCheckDate = null,
+                lastCheckResult = null,
+                reminders = emptyList()
+            ),
+            navController = rememberNavController()
+        )
+    }
 }
