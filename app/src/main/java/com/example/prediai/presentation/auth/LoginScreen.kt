@@ -43,31 +43,29 @@ fun LoginScreen(
         }
     }
 
-    PrediAITheme {
-        Scaffold { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                LoginForm(
-                    email = uiState.email,
-                    password = uiState.password,
-                    onEmailChange = viewModel::onEmailChange,
-                    onPasswordChange = viewModel::onPasswordChange,
-                    onLoginClick = { viewModel.login(navController) },
-                    isLoading = uiState.isLoading,
-                    errorMessage = uiState.authErrorMessage,
-                    onDismissError = viewModel::clearError,
-                    onForgotPasswordClick = {},
-                    onRegisterClick = { navController.navigate("register") },
-                    onGoogleSignInClick = {
-                        val signInIntent = googleSignInClient.signInIntent
-                        launcher.launch(signInIntent)
-                    }
-                )
-            }
+    Scaffold { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            LoginForm(
+                email = uiState.email,
+                password = uiState.password,
+                onEmailChange = viewModel::onEmailChange,
+                onPasswordChange = viewModel::onPasswordChange,
+                onLoginClick = { viewModel.login(navController) },
+                isLoading = uiState.isLoading,
+                errorMessage = uiState.authErrorMessage,
+                onDismissError = viewModel::clearError,
+                onForgotPasswordClick = {},
+                onRegisterClick = { navController.navigate("register") },
+                onGoogleSignInClick = {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
+            )
         }
     }
 }

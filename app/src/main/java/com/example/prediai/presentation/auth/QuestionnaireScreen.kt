@@ -39,90 +39,87 @@ fun QuestionnaireScreen(
     onStep4Answer: (String, String) -> Unit,
     onNextClick: () -> Unit
 ) {
-    PrediAITheme {
-        Scaffold { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+    Scaffold { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    Text(
+                        text = "$step/4",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF2D3748)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(6.dp))
                     ) {
-                        Text(
-                            text = "$step/4",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF2D3748)
+                        LinearProgressIndicator(
+                            progress = step / 4f,
+                            modifier = Modifier.matchParentSize(),
+                            trackColor = Color(0xFFE2E8F0),
+                            color = Color(0xFF00B4A3)
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.6f)
-                                .height(12.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                        ) {
-                            LinearProgressIndicator(
-                                progress = step / 4f,
-                                modifier = Modifier.matchParentSize(),
-                                trackColor = Color(0xFFE2E8F0),
-                                color = Color(0xFF00B4A3)
-                            )
-                        }
                     }
                 }
+            }
 
-                if (step == 1) {
-                    DataFormStep(
-                        name = state.name,
-                        birthDate = state.birthDate,
-                        height = state.height,
-                        weight = state.weight,
-                        city = state.city,
-                        cityOptions = listOf("Malang", "Surabaya", "Jakarta", "Bandung"),
-                        onNameChange = onNameChange,
-                        onBirthDateChange = onBirthDateChange,
-                        onHeightChange = onHeightChange,
-                        onWeightChange = onWeightChange,
-                        onCityChange = onCityChange,
-                        onNextClick = onNextClick,
-                        isLoading = state.isLoading
-                    )
-                }
+            if (step == 1) {
+                DataFormStep(
+                    name = state.name,
+                    birthDate = state.birthDate,
+                    height = state.height,
+                    weight = state.weight,
+                    city = state.city,
+                    cityOptions = listOf("Malang", "Surabaya", "Jakarta", "Bandung"),
+                    onNameChange = onNameChange,
+                    onBirthDateChange = onBirthDateChange,
+                    onHeightChange = onHeightChange,
+                    onWeightChange = onWeightChange,
+                    onCityChange = onCityChange,
+                    onNextClick = onNextClick,
+                    isLoading = state.isLoading
+                )
+            }
 
-                if (step == 2) {
-                    QuestionnaireStep(
-                        answers = state.step2Answers,
-                        onAnswer = onStep2Answer,
-                        onNextClick = onNextClick,
-                        isLoading = state.isLoading
-                    )
-                }
+            if (step == 2) {
+                QuestionnaireStep(
+                    answers = state.step2Answers,
+                    onAnswer = onStep2Answer,
+                    onNextClick = onNextClick,
+                    isLoading = state.isLoading
+                )
+            }
 
-                if (step == 3) {
-                    QuestionnaireStep2(
-                        answers = state.step3Answers,
-                        onAnswer = onStep3Answer,
-                        onNextClick = onNextClick,
-                        isLoading = state.isLoading
-                    )
-                }
+            if (step == 3) {
+                QuestionnaireStep2(
+                    answers = state.step3Answers,
+                    onAnswer = onStep3Answer,
+                    onNextClick = onNextClick,
+                    isLoading = state.isLoading
+                )
+            }
 
-                if (step == 4) {
-                    QuestionnaireStep3(
-                        answers = state.step4Answers,
-                        onAnswer = onStep4Answer,
-                        onNextClick = onNextClick,
-                        isLoading = state.isLoading
-                    )
-                }
+            if (step == 4) {
+                QuestionnaireStep3(
+                    answers = state.step4Answers,
+                    onAnswer = onStep4Answer,
+                    onNextClick = onNextClick,
+                    isLoading = state.isLoading
+                )
             }
         }
     }

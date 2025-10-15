@@ -24,68 +24,65 @@ fun OnboardingScreen(
     onSkipClick: () -> Unit,
     onFinishClick: () -> Unit
 ) {
-    PrediAITheme {
-        val pages = listOf(
-            OnboardingPage(
-                image = com.example.prediai.R.drawable.onboarding1,
-                title = "Scan Kuku & Lidah Sekaligus",
-                description = "Deteksi tanda-tanda awal diabetes hanya dengan satu kali scan menggunakan kamera ponsel Anda"
-            ),
-            OnboardingPage(
-                image = com.example.prediai.R.drawable.onboarding2,
-                title = "Analisis AI yang Akurat",
-                description = "PrediAI menganalisis pola pada kuku dan lidah menggunakan teknologi kecerdasan buatan untuk memperkirakan risiko diabetes Anda."
-            ),
-            OnboardingPage(
-                image = com.example.prediai.R.drawable.onboarding3,
-                title = "Rekomendasi & Konsultasi",
-                description = "Dapatkan hasil instan lengkap dengan rekomendasi gaya hidup dan opsi konsultasi dokter terdekat."
-            )
+    val pages = listOf(
+        OnboardingPage(
+            image = com.example.prediai.R.drawable.onboarding1,
+            title = "Scan Kuku & Lidah Sekaligus",
+            description = "Deteksi tanda-tanda awal diabetes hanya dengan satu kali scan menggunakan kamera ponsel Anda"
+        ),
+        OnboardingPage(
+            image = com.example.prediai.R.drawable.onboarding2,
+            title = "Analisis AI yang Akurat",
+            description = "PrediAI menganalisis pola pada kuku dan lidah menggunakan teknologi kecerdasan buatan untuk memperkirakan risiko diabetes Anda."
+        ),
+        OnboardingPage(
+            image = com.example.prediai.R.drawable.onboarding3,
+            title = "Rekomendasi & Konsultasi",
+            description = "Dapatkan hasil instan lengkap dengan rekomendasi gaya hidup dan opsi konsultasi dokter terdekat."
+        )
+    )
+
+    val pagerState = rememberPagerState()
+    val scope = rememberCoroutineScope()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Top
+    ) {
+        // Lewati button
+        TextButton(onClick = onSkipClick, modifier = Modifier.align(Alignment.End)) {
+            Text("Lewati", color = Color.Gray)
+        }
+        // Pager
+        OnboardingPager(
+            pagerState = pagerState,
+            pages = pages,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         )
 
-        val pagerState = rememberPagerState()
-        val scope = rememberCoroutineScope()
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Top
-        ) {
-            // Lewati button
-            TextButton(onClick = onSkipClick, modifier = Modifier.align(Alignment.End)) {
-                Text("Lewati", color = Color.Gray)
-            }
-
-            // Pager
-            OnboardingPager(
-                pagerState = pagerState,
-                pages = pages,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Navigation buttons
-            OnboardingButtons(
-                onBackClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
-                    }
-                },
-                onNextClick = {
-                    scope.launch {
-                        if (pagerState.currentPage < pages.size - 1) {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        } else {
-                            onFinishClick()
-                        }
+        // Navigation buttons
+        OnboardingButtons(
+            onBackClick = {
+                scope.launch {
+                    pagerState.animateScrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
+                }
+            },
+            onNextClick = {
+                scope.launch {
+                    if (pagerState.currentPage < pages.size - 1) {
+                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                    } else {
+                        onFinishClick()
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }
 

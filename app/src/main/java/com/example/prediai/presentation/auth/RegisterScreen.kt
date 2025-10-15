@@ -44,32 +44,30 @@ fun RegisterScreen(
         }
     }
 
-    PrediAITheme {
-        Scaffold { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                RegisterForm(
-                    email = uiState.email,
-                    password = uiState.password,
-                    confirmPassword = uiState.confirmPassword,
-                    onEmailChange = viewModel::onEmailChange,
-                    onPasswordChange = viewModel::onPasswordChange,
-                    onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-                    onRegisterClick = { viewModel.register(navController) },
-                    isLoading = uiState.isLoading,
-                    errorMessage = uiState.authErrorMessage,
-                    onDismissError = viewModel::clearError,
-                    onLoginClick = { navController.popBackStack() },
-                    onGoogleSignInClick = {
-                        val signInIntent = googleSignInClient.signInIntent
-                        launcher.launch(signInIntent)
-                    }
-                )
-            }
+    Scaffold { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            RegisterForm(
+                email = uiState.email,
+                password = uiState.password,
+                confirmPassword = uiState.confirmPassword,
+                onEmailChange = viewModel::onEmailChange,
+                onPasswordChange = viewModel::onPasswordChange,
+                onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+                onRegisterClick = { viewModel.register(navController) },
+                isLoading = uiState.isLoading,
+                errorMessage = uiState.authErrorMessage,
+                onDismissError = viewModel::clearError,
+                onLoginClick = { navController.popBackStack() },
+                onGoogleSignInClick = {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
+            )
         }
     }
 }
