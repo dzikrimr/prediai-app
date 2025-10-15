@@ -14,220 +14,218 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.prediai.R
+import com.example.prediai.presentation.common.TopBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen() {
     val tealColor = Color(0xFF00BFA5)
+    val lightTealBg = Color(0xFFB2F5EA)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(Color.White)
     ) {
-        // Header Section
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
-            colors = CardDefaults.cardColors(containerColor = tealColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp)
-            ) {
-                // Top bar with title and settings
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Profil",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+        // Top Bar
+        TopBar(
+            title = "Profil",
+            subtitle = "Profile",
+            onBackClick = { /* Handle back */ }
+        )
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Profile info
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Profile image placeholder
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Profile",
-                            tint = Color.White,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column {
-                        Text(
-                            text = "John Santoso",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "john.santoso@email.com",
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 14.sp
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Date",
-                                tint = Color.White.copy(alpha = 0.8f),
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "Bergabung sejak Jan 2024",
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Statistics Cards
+        // Profile Header Card
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .offset(y = (-20).dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(bottomEnd = 30.dp),
+            colors = CardDefaults.cardColors(containerColor = lightTealBg),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                StatItem(
-                    number = "12",
-                    label = "Total Scan",
-                    numberColor = Color(0xFF00BFA5)
-                )
-
-                // Divider
+                // Profile Image
                 Box(
                     modifier = Modifier
-                        .width(1.dp)
-                        .height(40.dp)
-                        .background(Color(0xFFE0E0E0))
-                )
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile",
+                        tint = tealColor,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
 
-                StatItem(
-                    number = "3",
-                    label = "Perlu\nPerhatian",
-                    numberColor = Color(0xFFFF6B35)
-                )
+                Spacer(modifier = Modifier.width(16.dp))
 
-                // Divider
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(40.dp)
-                        .background(Color(0xFFE0E0E0))
-                )
-
-                StatItem(
-                    number = "9",
-                    label = "Normal",
-                    numberColor = Color(0xFF4CAF50)
-                )
+                Column {
+                    Text(
+                        text = "John Santoso",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = tealColor
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "john.santoso@gmail.com",
+                        fontSize = 14.sp,
+                        color = tealColor
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Date",
+                            tint = tealColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "16 Agustus 2000",
+                            fontSize = 12.sp,
+                            color = tealColor
+                        )
+                    }
+                }
             }
         }
 
-        // Main Content
         LazyColumn(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            // Kesehatan Section
-            item {
-                MenuSection(
-                    title = "Kesehatan",
-                    items = listOf(
-                        MenuItem("Data Kesehatan", "Tinggi, berat badan, dll", Icons.Default.Favorite, Color(0xFF00BFA5)),
-                        MenuItem("Riwayat Scan", "Lihat semua hasil scan", Icons.Default.Timeline, Color(0xFF2196F3)),
-                        MenuItem("Pengingat", "Atur jadwal scan rutin", Icons.Default.Notifications, Color(0xFF9C27B0))
-                    )
-                )
-            }
 
             // Akun Section
             item {
-                MenuSection(
-                    title = "Akun",
-                    items = listOf(
-                        MenuItem("Edit Profil", "Ubah foto dan info pribadi", Icons.Default.Person, Color(0xFF757575)),
-                        MenuItem("Keamanan", "Password dan autentikasi", Icons.Default.Security, Color(0xFF4CAF50)),
-                        MenuItem("Export Data", "Unduh data kesehatan", Icons.Default.Download, Color(0xFFFF9800))
-                    )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Akun",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF212121),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column {
+                        SimpleMenuItem(
+                            title = "Edit Profil",
+                            subtitle = "Ubah foto dan info pribadi",
+                            icon = R.drawable.ic_profile,
+                            iconColor = Color(0xFF424242),
+                            iconBgColor = Color(0xFFEEEEEE)
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = Color(0xFFEEEEEE)
+                        )
+                        SimpleMenuItem(
+                            title = "Keamanan",
+                            subtitle = "Password dan izin",
+                            icon = R.drawable.ic_security,
+                            iconColor = Color(0xFF4CAF50),
+                            iconBgColor = Color(0xFFE8F5E9)
+                        )
+                    }
+                }
             }
 
             // Bantuan & Dukungan Section
             item {
-                MenuSection(
-                    title = "Bantuan & Dukungan",
-                    items = listOf(
-                        MenuItem("Pusat Bantuan", "FAQ dan panduan", Icons.Default.Help, Color(0xFF2196F3)),
-                        MenuItem("Hubungi Kami", "Support dan feedback", Icons.Default.Headset, Color(0xFF00BCD4)),
-                        MenuItem("Tentang PrediAI", "Versi 1.2.0", Icons.Default.Info, Color(0xFF9C27B0))
-                    )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Bantuan & Dukungan",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF212121),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column {
+                        SimpleMenuItem(
+                            title = "Pusat Bantuan",
+                            subtitle = "FAQ dan panduan",
+                            icon = R.drawable.ic_help,
+                            iconColor = Color(0xFF2196F3),
+                            iconBgColor = Color(0xFFE3F2FD)
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = Color(0xFFEEEEEE)
+                        )
+                        SimpleMenuItem(
+                            title = "Hubungi Kami",
+                            subtitle = "Support dan feedback",
+                            icon = R.drawable.ic_support,
+                            iconColor = tealColor,
+                            iconBgColor = lightTealBg
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = Color(0xFFEEEEEE)
+                        )
+                        SimpleMenuItem(
+                            title = "Tentang PrediAI",
+                            subtitle = "Versi 1.2.0",
+                            icon = R.drawable.ic_info2,
+                            iconColor = Color(0xFF9C27B0),
+                            iconBgColor = Color(0xFFF3E5F5)
+                        )
+                    }
+                }
             }
 
             // Logout Button
             item {
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedButton(
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(
                     onClick = { /* Handle logout */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFF5F5),
                         contentColor = Color(0xFFE53E3E)
                     ),
-                    border = androidx.compose.foundation.BorderStroke(
-                        width = 1.dp,
-                        color = Color(0xFFE53E3E)
-                    )
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ExitToApp,
+                        imageVector = Icons.Default.Logout,
                         contentDescription = "Logout",
                         modifier = Modifier.size(20.dp)
                     )
@@ -238,77 +236,20 @@ fun ProfileScreen() {
                         fontWeight = FontWeight.Medium
                     )
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            item { Spacer(modifier = Modifier.height(24.dp)) }
         }
     }
 }
 
 @Composable
-fun StatItem(
-    number: String,
-    label: String,
-    numberColor: Color = Color(0xFF00BFA5)
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = number,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = numberColor
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color(0xFF757575),
-            textAlign = TextAlign.Center,
-            lineHeight = 14.sp
-        )
-    }
-}
-
-@Composable
-fun MenuSection(
+fun SimpleMenuItem(
     title: String,
-    items: List<MenuItem>
+    subtitle: String,
+    icon: Int,
+    iconColor: Color,
+    iconBgColor: Color
 ) {
-    Column {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF212121),
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column {
-                items.forEachIndexed { index, item ->
-                    MenuItemRow(item = item)
-                    if (index < items.size - 1) {
-                        Divider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = Color(0xFFE0E0E0),
-                            thickness = 0.5.dp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MenuItemRow(item: MenuItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -319,13 +260,13 @@ fun MenuItemRow(item: MenuItem) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(item.iconColor.copy(alpha = 0.1f)),
+                .background(iconBgColor),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = item.icon,
-                contentDescription = item.title,
-                tint = item.iconColor,
+                painter = painterResource(id = icon),
+                contentDescription = title,
+                tint = iconColor,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -336,22 +277,22 @@ fun MenuItemRow(item: MenuItem) {
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = item.title,
+                text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFF212121)
             )
             Text(
-                text = item.subtitle,
+                text = subtitle,
                 fontSize = 12.sp,
-                color = Color(0xFF757575)
+                color = Color(0xFF9E9E9E)
             )
         }
 
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = "Arrow",
-            tint = Color(0xFF9E9E9E),
+            tint = Color(0xFFBDBDBD),
             modifier = Modifier.size(20.dp)
         )
     }
@@ -363,3 +304,9 @@ data class MenuItem(
     val icon: ImageVector,
     val iconColor: Color
 )
+
+@Preview
+@Composable
+private fun ProfileScreenPreview() {
+    ProfileScreen()
+}

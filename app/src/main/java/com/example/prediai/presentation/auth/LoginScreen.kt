@@ -25,8 +25,6 @@ fun LoginScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val googleSignInClient = getGoogleSignInClient(context)
     val uiState by viewModel.uiState.collectAsState()
 
     val launcher = rememberLauncherForActivityResult(
@@ -62,7 +60,7 @@ fun LoginScreen(
                     onForgotPasswordClick = {},
                     onRegisterClick = { navController.navigate("register") },
                     onGoogleSignInClick = {
-                        val signInIntent = googleSignInClient.signInIntent
+                        val signInIntent = viewModel.googleSignInClient.signInIntent
                         launcher.launch(signInIntent)
                     }
                 )

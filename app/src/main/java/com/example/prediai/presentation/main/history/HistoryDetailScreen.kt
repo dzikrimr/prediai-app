@@ -22,11 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.prediai.presentation.main.BackgroundColor
-import com.example.prediai.presentation.main.DangerColor
-import com.example.prediai.presentation.main.PrimaryColor
-import com.example.prediai.presentation.main.SecondaryColor
-import com.example.prediai.presentation.main.WarningColor
+import com.example.prediai.presentation.theme.BackgroundColor
+import com.example.prediai.presentation.theme.PrimaryColor
+import com.example.prediai.presentation.theme.SecondaryColor
+import com.example.prediai.presentation.theme.DangerColor
+import com.example.prediai.presentation.theme.WarningColor
 
 data class ScanDetail(
     val scanType: String,
