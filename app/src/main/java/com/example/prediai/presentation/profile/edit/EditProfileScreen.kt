@@ -1,8 +1,10 @@
 package com.example.prediai.presentation.profile.edit
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -16,18 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.prediai.R
 import com.example.prediai.presentation.common.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen() {
+fun EditProfileScreen(navController: NavController) {
     var fullName by remember { mutableStateOf("Sarah Wijaya") }
     var birthDate by remember { mutableStateOf("1990-05-15") }
     var height by remember { mutableStateOf("165") }
@@ -48,7 +52,7 @@ fun EditProfileScreen() {
         TopBar(
             title = "Edit Profil",
             subtitle = null,
-            onBackClick = { /* Handle back */ }
+            onBackClick = { navController.popBackStack() }
         )
 
         LazyColumn(
@@ -57,7 +61,7 @@ fun EditProfileScreen() {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item { Spacer(modifier = Modifier.height(6.dp)) }
 
             // Profile Photo Section
             item {
@@ -75,12 +79,12 @@ fun EditProfileScreen() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
-                            modifier = Modifier.size(90.dp) // Changed from 120.dp
+                            modifier = Modifier.size(70.dp) // Changed from 120.dp
                         ) {
                             // Profile Image
                             Box(
                                 modifier = Modifier
-                                    .size(80.dp) // Changed from 120.dp
+                                    .size(60.dp) // Changed from 120.dp
                                     .clip(CircleShape)
                                     .background(Color(0xFFE0E0E0)),
                                 contentAlignment = Alignment.Center
@@ -101,7 +105,11 @@ fun EditProfileScreen() {
                                     .offset(x = (-4).dp, y = (-4).dp) // Adjusted offset slightly
                                     .clip(CircleShape)
                                     .background(tealColor)
-                                    .clickable { /* Handle photo change */ },
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = LocalIndication.current,
+                                        onClick = { /* Handle photo change */ }
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -331,7 +339,11 @@ fun InputField(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(enabled = onClick != null) { onClick?.invoke() },
+                .clickable(
+                    enabled = onClick != null,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = LocalIndication.current
+                ) { onClick?.invoke() },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
@@ -363,5 +375,5 @@ fun InputField(
 @Preview(showBackground = true)
 @Composable
 private fun EditProfileScreenPreview() {
-    EditProfileScreen()
+    EditProfileScreen(navController = NavController(LocalContext.current))
 }
