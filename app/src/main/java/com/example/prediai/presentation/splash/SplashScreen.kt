@@ -35,9 +35,9 @@ fun SplashScreen(
                     if (hasNavigated) return@collectLatest // Hentikan jika sudah navigasi
 
                     val destination = if (!uid.isNullOrEmpty()) {
-                        // Jika ada UID (sudah login), refresh data di background dan arahkan ke "home"
+                        // Jika ada UID (sudah login), refresh data di background dan arahkan ke "main"
                         viewModel.refreshCache(uid)
-                        "home" // DIUBAH: Menggunakan "home" bukan "main"
+                        "main" // DIUBAH: Menggunakan "main" bukan "home"
                     } else {
                         // Jika tidak ada UID, arahkan ke "login"
                         "login"

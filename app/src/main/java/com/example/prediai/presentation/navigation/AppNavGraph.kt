@@ -10,13 +10,11 @@ import androidx.navigation.compose.composable
 import com.example.prediai.presentation.auth.LoginScreen
 import com.example.prediai.presentation.auth.QuestionnaireRoot
 import com.example.prediai.presentation.auth.RegisterScreen
-import com.example.prediai.presentation.main.HomeScreen
+import com.example.prediai.presentation.main.MainScreen // Import MainScreen
 import com.example.prediai.presentation.main.education.EducationListScreen
 import com.example.prediai.presentation.main.education.EducationViewModel
 import com.example.prediai.presentation.main.education.VideoDetailScreen
-import com.example.prediai.presentation.main.history.HistoryScreen
 import com.example.prediai.presentation.main.notification.NotificationScreen
-import com.example.prediai.presentation.main.progress.ProgressScreen
 import com.example.prediai.presentation.onboarding.OnboardingScreen
 import com.example.prediai.presentation.onboarding.OnboardingViewModel
 import com.example.prediai.presentation.splash.SplashScreen
@@ -30,10 +28,8 @@ fun AppNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = "splash"
     ) {
-        composable("splash") {
-            SplashScreen(navController = navController)
-        }
-
+        // Alur Pra-Login (tidak berubah)
+        composable("splash") { SplashScreen(navController = navController) }
         composable("onboarding") {
             val viewModel: OnboardingViewModel = hiltViewModel()
             OnboardingScreen(
@@ -48,30 +44,22 @@ fun AppNavGraph(navController: NavHostController) {
                 }
             )
         }
-
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
         composable("questionnaire") { QuestionnaireRoot(navController) }
 
-        composable("home") {
-            HomeScreen(navController = navController)
-        }
-        composable("progress") {
-            ProgressScreen(navController = navController)
-        }
-        composable("history") {
-            HistoryScreen(navController = navController)
+        // DIUBAH: Semua layar utama sekarang berada di dalam satu rute "main"
+        composable("main") {
+            MainScreen(rootNavController = navController)
         }
 
-        // BARU: Menambahkan rute untuk fitur Notifikasi
+        // Rute-rute yang bisa diakses dari mana saja (di luar bottom nav)
         composable("notification") {
             NotificationScreen(navController = navController)
         }
-
         composable("education_list") {
             EducationListScreen(navController = navController, viewModel = educationViewModel)
         }
-
         composable("video_detail/{videoId}") { backStackEntry ->
             val videoId = backStackEntry.arguments?.getString("videoId")
             val video = educationUiState.videos.find { it.id == videoId }

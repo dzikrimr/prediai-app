@@ -17,47 +17,47 @@ import com.example.prediai.presentation.scan.ScanScreen
 
 @Composable
 fun MainNavGraph(
-    navController: NavHostController,
-    onUpdateRoute: (String) -> Unit
+    // DIUBAH: Terima `mainNavController` untuk membangun graph, dan `rootNavController` untuk diberikan ke screen
+    mainNavController: NavHostController,
+    rootNavController: NavHostController
 ) {
     NavHost(
-        navController = navController,
+        navController = mainNavController,
         startDestination = "beranda"
     ) {
         composable("beranda") {
-            onUpdateRoute("beranda")
-            HomeScreen(navController)
+            // PENTING: Berikan `rootNavController` ke HomeScreen
+            HomeScreen(navController = rootNavController)
         }
         composable("riwayat") {
-            onUpdateRoute("riwayat")
-            HistoryScreen(navController)
+            HistoryScreen(navController = rootNavController)
         }
         composable("scan") {
-            onUpdateRoute("scan")
             ScanScreen()
         }
         composable("labs") {
-            onUpdateRoute("labs")
             LabsScreen()
         }
         composable("profil") {
-            onUpdateRoute("profil")
-            ProfileScreen(navController = navController)
+            ProfileScreen(navController = rootNavController)
         }
+
+        // Rute-rute ini adalah bagian dari "profil" dan seharusnya dipanggil dari sana,
+        // jadi mereka tetap menggunakan `rootNavController`.
         composable("edit_profile") {
-            EditProfileScreen(navController = navController)
+            EditProfileScreen(navController = rootNavController)
         }
         composable("security") {
-            SecurityScreen(navController = navController)
+            SecurityScreen(navController = rootNavController)
         }
         composable("help_center") {
-            HelpCenterScreen(navController = navController)
+            HelpCenterScreen(navController = rootNavController)
         }
         composable("contact_us") {
-            ContactUsScreen(navController = navController)
+            ContactUsScreen(navController = rootNavController)
         }
         composable("about") {
-            AboutScreen(navController = navController)
+            AboutScreen(navController = rootNavController)
         }
     }
 }
