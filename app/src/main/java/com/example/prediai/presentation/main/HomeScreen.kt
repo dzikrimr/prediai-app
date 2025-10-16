@@ -38,7 +38,6 @@ fun HomeScreenContent(
     uiState: MainUiState,
     navController: NavController
 ) {
-    // DIUBAH: Scaffold dan BottomNavigationBar dihapus
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -59,7 +58,7 @@ fun HomeScreenContent(
         }
 
         item {
-            ActionCardsSection()
+            ActionCardsSection(navController = navController)
         }
 
         item {

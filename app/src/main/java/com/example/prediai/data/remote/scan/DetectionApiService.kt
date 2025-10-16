@@ -6,7 +6,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 
-interface ApiService {
+interface DetectionApiService {
     @Multipart
     @POST("/detect/kuku")
     suspend fun detectKuku(@Part image: MultipartBody.Part): Response<DetectionResponse>

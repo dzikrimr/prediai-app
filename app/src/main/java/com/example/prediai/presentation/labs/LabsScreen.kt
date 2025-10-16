@@ -1,5 +1,10 @@
 package com.example.prediai.presentation.labs
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,10 +40,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
@@ -47,14 +51,65 @@ import com.example.prediai.domain.model.AnalysisItem
 import com.example.prediai.domain.model.AnalysisType
 import com.example.prediai.presentation.common.TopBar
 import com.example.prediai.presentation.labs.comps.AnalysisItemCard
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Helper function untuk mendapatkan nama file dari Uri
+fun getFileName(uri: Uri, context: Context): String {
+    var result: String? = null
+    if (uri.scheme == "content") {
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        try {
+            if (cursor != null && cursor.moveToFirst()) {
+                val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (columnIndex != -1) {
+                    result = cursor.getString(columnIndex)
+                }
+            }
+        } finally {
+            cursor?.close()
+        }
+    }
+    if (result == null) {
+        result = uri.path
+        val cut = result?.lastIndexOf('/')
+        if (cut != -1) {
+            result = result?.substring(cut!! + 1)
+        }
+    }
+    return result ?: "Unknown file"
+}
+
 @Composable
 fun LabsScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onNavigateToResult: (fileName: String, uploadDate: String) -> Unit = { _, _ -> }
 ) {
-    var selectedFile by remember { mutableStateOf<String?>(null) }
-    var isAnalysisEnabled by remember { mutableStateOf(false) }
+    var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedFileName by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
+    // Definisikan tipe file yang diizinkan
+    val mimeTypes = arrayOf(
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+        "text/plain",
+        "image/jpeg",
+        "image/png"
+    )
+
+    // Launcher untuk membuka file picker
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri ->
+            if (uri != null) {
+                selectedFileUri = uri
+                selectedFileName = getFileName(uri, context)
+            }
+        }
+    )
 
     // Sample data untuk recent analysis
     val recentAnalysisList = remember {
@@ -64,23 +119,21 @@ fun LabsScreen(
             AnalysisItem("CamScanner-dokter-01.jpg", "April 10, 2025", AnalysisType.PDF, true)
         )
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9FAFB)) // Background color applied to the main Column
+            .background(Color(0xFFF9FAFB))
     ) {
-        // Top Bar
         TopBar(
             title = "Labs",
             subtitle = "Smart Lab Analysis",
-            onBackClick = onBackClick // Use the passed onBackClick
+            onBackClick = onBackClick
         )
 
-        // Content using LazyColumn for scrolling
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                // Removed background from here as it's in the Column
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -180,11 +233,12 @@ fun LabsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        if (selectedFile != null) {
+                        if (selectedFileName != null) {
                             Text(
-                                text = selectedFile ?: "",
+                                text = selectedFileName!!,
                                 fontSize = 14.sp,
-                                color = Color.Gray
+                                color = Color.Gray,
+                                fontWeight = FontWeight.Medium
                             )
                         } else {
                             Text(
@@ -207,9 +261,8 @@ fun LabsScreen(
                 // Upload File Button
                 Button(
                     onClick = {
-                        // Handle file upload
-                        selectedFile = "document.pdf"
-                        isAnalysisEnabled = true
+                        // Jalankan file picker saat tombol diklik
+                        filePickerLauncher.launch(mimeTypes)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -258,17 +311,23 @@ fun LabsScreen(
             }
 
             item {
-                // Mulai Analisa Button
                 Button(
-                    onClick = { /* Handle analysis */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
+                    onClick = {
+                        selectedFileName?.let { fileName ->
+                            val currentDate = LocalDate.now().format(
+                                DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.getDefault())
+                            )
+                            onNavigateToResult(fileName, currentDate)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    enabled = selectedFileUri != null,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isAnalysisEnabled) Color(0xFFA78BFA) else Color(0xFFD9D9D9),
-                        contentColor = if (isAnalysisEnabled) Color.White else Color.Gray
+                        containerColor = Color(0xFFA78BFA),
+                        disabledContainerColor = Color(0xFFD9D9D9),
+                        contentColor = Color.White,
+                        disabledContentColor = Color.Gray
                     ),
-                    enabled = isAnalysisEnabled,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
@@ -320,10 +379,4 @@ fun LabsScreen(
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun LabScreenPreview() {
-    LabsScreen()
 }

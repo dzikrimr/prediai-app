@@ -26,8 +26,8 @@ import com.example.prediai.presentation.labs.comps.FileInfoCard
 
 @Composable
 fun LabResultScreen(
-    fileName: String = "CamScanner-dokter-01.jpg",
-    uploadDate: String = "Apr 15, 2025",
+    fileName: String,
+    uploadDate: String,
     onBackClick: () -> Unit = {},
     onConsultClick: () -> Unit = {},
     onAskAIClick: () -> Unit = {}
@@ -62,35 +62,6 @@ fun LabResultScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = onAskAIClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFA78BFA) // Ganti backgroundColor -> containerColor
-                ),
-                shape = RoundedCornerShape(8.dp),
-                elevation = ButtonDefaults.buttonElevation( // Ganti elevation() -> buttonElevation()
-                    defaultElevation = 0.dp
-                )
-            ) {
-                Text(
-                    text = "Tanya ke AI",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
-}
-
-@Preview
-@Composable
-private fun LabsResultScreenPreview() {
-    LabResultScreen()
 }
