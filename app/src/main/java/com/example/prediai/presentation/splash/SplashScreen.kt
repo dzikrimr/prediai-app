@@ -8,43 +8,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SplashScreen(
     navController: NavController,
     viewModel: SplashViewModel = hiltViewModel()
 ) {
-    val isOnboardingCompleted by viewModel.getOnboardingState().collectAsState(initial = null)
-    val userUid by viewModel.getCachedUserUid().collectAsState(initial = null)
+    // State untuk memastikan navigasi hanya terjadi sekali
+    var hasNavigated by remember { mutableStateOf(false) }
 
-    // ✅ Navigasi aman setelah data siap & layout attach
-    LaunchedEffect(Unit) {
-        snapshotFlow { isOnboardingCompleted to userUid }
-            .filter { (onboarding, _) -> onboarding != null } // tunggu data siap
-            .collect { (onboarding, uid) ->
-                delay(300) // beri waktu untuk transisi halus
+    LaunchedEffect(key1 = true) {
+        // Cek status onboarding terlebih dahulu
+        viewModel.getOnboardingState().collectLatest { isCompleted ->
+            if (hasNavigated) return@collectLatest // Hentikan jika sudah navigasi
 
-                if (onboarding == false) {
-                    // Belum pernah onboarding → ke onboarding
-                    navController.navigate("main") {
-                        popUpTo("splash") { inclusive = true }
-                    }
-                } else {
-                    // Sudah onboarding → cek apakah user login
-                    if (uid.isNullOrEmpty()) {
-                        // User belum login → tetap arahkan ke onboarding (bukan login)
-                        navController.navigate("main") {
-                            popUpTo("splash") { inclusive = true }
-                        }
+            if (!isCompleted) {
+                // Jika onboarding belum selesai, arahkan ke sana
+                hasNavigated = true
+                navController.navigate("onboarding") {
+                    popUpTo("splash") { inclusive = true }
+                }
+            } else {
+                // Jika onboarding sudah selesai, cek status login
+                viewModel.getCachedUserUid().collectLatest { uid ->
+                    if (hasNavigated) return@collectLatest // Hentikan jika sudah navigasi
+
+                    val destination = if (!uid.isNullOrEmpty()) {
+                        // Jika ada UID (sudah login), refresh data di background dan arahkan ke "home"
+                        viewModel.refreshCache(uid)
+                        "home" // DIUBAH: Menggunakan "home" bukan "main"
                     } else {
-                        // User sudah login → ke home
-                        navController.navigate("main") {
-                            popUpTo("splash") { inclusive = true }
-                        }
+                        // Jika tidak ada UID, arahkan ke "login"
+                        "login"
+                    }
+                    hasNavigated = true
+                    navController.navigate(destination) {
+                        popUpTo("splash") { inclusive = true }
                     }
                 }
             }
+        }
+    }
+
+    // Tampilan loading
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
     }
 }

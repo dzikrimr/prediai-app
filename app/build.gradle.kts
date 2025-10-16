@@ -136,4 +136,6 @@ dependencies {
 
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 }

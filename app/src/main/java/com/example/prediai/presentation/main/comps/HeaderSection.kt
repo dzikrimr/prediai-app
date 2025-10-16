@@ -1,15 +1,7 @@
 package com.example.prediai.presentation.main.comps
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,10 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun HeaderSection(userName: String) {
+fun HeaderSection(userName: String, navController: NavController) { // DIUBAH: Tambah NavController
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -39,7 +33,8 @@ fun HeaderSection(userName: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        IconButton(onClick = { /* TODO: Aksi notifikasi */ }) {
+        // DIUBAH: Tambahkan aksi navigasi pada onClick
+        IconButton(onClick = { navController.navigate("notification") }) {
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Notifications",
@@ -59,7 +54,7 @@ fun HeaderSection(userName: String) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight() // DIUBAH: Tambahkan ini agar Row mengisi tinggi Card
+                    .fillMaxHeight()
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -72,13 +67,13 @@ fun HeaderSection(userName: String) {
                 ) {
                     Text(
                         text = "Good morning, ${userName}!",
-                        fontSize = 18.sp, // Ukuran font sesuai permintaan
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1E293B)
                     )
                     Text(
                         text = "How are you feeling today?",
-                        fontSize = 12.sp, // Ukuran font sesuai permintaan
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF1E293B)
                     )
@@ -106,6 +101,7 @@ fun HeaderSection(userName: String) {
 @Composable
 fun HeaderSectionPreview() {
     PrediAITheme {
-        HeaderSection(userName = "Sarah")
+        // DIUBAH: Tambahkan rememberNavController() untuk preview
+        HeaderSection(userName = "Sarah", navController = rememberNavController())
     }
 }

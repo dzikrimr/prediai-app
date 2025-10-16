@@ -1,9 +1,9 @@
 package com.example.prediai.presentation.main
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.prediai.presentation.main.comps.RiskStatusCard
+import com.example.prediai.presentation.common.BottomNavigationBar
 import com.example.prediai.presentation.main.comps.*
 import com.example.prediai.presentation.theme.PrediAITheme
 
@@ -38,40 +38,49 @@ fun HomeScreenContent(
     uiState: MainUiState,
     navController: NavController
 ) {
-    // DIUBAH: Scaffold dan BottomNavigationBar dihapus
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(0.dp))
-        }
-
-        item {
-            HeaderSection(userName = uiState.userName)
-        }
-
-        item {
-            RiskStatusCard(
-                riskPercentage = uiState.riskPercentage,
-                lastCheckDate = uiState.lastCheckDate,
-                lastCheckResult = uiState.lastCheckResult
+    // DIKEMBALIKAN: Scaffold untuk menyediakan layout dasar dengan top bar, bottom bar, dll.
+    Scaffold(
+        bottomBar = {
+            // DIKEMBALIKAN: Memanggil BottomNavigationBar di slot bottomBar
+            BottomNavigationBar(
+                currentRoute = "beranda", // Ganti ini dengan state navigasi yang sebenarnya
+                onNavigate = { route -> navController.navigate(route) }
             )
         }
+    ) { paddingValues ->
+        LazyColumn(
+            // PENTING: Terapkan paddingValues dari Scaffold agar konten tidak tertutup oleh bottom bar
+            modifier = Modifier.padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Spacer di atas dan bawah bisa dihilangkan jika tidak perlu jarak ekstra
+            // item { Spacer(modifier = Modifier.height(0.dp)) }
 
-        item {
-            ActionCardsSection()
-        }
+            item {
+                HeaderSection(userName = uiState.userName, navController = navController)
+            }
 
-        item {
-            UpcomingRemindersSection(reminders = uiState.reminders)
-        }
+            item {
+                RiskStatusCard(
+                    riskPercentage = uiState.riskPercentage,
+                    lastCheckDate = uiState.lastCheckDate,
+                    lastCheckResult = uiState.lastCheckResult
+                )
+            }
 
-        item {
-            RecommendationsSection(recommendations = uiState.recommendations)
-        }
+            item {
+                ActionCardsSection()
+            }
 
-        item {
-            Spacer(modifier = Modifier.height(0.dp))
+            item {
+                UpcomingRemindersSection(reminders = uiState.reminders)
+            }
+
+            item {
+                RecommendationsSection(recommendations = uiState.recommendations)
+            }
+
+            // item { Spacer(modifier = Modifier.height(0.dp)) }
         }
     }
 }
