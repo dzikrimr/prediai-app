@@ -1,14 +1,18 @@
 package com.example.prediai.presentation.main.comps
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,13 +26,15 @@ import com.example.prediai.R
 import com.example.prediai.presentation.main.Reminder
 import com.example.prediai.presentation.theme.PrediAITheme
 
-// Definisikan warna agar mudah digunakan kembali
 private val primaryButtonColor = Color(0xFF157BBC)
 private val cardBorderColor = Color(0xFF93C5FD)
 
 @Composable
-fun UpcomingRemindersSection(reminders: List<Reminder>) {
-    // DIUBAH: Seluruh section sekarang dibungkus dalam Card utama
+fun UpcomingRemindersSection(
+    reminders: List<Reminder>,
+    onAddScheduleClick: () -> Unit,
+    onSeeAllClick: () -> Unit // DIUBAH: Tambahkan parameter ini
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -49,17 +55,11 @@ fun UpcomingRemindersSection(reminders: List<Reminder>) {
                     fontSize = 18.sp,
                     color = primaryButtonColor
                 )
-                Text(
-                    text = "Lihat Semua",
-                    color = primaryButtonColor,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
             }
             Spacer(modifier = Modifier.height(16.dp))
 
             if (reminders.isEmpty()) {
-                EmptyReminders()
+                EmptyReminders(onAddScheduleClick = onAddScheduleClick)
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     LazyRow(
@@ -71,7 +71,7 @@ fun UpcomingRemindersSection(reminders: List<Reminder>) {
                         }
                     }
                     Button(
-                        onClick = { /*TODO: Navigate to Add Schedule*/ },
+                        onClick = onAddScheduleClick,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = primaryButtonColor),
                         modifier = Modifier.fillMaxWidth()
@@ -86,7 +86,6 @@ fun UpcomingRemindersSection(reminders: List<Reminder>) {
 
 @Composable
 private fun ReminderItem(reminder: Reminder) {
-    // DIUBAH: Card dihilangkan, diganti dengan Column + border
     Column(
         modifier = Modifier
             .width(140.dp)
@@ -119,20 +118,19 @@ private fun ReminderItem(reminder: Reminder) {
 }
 
 @Composable
-private fun EmptyReminders() {
-    // DIUBAH: Card dihilangkan, diganti dengan Column biasa
+private fun EmptyReminders(onAddScheduleClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 24.dp), // Beri padding vertikal agar tidak terlalu sempit
+            .padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_calendar_empty),
             contentDescription = null,
-            tint = Color.LightGray,
-            modifier = Modifier.size(64.dp)
+            modifier = Modifier.size(64.dp),
+            tint = Color.LightGray
         )
         Text(
             text = "Anda belum memiliki jadwal",
@@ -140,7 +138,7 @@ private fun EmptyReminders() {
             textAlign = TextAlign.Center
         )
         Button(
-            onClick = { /*TODO: Navigate to Add Schedule*/ },
+            onClick = onAddScheduleClick,
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(containerColor = primaryButtonColor),
             modifier = Modifier.fillMaxWidth()
@@ -158,7 +156,9 @@ fun UpcomingRemindersSectionFilledPreview() {
             reminders = listOf(
                 Reminder("Take a Medicine", "Today at 2:00 PM"),
                 Reminder("Take a Exercise", "Today at 2:00 PM"),
-            )
+            ),
+            onAddScheduleClick = {},
+            onSeeAllClick = {} // Tambahkan untuk preview
         )
     }
 }
@@ -167,6 +167,10 @@ fun UpcomingRemindersSectionFilledPreview() {
 @Composable
 fun UpcomingRemindersSectionEmptyPreview() {
     PrediAITheme {
-        UpcomingRemindersSection(reminders = emptyList())
+        UpcomingRemindersSection(
+            reminders = emptyList(),
+            onAddScheduleClick = {},
+            onSeeAllClick = {} // Tambahkan untuk preview
+        )
     }
 }

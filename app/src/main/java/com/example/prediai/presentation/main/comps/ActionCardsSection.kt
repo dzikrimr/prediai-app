@@ -1,11 +1,15 @@
 package com.example.prediai.presentation.main.comps
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,11 +20,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.prediai.R
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun ActionCardsSection() {
+fun ActionCardsSection(
+    // DIUBAH: Menerima lambda, bukan NavController
+    onFindDoctorClick: () -> Unit,
+    onConsultationClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -28,25 +38,22 @@ fun ActionCardsSection() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ActionCard(
-            title = "Mulai Skrining",
-            subtitle = "PrediAI siap membantu memeriksa gula darahmu",
-            icon = painterResource(id = R.drawable.ic_screening),
-            // DIUBAH: Warna background card pertama
+            title = "Cari Dokter Spesialis",
+            subtitle = "Temukan dokter spesialis yang siap membantumu",
+            icon = painterResource(id = R.drawable.ic_consult),
             backgroundColor = Color(0xFFFFA4AE),
-            onClick = { /*TODO: Navigate to Scan*/ }
+            onClick = onFindDoctorClick // Gunakan lambda
         )
         ActionCard(
             title = "Butuh Bantuan Konsultasi",
             subtitle = "Konsultasi dengan chatbot untuk konsultasi kesehatan",
             icon = painterResource(id = R.drawable.ic_chatbot),
-            // DIUBAH: Warna background card kedua
             backgroundColor = Color(0xFF61DA65),
-            onClick = { /*TODO: Navigate to Chatbot*/ }
+            onClick = onConsultationClick // Gunakan lambda
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActionCard(
     title: String,
@@ -55,10 +62,16 @@ private fun ActionCard(
     backgroundColor: Color,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+
     Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        // DIUBAH: Corner radius menjadi 24.dp
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = rememberRipple(),
+                onClick = onClick
+            ),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -70,36 +83,33 @@ private fun ActionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                // DIUBAH: Properti teks title
                 Text(
                     text = title,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     color = Color.White
                 )
-                // DIUBAH: Properti teks subtitle
                 Text(
                     text = subtitle,
                     fontSize = 14.sp,
                     color = Color.White,
-                    fontWeight = FontWeight.Normal // Regular
+                    fontWeight = FontWeight.Normal
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
 
-            // DIUBAH: Box untuk frame ikon
             Box(
                 modifier = Modifier
-                    .size(56.dp) // Ukuran frame lingkaran
+                    .size(56.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f)), // Background putih 20% opacity
+                    .background(Color.White.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = icon,
                     contentDescription = title,
-                    tint = Color.White, // Ikon dibuat warna putih agar kontras
-                    modifier = Modifier.size(28.dp) // Ukuran ikon di dalam frame
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -110,6 +120,9 @@ private fun ActionCard(
 @Composable
 fun ActionCardsSectionPreview() {
     PrediAITheme {
-        ActionCardsSection()
+        ActionCardsSection(
+            onFindDoctorClick = {},
+            onConsultationClick = {}
+        )
     }
 }

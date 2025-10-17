@@ -21,7 +21,12 @@ fun QuickReplies(replies: List<QuickReply>, onReplyClick: (String) -> Unit) {
     ) {
         Text("Pertanyaan yang sering ditanyakan", color = Color.Gray, fontSize = 14.sp)
         Spacer(Modifier.height(16.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        // DIUBAH: Tambahkan padding horizontal pada Column ini
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             replies.forEach { reply ->
                 Card(
                     onClick = { onReplyClick(reply.text) },

@@ -77,9 +77,12 @@ fun AIExplanationCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Your glucose levels indicate you're in the prediabetic range. This is a warning sign that can be addressed with lifestyle changes. We recommend consulting with a healthcare provider to discuss a prevention plan.",
+                text = "Berdasarkan hasil analisis, kadar glukosa Anda menunjukkan Anda berada di rentang pradiabetes. " +
+                        "Ini adalah sebuah tanda peringatan penting, di mana kadar gula darah Anda lebih tinggi dari normal, namun belum cukup tinggi untuk didiagnosis sebagai diabetes tipe 2. Anggap ini sebagai kesempatan untuk mengambil tindakan pencegahan.\n\n" +
+                        "Kabar baiknya, kondisi ini seringkali dapat dikelola dan bahkan dikembalikan ke rentang normal melalui perubahan gaya hidup yang konsisten, seperti memperbaiki pola makan, meningkatkan aktivitas fisik, dan menjaga berat badan ideal.\n\n" +
+                        "Kami sangat menyarankan Anda untuk segera berkonsultasi dengan dokter atau tenaga kesehatan profesional. Mereka dapat memberikan diagnosis yang akurat, menyusun rencana pencegahan yang dipersonalisasi sesuai kondisi Anda, dan menentukan apakah diperlukan pemantauan atau tes lebih lanjut.",
                 fontSize = 14.sp,
-                lineHeight = 20.sp,
+                lineHeight = 22.sp,
                 color = Color(0xFF5D5D5D)
             )
 

@@ -9,24 +9,33 @@ import javax.inject.Inject
 // Data class untuk menampung semua state di HomeScreen
 data class MainUiState(
     val userName: String = "Sarah",
-    val riskPercentage: Int? = 60, // null jika belum ada data
+    val riskPercentage: Int? = 32, // null jika belum ada data
     val lastCheckDate: String? = "15 Jan 2024", // null jika belum ada data
     val lastCheckResult: String? = "Tidak ada kemungkinan gejala",
     val reminders: List<Reminder> = listOf(
-        Reminder("Take a Medicine", "Today at 2:00 PM"),
+        Reminder("Take a Medicine", "Today at 7:00 AM"),
         Reminder("Take a Exercise", "Today at 2:00 PM"),
-        Reminder("Take a Medicine", "Today at 2:00 PM"),
+        Reminder("Take a Medicine", "Today at 7:00 PM"),
     ),
     val recommendations: List<Recommendation> = listOf(
-        Recommendation("Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/200"),
-        Recommendation("Kenali gejala diabetesmu melalui tangan", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/201"),
-        Recommendation("Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/202"),
+        // DIUBAH: Menambahkan ID unik untuk setiap item
+        Recommendation("1", "Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/200"),
+        Recommendation("2", "Kenali gejala diabetesmu melalui tangan", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/201"),
+        Recommendation("3", "Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/202"),
     )
 )
 
 // Model data sederhana untuk UI
 data class Reminder(val title: String, val time: String)
-data class Recommendation(val title: String, val source: String, val views: String, val imageUrl: String)
+
+// DIUBAH: Menambahkan properti 'id'
+data class Recommendation(
+    val id: String,
+    val title: String,
+    val source: String,
+    val views: String,
+    val imageUrl: String
+)
 
 @HiltViewModel
 class MainViewModel @Inject constructor(

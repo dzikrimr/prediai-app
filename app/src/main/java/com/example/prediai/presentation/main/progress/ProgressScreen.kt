@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.prediai.presentation.common.TopBar // Import TopBar yang sudah ada
+import com.example.prediai.presentation.common.TopBar
 import com.example.prediai.presentation.main.progress.comps.RecentScans
 import com.example.prediai.presentation.main.progress.comps.RiskDevelopmentChart
 import com.example.prediai.presentation.main.progress.comps.SummaryCards
@@ -28,7 +28,6 @@ fun ProgressScreen(
 
     Scaffold(
         topBar = {
-            // DIUBAH: Menggunakan TopBar yang sudah ada
             TopBar(
                 title = "Kemajuan Pelacakan",
                 subtitle = "Progress Tracking",
@@ -54,7 +53,13 @@ fun ProgressScreen(
                 )
             }
             item {
-                RecentScans(scanResults = uiState.recentScans)
+                // DIUBAH: Meneruskan aksi navigasi ke komponen
+                RecentScans(
+                    scanResults = uiState.recentScans,
+                    onSeeMoreClick = {
+                        navController.navigate("history_detail")
+                    }
+                )
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.example.prediai.presentation.main
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
@@ -12,88 +14,98 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.common.BottomNavigationBar
 import com.example.prediai.presentation.main.comps.*
 import com.example.prediai.presentation.theme.PrediAITheme
 
-// 1. Komponen Stateful: Mengambil data dari ViewModel
 @Composable
 fun HomeScreen(
-    navController: NavController,
+    mainNavController: NavHostController, // "Peta Kota"
+    rootNavController: NavHostController, // "Peta Dunia"
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Memanggil komponen stateless dengan data dari ViewModel
     HomeScreenContent(
         uiState = uiState,
-        navController = navController
+        mainNavController = mainNavController,
+        rootNavController = rootNavController
     )
 }
 
-// 2. Komponen Stateless: Hanya menampilkan UI berdasarkan data yang diterima
 @Composable
 fun HomeScreenContent(
     uiState: MainUiState,
-    navController: NavController
+    mainNavController: NavHostController, // "Peta Kota"
+    rootNavController: NavHostController  // "Peta Dunia"
 ) {
-    // DIKEMBALIKAN: Scaffold untuk menyediakan layout dasar dengan top bar, bottom bar, dll.
-    Scaffold(
-        bottomBar = {
-            // DIKEMBALIKAN: Memanggil BottomNavigationBar di slot bottomBar
-            BottomNavigationBar(
-                currentRoute = "beranda", // Ganti ini dengan state navigasi yang sebenarnya
-                onNavigate = { route -> navController.navigate(route) }
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 16.dp, top = 16.dp)
+    ) {
+        item {
+            HeaderSection(
+                userName = uiState.userName,
+                onNotificationClick = { rootNavController.navigate("notification") },
+                onProfileClick = { mainNavController.navigate("profil") }
             )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            // PENTING: Terapkan paddingValues dari Scaffold agar konten tidak tertutup oleh bottom bar
-            modifier = Modifier.padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Spacer di atas dan bawah bisa dihilangkan jika tidak perlu jarak ekstra
-            // item { Spacer(modifier = Modifier.height(0.dp)) }
 
-            item {
-                HeaderSection(userName = uiState.userName, navController = navController)
-            }
+        item {
+            RiskStatusCard(
+                riskPercentage = uiState.riskPercentage,
+                lastCheckDate = uiState.lastCheckDate,
+                lastCheckResult = uiState.lastCheckResult,
+                onSeeHistoryClick = { mainNavController.navigate("riwayat") }
+            )
+        }
 
-            item {
-                RiskStatusCard(
-                    riskPercentage = uiState.riskPercentage,
-                    lastCheckDate = uiState.lastCheckDate,
-                    lastCheckResult = uiState.lastCheckResult
-                )
-            }
+        item {
+            ActionCardsSection(
+                onFindDoctorClick = { mainNavController.navigate("doctor") },
+                // DIUBAH: Gunakan rootNavController untuk navigasi ke "chatbot"
+                onConsultationClick = { rootNavController.navigate("chatbot") }
+            )
+        }
 
-            item {
-                ActionCardsSection()
-            }
+        item {
+            UpcomingRemindersSection(
+                reminders = uiState.reminders,
+                onAddScheduleClick = { rootNavController.navigate("schedule") },
+                onSeeAllClick = { rootNavController.navigate("schedule") }
+            )
+        }
 
-            item {
-                UpcomingRemindersSection(reminders = uiState.reminders)
-            }
-
-            item {
-                RecommendationsSection(recommendations = uiState.recommendations)
-            }
-
-            // item { Spacer(modifier = Modifier.height(0.dp)) }
+        item {
+            RecommendationsSection(
+                recommendations = uiState.recommendations,
+                onSeeMoreClick = { rootNavController.navigate("education_list") },
+                onItemClick = { videoId -> rootNavController.navigate("video_detail/$videoId") }
+            )
         }
     }
 }
 
-// 3. Preview: Memanggil komponen stateless dengan data palsu (mock)
+// ... Preview tidak berubah ...
 @Preview(showBackground = true, name = "Home Screen (Filled State)")
 @Composable
 fun HomeScreenFilledPreview() {
     PrediAITheme {
-        HomeScreenContent(
-            uiState = MainUiState(), // Menggunakan data default dari MainUiState
-            navController = rememberNavController()
-        )
+        Scaffold(
+            bottomBar = {
+                BottomNavigationBar(currentRoute = "beranda", onNavigate = {})
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                HomeScreenContent(
+                    uiState = MainUiState(),
+                    mainNavController = rememberNavController(),
+                    rootNavController = rememberNavController()
+                )
+            }
+        }
     }
 }
 
@@ -101,15 +113,23 @@ fun HomeScreenFilledPreview() {
 @Composable
 fun HomeScreenEmptyPreview() {
     PrediAITheme {
-        HomeScreenContent(
-            // Data palsu untuk kondisi kosong
-            uiState = MainUiState(
-                riskPercentage = null,
-                lastCheckDate = null,
-                lastCheckResult = null,
-                reminders = emptyList()
-            ),
-            navController = rememberNavController()
-        )
+        Scaffold(
+            bottomBar = {
+                BottomNavigationBar(currentRoute = "beranda", onNavigate = {})
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                HomeScreenContent(
+                    uiState = MainUiState(
+                        riskPercentage = null,
+                        lastCheckDate = null,
+                        lastCheckResult = null,
+                        reminders = emptyList()
+                    ),
+                    mainNavController = rememberNavController(),
+                    rootNavController = rememberNavController()
+                )
+            }
+        }
     }
 }

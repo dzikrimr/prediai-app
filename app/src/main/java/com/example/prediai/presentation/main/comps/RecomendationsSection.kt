@@ -22,11 +22,15 @@ import com.example.prediai.presentation.main.Recommendation
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun RecommendationsSection(recommendations: List<Recommendation>) {
+fun RecommendationsSection(
+    recommendations: List<Recommendation>,
+    onSeeMoreClick: () -> Unit, // DIUBAH: Tambahkan parameter ini
+    onItemClick: (String) -> Unit // DIUBAH: Tambahkan parameter ini
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -46,14 +50,24 @@ fun RecommendationsSection(recommendations: List<Recommendation>) {
                     text = "Lihat Lainnya",
                     color = Color(0xFF00B4A3),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    // DIUBAH: Buat teks bisa diklik (versi aman)
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple(),
+                        onClick = onSeeMoreClick
+                    )
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 recommendations.forEachIndexed { index, recommendation ->
-                    RecommendationItem(recommendation = recommendation)
+                    // DIUBAH: Teruskan aksi klik dengan ID video
+                    RecommendationItem(
+                        recommendation = recommendation,
+                        onClick = { onItemClick(recommendation.id) }
+                    )
                     if (index < recommendations.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(top = 12.dp),
@@ -68,18 +82,18 @@ fun RecommendationsSection(recommendations: List<Recommendation>) {
 }
 
 @Composable
-private fun RecommendationItem(recommendation: Recommendation) {
-    // BARU: Buat interactionSource
+private fun RecommendationItem(
+    recommendation: Recommendation,
+    onClick: () -> Unit // DIUBAH: Terima parameter lambda
+) {
     val interactionSource = remember { MutableInteractionSource() }
-
     Row(
-        // DIUBAH: Gunakan overload clickable yang lebih lengkap
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(), // Secara eksplisit meminta efek ripple
-                onClick = { /*TODO: Navigate to Video Detail*/ }
+                indication = rememberRipple(),
+                onClick = onClick // Gunakan lambda yang diteruskan
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -121,9 +135,11 @@ fun RecommendationsSectionPreview() {
     PrediAITheme {
         RecommendationsSection(
             recommendations = listOf(
-                Recommendation("Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/200"),
-                Recommendation("Kenali gejala diabetesmu melalui tangan", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/201"),
-            )
+                Recommendation("1", "Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/200"),
+                Recommendation("2", "Kenali gejala diabetesmu melalui tangan", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/201"),
+            ),
+            onSeeMoreClick = {},
+            onItemClick = {}
         )
     }
 }

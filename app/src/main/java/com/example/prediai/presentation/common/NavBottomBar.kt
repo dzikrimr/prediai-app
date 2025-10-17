@@ -39,7 +39,7 @@ enum class BottomNavItem(
 ) {
     BERANDA("beranda", "Beranda", R.drawable.ic_home),
     RIWAYAT("riwayat", "Riwayat", R.drawable.ic_history),
-    SCAN("scan", "Scan", R.drawable.ic_camera),
+    GUIDE("guide", "Scan", R.drawable.ic_camera),
     LABS("labs", "Labs", R.drawable.ic_labs),
     PROFIL("profil", "Profil", R.drawable.ic_profile)
 }
@@ -111,7 +111,7 @@ fun BottomNavigationBar(
             contentAlignment = Alignment.Center
         ) {
             FloatingActionButton(
-                onClick = { onNavigate(BottomNavItem.SCAN.route) },
+                onClick = { onNavigate(BottomNavItem.GUIDE.route) },
                 containerColor = Color(0xFF00B4A3),
                 contentColor = Color.White,
                 shape = CircleShape,

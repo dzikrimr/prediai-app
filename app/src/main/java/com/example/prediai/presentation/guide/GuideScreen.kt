@@ -50,14 +50,14 @@ fun GuideScreen(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Illustration
             Image(
                 painter = painterResource(id = R.drawable.see_guide),
                 contentDescription = "Health Screening Illustration",
                 modifier = Modifier
-                    .size(250.dp)
+                    .size(200.dp)
                     .padding(horizontal = 32.dp)
             )
 
@@ -93,7 +93,7 @@ fun GuideScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Bottom Buttons
             Column(
@@ -106,7 +106,7 @@ fun GuideScreen(
                     onClick = onContinueClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF00BFA5)
                     ),
@@ -124,7 +124,11 @@ fun GuideScreen(
                     onClick = onChangeQuestionnaireClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = Color(0xFFE5E7EB)
+                    )
                 ) {
                     Text(
                         text = "Ubah Kuisionermu",

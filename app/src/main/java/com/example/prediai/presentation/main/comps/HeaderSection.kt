@@ -1,18 +1,22 @@
 package com.example.prediai.presentation.main.comps
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,12 +24,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun HeaderSection(userName: String, navController: NavController) { // DIUBAH: Tambah NavController
+fun HeaderSection(
+    userName: String,
+    onNotificationClick: () -> Unit, // DIUBAH
+    onProfileClick: () -> Unit      // DIUBAH
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -33,8 +40,7 @@ fun HeaderSection(userName: String, navController: NavController) { // DIUBAH: T
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // DIUBAH: Tambahkan aksi navigasi pada onClick
-        IconButton(onClick = { navController.navigate("notification") }) {
+        IconButton(onClick = onNotificationClick) { // DIUBAH
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Notifications",
@@ -80,9 +86,15 @@ fun HeaderSection(userName: String, navController: NavController) { // DIUBAH: T
                 }
 
                 Box(
+                    // DIUBAH: Tambahkan clickable
                     modifier = Modifier
                         .size(48.dp)
-                        .background(color = Color(0xFF00B4A3), shape = CircleShape),
+                        .background(color = Color(0xFF00B4A3), shape = CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = rememberRipple(bounded = false),
+                            onClick = onProfileClick
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -101,7 +113,10 @@ fun HeaderSection(userName: String, navController: NavController) { // DIUBAH: T
 @Composable
 fun HeaderSectionPreview() {
     PrediAITheme {
-        // DIUBAH: Tambahkan rememberNavController() untuk preview
-        HeaderSection(userName = "Sarah", navController = rememberNavController())
+        HeaderSection(
+            userName = "Sarah",
+            onNotificationClick = {},
+            onProfileClick = {}
+        )
     }
 }

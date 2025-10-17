@@ -26,10 +26,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
+import com.example.prediai.data.remote.scan.AnalysisResponse
 import com.example.prediai.presentation.scan.comps.DetailItemWithCircle
 
 @Composable
-fun DetailsScreen() {
+fun DetailsScreen(data: AnalysisResponse?) {
+    if (data == null) { /* ... loading state ... */ return }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,19 +70,12 @@ fun DetailsScreen() {
                         color = Color(0xFF212121)
                     )
                 }
-
-                DetailItemWithCircle(
-                    text = "Nail discoloration patterns",
-                    circleColor = Color(0xFFFACC15)
-                )
-                DetailItemWithCircle(
-                    text = "Texture irregularities",
-                    circleColor = Color(0xFFFACC15)
-                )
-                DetailItemWithCircle(
-                    text = "Surface changes detected",
-                    circleColor = Color(0xFFFACC15)
-                )
+                data.riskFactors.forEach { factor ->
+                    DetailItemWithCircle(
+                        text = factor,
+                        circleColor = Color(0xFFFACC15)
+                    )
+                }
             }
         }
 

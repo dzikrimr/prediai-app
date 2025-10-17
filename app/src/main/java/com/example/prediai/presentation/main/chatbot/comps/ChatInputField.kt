@@ -21,10 +21,12 @@ import com.example.prediai.presentation.theme.PrediAITheme
 fun ChatInputField(
     value: String,
     onValueChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onSendClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth(), // tidak pakai animateContentSize untuk performa
         shadowElevation = 8.dp,
         color = Color.White
     ) {
@@ -38,7 +40,6 @@ fun ChatInputField(
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("Ketik pesan Anda...") },
                 shape = RoundedCornerShape(50),
-                // DIUBAH: Menggunakan parameter yang benar
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
@@ -54,7 +55,11 @@ fun ChatInputField(
                     .background(Color(0xFF00B4A3), CircleShape),
                 enabled = value.isNotBlank()
             ) {
-                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
+                Icon(
+                    Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send",
+                    tint = Color.White
+                )
             }
         }
     }

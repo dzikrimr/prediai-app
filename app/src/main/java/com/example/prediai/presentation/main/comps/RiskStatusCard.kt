@@ -22,12 +22,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
+import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun RiskStatusCard(
     riskPercentage: Int?,
     lastCheckDate: String?,
-    lastCheckResult: String?
+    lastCheckResult: String?,
+    onSeeHistoryClick: () -> Unit // PASTIKAN PARAMETER INI ADA
 ) {
     val displayPercentage = riskPercentage ?: 0
     val displayDate = lastCheckDate ?: "Belum Ada Pemeriksaan"
@@ -138,10 +140,10 @@ fun RiskStatusCard(
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(height = 16.dp))
+                Spacer(modifier = Modifier.padding(top = 16.dp))
 
                 Button(
-                    onClick = { /*TODO: Navigate to History*/ },
+                    onClick = onSeeHistoryClick, // PASTIKAN ONCLICK MENGGUNAKAN PARAMETER
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                     modifier = Modifier
@@ -164,9 +166,21 @@ fun RiskStatusCard(
 @Preview(showBackground = true)
 @Composable
 fun RiskStatusCardFilledPreview() {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(horizontal = 16.dp)) {
-        RiskStatusCard(riskPercentage = 0, lastCheckDate = "15 Jan 2025", lastCheckResult = "Tidak ada kemungkinan gejala")
-        RiskStatusCard(riskPercentage = 60, lastCheckDate = "15 Jan 2025", lastCheckResult = "Terdeteksi beberapa indikator. Disarankan konsultasi dokter.")
+    PrediAITheme {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(16.dp)) {
+            RiskStatusCard(
+                riskPercentage = 0,
+                lastCheckDate = "15 Jan 2025",
+                lastCheckResult = "Tidak ada kemungkinan gejala",
+                onSeeHistoryClick = {} // Tambahkan untuk preview
+            )
+            RiskStatusCard(
+                riskPercentage = 32,
+                lastCheckDate = "15 Jan 2025",
+                lastCheckResult = "Terdeteksi beberapa indikator. Disarankan konsultasi dokter.",
+                onSeeHistoryClick = {} // Tambahkan untuk preview
+            )
+        }
     }
 }
 

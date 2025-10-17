@@ -15,8 +15,10 @@ object GenerativeAiModule {
     @Singleton
     fun provideGenerativeModel(): GenerativeModel {
         return GenerativeModel(
-            modelName = "gemini-1.5-flash",
-            apiKey = "YOUR_API_KEY" // idealnya ambil dari local.properties / BuildConfig
+            // V GANTI INI V
+            modelName = "gemini-2.5-flash",
+            // ^ DARI "gemini-1.5-flash" ^
+            apiKey = "AIzaSyDR45Ww-yQQqrCHgKYBLA8eXt5t6vBbmqw"
         )
     }
 }

@@ -1,14 +1,18 @@
 package com.example.prediai.presentation.main.progress.comps
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PriorityHigh
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +26,10 @@ import com.example.prediai.presentation.main.progress.ScanStatus
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun RecentScans(scanResults: List<ScanResult>) {
+fun RecentScans(
+    scanResults: List<ScanResult>,
+    onSeeMoreClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,18 +44,22 @@ fun RecentScans(scanResults: List<ScanResult>) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // DIUBAH: Properti teks "Scan Terbaru"
                 Text(
                     text = "Scan Terbaru",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp
                 )
-                // DIUBAH: Properti teks "Lihat Lainnya"
                 Text(
                     text = "Lihat Lainnya",
                     color = Color(0xFF00B4A3),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    // DIUBAH: Menggunakan versi clickable yang lebih aman
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple(),
+                        onClick = onSeeMoreClick
+                    )
                 )
             }
 
@@ -68,7 +79,6 @@ fun RecentScans(scanResults: List<ScanResult>) {
 
 @Composable
 private fun ScanItem(scanResult: ScanResult) {
-    // DIUBAH: Menggunakan warna dinamis berdasarkan persentase
     val dynamicRiskColor = getInterpolatedColor(scanResult.riskPercentage)
 
     val (icon, iconBgColor) = when (scanResult.status) {
@@ -92,32 +102,29 @@ private fun ScanItem(scanResult: ScanResult) {
             Icon(
                 imageVector = icon,
                 contentDescription = scanResult.riskLevel,
-                tint = dynamicRiskColor, // Tint ikon juga menggunakan warna dinamis
+                tint = dynamicRiskColor,
                 modifier = Modifier.size(20.dp)
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            // DIUBAH: Properti teks tanggal
             Text(
                 text = scanResult.date,
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
             )
-            // DIUBAH: Properti teks level risiko
             Text(
                 text = scanResult.riskLevel,
                 fontSize = 12.sp,
                 color = Color.Gray,
-                fontWeight = FontWeight.Normal // Regular
+                fontWeight = FontWeight.Normal
             )
         }
         Column(horizontalAlignment = Alignment.End) {
-            // DIUBAH: Properti teks persentase
             Text(
                 text = "${scanResult.riskPercentage}%",
                 fontWeight = FontWeight.SemiBold,
-                color = dynamicRiskColor, // Menggunakan warna dinamis
+                color = dynamicRiskColor,
                 fontSize = 14.sp
             )
             Text(scanResult.time, fontSize = 12.sp, color = Color.Gray)
@@ -134,12 +141,12 @@ fun RecentScansPreview() {
                 ScanResult("15 Jan 2024", "Risiko Rendah", 25, "09:30", ScanStatus.LOW),
                 ScanResult("14 Jan 2024", "Risiko Sedang", 65, "14:20", ScanStatus.MEDIUM),
                 ScanResult("13 Jan 2024", "Risiko Tinggi", 85, "11:15", ScanStatus.HIGH)
-            )
+            ),
+            onSeeMoreClick = {}
         )
     }
 }
 
-// Fungsi bantuan untuk transisi warna, sama seperti di RiskStatusCard
 private fun getInterpolatedColor(percentage: Int): Color {
     return when {
         percentage <= 60 -> lerp(

@@ -15,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,12 +35,14 @@ import com.example.prediai.presentation.scan.tabs.OverviewScreen
 
 @Composable
 fun ScanResultScreen(
+    viewModel: ScanResultViewModel,
     onBackClick: () -> Unit = {},
     onExportClick: () -> Unit = {},
     onSaveToHistory: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Details", "Advice")
+    val uiState by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -116,15 +119,9 @@ fun ScanResultScreen(
         }
 
         when (selectedTab) {
-            0 -> OverviewScreen(onExportClick, onSaveToHistory)
-            1 -> DetailsScreen()
+            0 -> OverviewScreen(uiState.analysisData, uiState.nailImage, uiState.tongueImage, onExportClick, onSaveToHistory)
+            1 -> DetailsScreen(uiState.analysisData)
             2 -> AdviceScreen()
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ScanResultScreenPreview() {
-    ScanResultScreen()
 }

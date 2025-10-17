@@ -11,22 +11,29 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.common.BottomNavigationBar
+import com.example.prediai.presentation.common.BottomNavItem
 import com.example.prediai.presentation.navigation.MainNavGraph
 
 @Composable
-fun MainScreen(rootNavController: NavHostController) {
-    val mainNavController = rememberNavController()
-    // DIUBAH: Mengambil route saat ini secara otomatis dari back stack
+fun MainScreen(rootNavController: NavHostController) { // Menerima "Peta Dunia"
+    val mainNavController = rememberNavController() // Membuat "Peta Kota"
+
+    // Secara otomatis mendeteksi rute saat ini di "Peta Kota"
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
-                // Gunakan route yang didapat dari back stack
                 currentRoute = currentRoute ?: "beranda",
                 onNavigate = { route ->
-                    mainNavController.navigate(route) {
+                    val destination = if (route == BottomNavItem.GUIDE.route) {
+                        "scan_flow"
+                    } else {
+                        route
+                    }
+                    // Navigasi di bottom bar HANYA menggunakan "Peta Kota"
+                    mainNavController.navigate(destination) {
                         popUpTo(mainNavController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -38,10 +45,14 @@ fun MainScreen(rootNavController: NavHostController) {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
+            // Berikan KEDUA peta ke MainNavGraph
             MainNavGraph(
                 mainNavController = mainNavController,
-                // Teruskan rootNavController ke MainNavGraph
-                rootNavController = rootNavController
+                rootNavController = rootNavController,
+                onUpdateRoute = { newRoute ->
+                    // `onUpdateRoute` masih diperlukan oleh MainNavGraph Anda
+                    // untuk menandai tab "scan" saat berada di dalam alur scan
+                }
             )
         }
     }
