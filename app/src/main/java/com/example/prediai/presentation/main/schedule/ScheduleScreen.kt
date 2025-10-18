@@ -1,8 +1,9 @@
 package com.example.prediai.presentation.main.schedule
 
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -11,7 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +27,8 @@ import com.example.prediai.presentation.main.schedule.comps.AddScheduleSheet
 import com.example.prediai.presentation.main.schedule.comps.CalendarView
 import com.example.prediai.presentation.main.schedule.comps.ScheduleItemCard
 import com.example.prediai.presentation.theme.PrediAITheme
-import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,14 +38,25 @@ fun ScheduleScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
 
     if (uiState.isAddScheduleSheetVisible) {
         ModalBottomSheet(
             onDismissRequest = { viewModel.hideAddScheduleSheet() },
             sheetState = sheetState
         ) {
-            AddScheduleSheet()
+            // --- PERBARUI PEMANGGILAN INI ---
+            AddScheduleSheet(
+                onDismiss = { viewModel.hideAddScheduleSheet() },
+
+                // Tambahkan blok onSaveClick
+                onSaveClick = { type, time, notes ->
+                    viewModel.saveSchedule(
+                        typeString = type,
+                        notes = notes,
+                        time = time
+                    )
+                }
+            )
         }
     }
 
@@ -80,32 +93,41 @@ fun ScheduleScreen(
                 CalendarView(
                     selectedDate = uiState.selectedDate,
                     datesWithEvents = uiState.datesWithScheduledEvents,
-                    currentMonth = uiState.currentMonth,
                     onDateClick = { date -> viewModel.onDateSelected(date) },
-                    onPrevMonthClick = { /* TODO */ },
-                    onNextMonthClick = { /* TODO */ }
+                    onMonthChanged = { yearMonth -> viewModel.onMonthChanged(yearMonth) }
                 )
             }
 
             item {
                 Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Jadwal Hari Ini", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("15 Jan", color = Color.Gray, fontSize = 14.sp)
+                    Text("Jadwal Anda", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                    val selectedDateText = remember(uiState.selectedDate) {
+                        val formatter = DateTimeFormatter.ofPattern("dd MMM", Locale.getDefault())
+                        uiState.selectedDate.format(formatter)
+                    }
+                    Text(selectedDateText, color = Color.Gray, fontSize = 14.sp)
                 }
             }
 
-            items(uiState.schedulesForSelectedDay) { scheduleItem ->
+            itemsIndexed(uiState.schedulesForSelectedDay) { index, scheduleItem ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    ScheduleItemCard(item = scheduleItem)
+                    // Teruskan index ke ScheduleItemCard
+                    ScheduleItemCard(
+                        item = scheduleItem,
+                        index = index
+                    )
                 }
             }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

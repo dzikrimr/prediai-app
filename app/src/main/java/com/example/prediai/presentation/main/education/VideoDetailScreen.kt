@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.prediai.domain.model.EducationVideo
 import com.example.prediai.presentation.common.TopBar
 import com.example.prediai.presentation.main.education.comps.VideoDescription
 import com.example.prediai.presentation.main.education.comps.YoutubePlayerView
@@ -58,7 +59,7 @@ fun VideoDetailScreenPreview() {
     PrediAITheme {
         VideoDetailScreen(
             navController = rememberNavController(),
-            video = EducationVideo("1", "Penyebab, Ciri-Ciri dan Pencegahan Penyakit Gula", "RS Premier Jatinegara", "", "", "S5-zKft4-nI")
+            video = EducationVideo("1", "Penyebab, Ciri-Ciri dan Pencegahan Penyakit Gula", "RS Premier Jatinegara", "", "", "S5-zKft4-nI", "Gejala")
         )
     }
 }

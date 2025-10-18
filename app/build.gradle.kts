@@ -99,9 +99,6 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.foundation)
 
     // Testing
     testImplementation(libs.junit)
@@ -139,4 +136,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+
+    implementation("com.kizitonwose.calendar:compose:2.6.1")
 }

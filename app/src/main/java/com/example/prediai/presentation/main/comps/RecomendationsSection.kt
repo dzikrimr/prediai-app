@@ -18,14 +18,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.prediai.presentation.main.Recommendation
+// 1. GANTI IMPORT INI:
+// import com.example.prediai.presentation.main.Recommendation // <-- HAPUS
+import com.example.prediai.domain.model.EducationVideo // <-- IMPORT MODEL BARU
+import com.example.prediai.domain.model.VideoCategories // <-- Import untuk Preview
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun RecommendationsSection(
-    recommendations: List<Recommendation>,
-    onSeeMoreClick: () -> Unit, // DIUBAH: Tambahkan parameter ini
-    onItemClick: (String) -> Unit // DIUBAH: Tambahkan parameter ini
+    // 2. GANTI TIPE DATA DI PARAMETER INI:
+    recommendations: List<EducationVideo>,
+    onSeeMoreClick: () -> Unit,
+    onItemClick: (String) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -44,14 +48,13 @@ fun RecommendationsSection(
                 Text(
                     text = "Cocok Untukmu",
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
+                    fontSize = 18.sp
                 )
                 Text(
                     text = "Lihat Lainnya",
                     color = Color(0xFF00B4A3),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    // DIUBAH: Buat teks bisa diklik (versi aman)
                     modifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = rememberRipple(),
@@ -63,14 +66,13 @@ fun RecommendationsSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 recommendations.forEachIndexed { index, recommendation ->
-                    // DIUBAH: Teruskan aksi klik dengan ID video
+                    // 'recommendation' sekarang adalah tipe EducationVideo
                     RecommendationItem(
                         recommendation = recommendation,
                         onClick = { onItemClick(recommendation.id) }
                     )
                     if (index < recommendations.lastIndex) {
                         HorizontalDivider(
-                            modifier = Modifier.padding(top = 12.dp),
                             thickness = 1.dp,
                             color = Color.Gray.copy(alpha = 0.1f)
                         )
@@ -83,8 +85,9 @@ fun RecommendationsSection(
 
 @Composable
 private fun RecommendationItem(
-    recommendation: Recommendation,
-    onClick: () -> Unit // DIUBAH: Terima parameter lambda
+    // 3. GANTI TIPE DATA DI PARAMETER INI JUGA:
+    recommendation: EducationVideo,
+    onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Row(
@@ -93,11 +96,14 @@ private fun RecommendationItem(
             .clickable(
                 interactionSource = interactionSource,
                 indication = rememberRipple(),
-                onClick = onClick // Gunakan lambda yang diteruskan
+                onClick = onClick
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
+            // Nama properti (imageUrl, title, source, views)
+            // sama antara Recommendation dan EducationVideo,
+            // jadi tidak ada perubahan di sini.
             model = recommendation.imageUrl,
             contentDescription = recommendation.title,
             modifier = Modifier
@@ -133,10 +139,27 @@ private fun RecommendationItem(
 @Composable
 fun RecommendationsSectionPreview() {
     PrediAITheme {
+        // 4. PERBARUI PREVIEW AGAR MENGGUNAKAN DATA DUMMY EducationVideo
         RecommendationsSection(
             recommendations = listOf(
-                Recommendation("1", "Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/200"),
-                Recommendation("2", "Kenali gejala diabetesmu melalui tangan", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/201"),
+                EducationVideo(
+                    id = "1",
+                    title = "Tips agar gula darah tidak naik",
+                    source = "Ilmu Dokter",
+                    views = "91rb x ditonton",
+                    imageUrl = "https://picsum.photos/200",
+                    youtubeVideoId = "dummy_id_1",
+                    category = VideoCategories.NUTRISI
+                ),
+                EducationVideo(
+                    id = "2",
+                    title = "Kenali gejala diabetesmu melalui tangan",
+                    source = "Ilmu Dokter",
+                    views = "91rb x ditonton",
+                    imageUrl = "https.picsum.photos/201",
+                    youtubeVideoId = "dummy_id_2",
+                    category = VideoCategories.GEJALA
+                ),
             ),
             onSeeMoreClick = {},
             onItemClick = {}
