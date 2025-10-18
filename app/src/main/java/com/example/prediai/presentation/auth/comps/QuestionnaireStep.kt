@@ -3,7 +3,7 @@ package com.example.prediai.presentation.auth.comps
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,83 +28,88 @@ fun QuestionnaireStep(
         "Apakah Anda sering merasa haus berlebihan?"
     )
 
+    // Column baru untuk menengahkan semua konten di bawahnya
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Bantu Kami Kenali Kesehatan Gula Darah Anda",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF2D3748)
-        )
+        // Konten asli Anda sekarang ada di dalam Column ini
+        Column(
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Bantu Kami Kenali Kesehatan Gula Darah Anda",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF2D3748)
+            )
 
-        questions.forEach { question ->
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = question,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF4A5568)
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+            questions.forEach { question ->
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(
-                        onClick = { onAnswer(question, true) },
-                        modifier = Modifier.weight(1f).height(42.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (answers[question] == true) primaryColor else Color(0xFFE2E8F0),
-                            contentColor = if (answers[question] == true) Color.White else Color(0xFF2D3748)
-                        )
-                    ) {
-                        Text("Ya", fontWeight = FontWeight.SemiBold)
-                    }
+                    Text(
+                        text = question,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF4A5568)
+                    )
 
-                    Button(
-                        onClick = { onAnswer(question, false) },
-                        modifier = Modifier.weight(1f).height(42.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (answers[question] == false) primaryColor else Color(0xFFE2E8F0),
-                            contentColor = if (answers[question] == false) Color.White else Color(0xFF2D3748)
-                        )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Tidak", fontWeight = FontWeight.SemiBold)
+                        Button(
+                            onClick = { onAnswer(question, true) },
+                            modifier = Modifier.weight(1f).height(42.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (answers[question] == true) primaryColor else Color(0xFFE2E8F0),
+                                contentColor = if (answers[question] == true) Color.White else Color(0xFF2D3748)
+                            )
+                        ) {
+                            Text("Ya", fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Button(
+                            onClick = { onAnswer(question, false) },
+                            modifier = Modifier.weight(1f).height(42.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (answers[question] == false) primaryColor else Color(0xFFE2E8F0),
+                                contentColor = if (answers[question] == false) Color.White else Color(0xFF2D3748)
+                            )
+                        ) {
+                            Text("Tidak", fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }
-        }
 
-        Button(
-            onClick = onNextClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            enabled = !isLoading,
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = primaryColor,
-                disabledContainerColor = Color(0xFFE2E8F0)
-            )
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White,
-                    strokeWidth = 2.dp
+            Button(
+                onClick = onNextClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                enabled = !isLoading,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryColor,
+                    disabledContainerColor = Color(0xFFE2E8F0)
                 )
-            } else {
-                Text("Selanjutnya", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Selanjutnya", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }

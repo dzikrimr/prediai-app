@@ -65,21 +65,13 @@ fun HistoryScreen(
 
             // History Items
             items(uiState.historyItems) { item ->
-                HistoryItemCard(item = item)
-            }
-
-            // Load More Button
-            item {
-                TextButton(
-                    onClick = { /* TODO: Aksi muat lebih banyak */ },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        "Muat Lebih Banyak",
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                HistoryItemCard(
+                    item = item,
+                    onClick = {
+                        // Navigasi ke ScanResultScreen dengan membawa ID item
+                        navController.navigate("scan_result?historyId=${item.id}")
+                    }
+                )
             }
         }
     }

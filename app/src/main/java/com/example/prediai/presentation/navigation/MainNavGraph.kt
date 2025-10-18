@@ -3,6 +3,8 @@ package com.example.prediai.presentation.navigation
 import ContactUsScreen
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -11,6 +13,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.example.prediai.presentation.auth.AuthViewModel
+import com.example.prediai.presentation.auth.QuestionnaireScreen
 import com.example.prediai.presentation.doctor.DoctorScreen
 import com.example.prediai.presentation.guide.GuideScreen
 import com.example.prediai.presentation.labs.LabResultScreen
@@ -36,7 +40,6 @@ import java.nio.charset.StandardCharsets
 fun MainNavGraph(
     mainNavController: NavHostController,
     rootNavController: NavHostController,
-    onUpdateRoute: (String) -> Unit
 ) {
 
     NavHost(
@@ -44,16 +47,12 @@ fun MainNavGraph(
         startDestination = "beranda"
     ) {
         composable("beranda") {
-            onUpdateRoute("beranda")
             HomeScreen(mainNavController, rootNavController)
         }
         composable("doctor") {
-            // DIUBAH: Berikan mainNavController agar bisa kembali ke HomeScreen
             DoctorScreen(mainNavController)
         }
         composable("riwayat") {
-            onUpdateRoute("riwayat")
-            // DIUBAH: Berikan mainNavController agar bisa kembali ke HomeScreen
             ProgressScreen(mainNavController)
         }
         composable("history_detail") {
@@ -65,7 +64,6 @@ fun MainNavGraph(
             route = "scan_flow"
         ) {
             composable("guide") {
-                onUpdateRoute("scan")
                 GuideScreen(
                     onBackClick = { mainNavController.popBackStack() },
                     onContinueClick = { mainNavController.navigate("scan") },
@@ -90,11 +88,26 @@ fun MainNavGraph(
                     }
                 )
             }
-            composable("scan_result") { backStackEntry ->
-                val parentEntry = remember(backStackEntry) {
-                    mainNavController.getBackStackEntry("scan_flow")
+            composable(
+                route = "scan_result?historyId={historyId}",
+                arguments = listOf(navArgument("historyId") {
+                    type = NavType.StringType
+                    nullable = true
+                })
+            ) { backStackEntry ->
+                // --- LOGIKA BARU UNTUK MEMILIH VIEWMODEL YANG TEPAT ---
+                val historyId = backStackEntry.arguments?.getString("historyId")
+
+                val scanResultViewModel: ScanResultViewModel = if (historyId == null) {
+                    // Mode Scan Baru: Ambil ViewModel yang sama dari "scan_flow" (Papan Tulis A)
+                    val parentEntry = remember(backStackEntry) {
+                        mainNavController.getBackStackEntry("scan_flow")
+                    }
+                    hiltViewModel(parentEntry)
+                } else {
+                    // Mode Lihat Riwayat: Buat ViewModel baru yang akan memuat data dari Firestore
+                    hiltViewModel()
                 }
-                val scanResultViewModel: ScanResultViewModel = hiltViewModel(parentEntry)
 
                 ScanResultScreen(
                     viewModel = scanResultViewModel,
@@ -103,19 +116,7 @@ fun MainNavGraph(
             }
         }
 
-        composable("quistionere") {
-            QuistionereScreen(
-                onBackClick = { rootNavController.popBackStack() },
-                onCancelClick = { rootNavController.popBackStack() },
-                onSaveClick = { answers ->
-                    Log.d("Quistionere", "Jawaban disimpan: $answers")
-                    rootNavController.popBackStack()
-                }
-            )
-        }
-
         composable("labs") {
-            onUpdateRoute("labs")
             LabsScreen(
                 onBackClick = { mainNavController.popBackStack() },
                 onNavigateToResult = { fileName, uploadDate ->
@@ -126,12 +127,9 @@ fun MainNavGraph(
             )
         }
         composable("profil") {
-            onUpdateRoute("profil")
             ProfileScreen(navController = rootNavController)
         }
 
-        // Rute-rute ini adalah bagian dari "profil" dan harusnya dipanggil dari sana,
-        // jadi mereka tetap menggunakan rootNavController.
         composable("edit_profile") { EditProfileScreen(navController = rootNavController) }
         composable("security") { SecurityScreen(navController = rootNavController) }
         composable("help_center") { HelpCenterScreen(navController = rootNavController) }

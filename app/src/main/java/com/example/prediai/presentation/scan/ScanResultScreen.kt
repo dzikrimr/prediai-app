@@ -38,7 +38,6 @@ fun ScanResultScreen(
     viewModel: ScanResultViewModel,
     onBackClick: () -> Unit = {},
     onExportClick: () -> Unit = {},
-    onSaveToHistory: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Details", "Advice")
@@ -119,7 +118,7 @@ fun ScanResultScreen(
         }
 
         when (selectedTab) {
-            0 -> OverviewScreen(uiState.analysisData, uiState.nailImage, uiState.tongueImage, onExportClick, onSaveToHistory)
+            0 -> OverviewScreen(uiState.analysisData, uiState.nailImage, uiState.tongueImage, onExportClick)
             1 -> DetailsScreen(uiState.analysisData)
             2 -> AdviceScreen()
         }

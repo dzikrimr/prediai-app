@@ -31,7 +31,28 @@ import com.example.prediai.presentation.scan.comps.DetailItemWithCircle
 
 @Composable
 fun DetailsScreen(data: AnalysisResponse?) {
-    if (data == null) { /* ... loading state ... */ return }
+    if (data == null) {
+        return
+    }
+
+    val nextStepsText: String
+    val conclusionText: String
+
+    when {
+        data.riskPercentage > 70 -> { // Risiko Tinggi
+            nextStepsText = "Segera jadwalkan konsultasi dengan dokter Anda. Tes glukosa darah dan pemeriksaan komprehensif sangat disarankan untuk diagnosis yang akurat."
+            conclusionText = "Berdasarkan analisis citra dan kuesioner, ditemukan indikasi kuat prediabetes/diabetes. Konsultasi medis diperlukan untuk diagnosis dan penanganan lebih lanjut."
+        }
+        data.riskPercentage > 50 -> { // Risiko Sedang
+            nextStepsText = "Pantau perubahan selama 2-3 minggu ke depan. Jadwalkan pemeriksaan rutin dengan penyedia layanan kesehatan Anda untuk mendiskusikan temuan ini."
+            conclusionText = "Berdasarkan analisis citra dan kuesioner, ditemukan beberapa indikator yang mengarah pada prediabetes. Disarankan untuk menjaga gaya hidup sehat dan melakukan pemeriksaan medis."
+        }
+        else -> { // Risiko Rendah
+            nextStepsText = "Pantau perubahan selama 2-3 minggu ke depan. Jadwalkan pemeriksaan rutin dengan penyedia layanan kesehatan Anda untuk mendapatkan panduan profesional."
+            conclusionText = "Berdasarkan analisis citra dan kuesioner, tidak ditemukan indikasi kuat diabetes. Namun, tetap disarankan untuk melakukan pemeriksaan rutin untuk pencegahan."
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,7 +85,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
                             .padding(end = 8.dp)
                     )
                     Text(
-                        text = "Risk Factors Identified",
+                        text = "Faktor Risiko Teridentifikasi", // Diubah ke Bahasa Indonesia
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF212121)
@@ -81,7 +102,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Lifestyle Suggestions
+        // Lifestyle Suggestions (Tidak ada di kode sebelumnya, saya tambahkan sebagai contoh)
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -104,7 +125,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
                             .padding(end = 8.dp)
                     )
                     Text(
-                        text = "Lifestyle Suggestions",
+                        text = "Saran Gaya Hidup", // Diubah ke Bahasa Indonesia
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF212121)
@@ -112,23 +133,24 @@ fun DetailsScreen(data: AnalysisResponse?) {
                 }
 
                 DetailItemWithCircle(
-                    text = "Maintain balanced nutrition with vitamins",
+                    text = "Jaga nutrisi seimbang dan perbanyak vitamin",
                     circleColor = Color(0xFF00B4A3)
                 )
                 DetailItemWithCircle(
-                    text = "Regular exercise and stress management",
+                    text = "Olahraga teratur dan kelola stres",
                     circleColor = Color(0xFF00B4A3)
                 )
                 DetailItemWithCircle(
-                    text = "Avoid harmful habits and chemicals",
+                    text = "Hindari kebiasaan dan bahan kimia berbahaya",
                     circleColor = Color(0xFF00B4A3)
                 )
             }
         }
 
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Next Steps
+        // --- CARD BARU: NEXT STEPS ---
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -151,7 +173,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
                             .padding(end = 8.dp)
                     )
                     Text(
-                        text = "Next Steps",
+                        text = "Langkah Selanjutnya",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF212121)
@@ -159,7 +181,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
                 }
 
                 Text(
-                    text = "Monitor changes over the next 2-3 weeks. Schedule a routine check-up with your healthcare provider to discuss these findings and get professional guidance.",
+                    text = nextStepsText, // Menggunakan teks dinamis
                     fontSize = 14.sp,
                     color = Color(0xFF424242),
                     lineHeight = 20.sp
@@ -169,7 +191,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Kesimpulan Card
+        // --- CARD BARU: KESIMPULAN ---
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -197,7 +219,7 @@ fun DetailsScreen(data: AnalysisResponse?) {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Berdasarkan analisa citra kuku dan lidah, tidak ditemukan indikasi kuat diabetes. Namun, tetap disarankan untuk rutin untuk pencegahan.",
+                    text = conclusionText, // Menggunakan teks dinamis
                     fontSize = 14.sp,
                     color = Color(0xFF424242),
                     lineHeight = 20.sp

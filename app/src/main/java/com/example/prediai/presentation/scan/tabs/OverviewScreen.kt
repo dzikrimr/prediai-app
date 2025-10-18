@@ -52,8 +52,7 @@ fun OverviewScreen(
     data: AnalysisResponse?,
     nailImage: ByteArray?,
     tongueImage: ByteArray?,
-    onExportClick: () -> Unit = {},
-    onSaveToHistory: () -> Unit = {}
+    onExportClick: () -> Unit = {}
 ) {
     if (data == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -191,31 +190,6 @@ fun OverviewScreen(
                 .fillMaxWidth() // Tambahkan fillMaxWidth agar textAlign berfungsi
                 .padding(bottom = 16.dp)
         )
-
-        // --- TOMBOL SAVE TO HISTORY DIUPDATE DENGAN IKON & TEKS BARU ---
-        OutlinedButton(
-            onClick = onSaveToHistory,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = Color(0xFF00B4A3)
-            ),
-            border = BorderStroke(1.dp, Color(0xFF00B4A3))
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_bookmark),
-                contentDescription = "Simpan ke Riwayat",
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Simpan ke Riwayat",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
 
         Spacer(modifier = Modifier.height(12.dp))
 

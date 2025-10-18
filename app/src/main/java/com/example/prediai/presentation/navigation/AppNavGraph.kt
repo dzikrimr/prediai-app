@@ -1,18 +1,24 @@
 package com.example.prediai.presentation.navigation
 
 import ContactUsScreen
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.prediai.presentation.auth.AuthViewModel
 import com.example.prediai.presentation.auth.LoginScreen
 import com.example.prediai.presentation.auth.QuestionnaireRoot
+import com.example.prediai.presentation.auth.QuestionnaireScreen
 import com.example.prediai.presentation.auth.RegisterScreen
+import com.example.prediai.presentation.auth.RegistrationSuccessScreen
 import com.example.prediai.presentation.doctor.DoctorScreen
 import com.example.prediai.presentation.labs.LabResultScreen
 import com.example.prediai.presentation.main.MainScreen
@@ -61,6 +67,49 @@ fun AppNavGraph(navController: NavHostController) {
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
 
+        composable("questionnaire") {
+            val viewModel: AuthViewModel = hiltViewModel()
+            val state by viewModel.uiState.collectAsState()
+            val step by viewModel.step.collectAsState()
+
+            // TAMBAHKAN BLOK INI UNTUK MENDENGARKAN HASIL SUKSES
+            LaunchedEffect(key1 = state.isQuestionnaireSuccess) {
+                if (state.isQuestionnaireSuccess) {
+                    navController.navigate("registration_success") {
+                        // Hapus halaman kuesioner dari backstack
+                        popUpTo("questionnaire") { inclusive = true }
+                    }
+                }
+            }
+
+            QuestionnaireScreen(
+                step = step,           // Now 'step' is an Int
+                state = state,         // And 'state' is an AuthUiState
+                onNameChange = viewModel::onNameChange,
+                onBirthDateChange = viewModel::onBirthDateChange,
+                onHeightChange = viewModel::onHeightChange,
+                onWeightChange = viewModel::onWeightChange,
+                onCityChange = viewModel::onCityChange,
+                onStep2Answer = viewModel::onStep2Answer,
+                onStep3Answer = viewModel::onStep3Answer,
+                onStep4Answer = viewModel::onStep4Answer,
+                onNextClick = viewModel::onNextClick
+            )
+        }
+
+        composable("registration_success") {
+            RegistrationSuccessScreen(
+                onStartClick = {
+                    // Navigasi ke halaman utama dan hapus semua backstack sebelumnya
+                    navController.navigate("main") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
         // Alur Utama Setelah Login
         composable("main") {
             MainScreen(rootNavController = navController)
@@ -92,15 +141,18 @@ fun AppNavGraph(navController: NavHostController) {
         composable("doctor") {
             DoctorScreen(navController = navController)
         }
+
         composable("quistionere") {
             QuistionereScreen(
                 onBackClick = { navController.popBackStack() },
                 onCancelClick = { navController.popBackStack() },
-                onSaveClick = { answers ->
+                onSaveClick = {
+                    Log.d("Quistionere", "Jawaban berhasil disimpan, kembali ke halaman sebelumnya.")
                     navController.popBackStack()
                 }
             )
         }
+
         composable(
             route = "lab_result/{fileName}/{uploadDate}",
             arguments = listOf(

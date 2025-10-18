@@ -15,44 +15,52 @@ import com.example.prediai.presentation.common.BottomNavItem
 import com.example.prediai.presentation.navigation.MainNavGraph
 
 @Composable
-fun MainScreen(rootNavController: NavHostController) { // Menerima "Peta Dunia"
-    val mainNavController = rememberNavController() // Membuat "Peta Kota"
+fun MainScreen(rootNavController: NavHostController) {
+    val mainNavController = rememberNavController()
 
-    // Secara otomatis mendeteksi rute saat ini di "Peta Kota"
     val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val bottomNavRoutes = listOf(
+        BottomNavItem.BERANDA.route,
+        BottomNavItem.RIWAYAT.route,
+        BottomNavItem.LABS.route,
+        BottomNavItem.PROFIL.route,
+        BottomNavItem.GUIDE.route
+    )
+
+    val isBottomNavVisible = currentRoute in bottomNavRoutes
+
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(
-                currentRoute = currentRoute ?: "beranda",
-                onNavigate = { route ->
-                    val destination = if (route == BottomNavItem.GUIDE.route) {
-                        "scan_flow"
-                    } else {
-                        route
-                    }
-                    // Navigasi di bottom bar HANYA menggunakan "Peta Kota"
-                    mainNavController.navigate(destination) {
-                        popUpTo(mainNavController.graph.findStartDestination().id) {
-                            saveState = true
+            if (isBottomNavVisible) {
+                BottomNavigationBar(
+                    currentRoute = when (currentRoute) {
+                        "scan", "scan_result" -> "guide"
+                        else -> currentRoute ?: BottomNavItem.BERANDA.route
+                    },
+                    onNavigate = { route ->
+                        val destination = if (route == BottomNavItem.GUIDE.route) {
+                            "scan_flow"
+                        } else {
+                            route
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                        mainNavController.navigate(destination) {
+                            popUpTo(mainNavController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            // Berikan KEDUA peta ke MainNavGraph
+        Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
             MainNavGraph(
                 mainNavController = mainNavController,
                 rootNavController = rootNavController,
-                onUpdateRoute = { newRoute ->
-                    // `onUpdateRoute` masih diperlukan oleh MainNavGraph Anda
-                    // untuk menandai tab "scan" saat berada di dalam alur scan
-                }
             )
         }
     }

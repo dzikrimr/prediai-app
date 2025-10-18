@@ -36,7 +36,9 @@ fun ProgressScreen(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier.padding(
+                top = paddingValues.calculateTopPadding()
+            ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
@@ -53,11 +55,14 @@ fun ProgressScreen(
                 )
             }
             item {
-                // DIUBAH: Meneruskan aksi navigasi ke komponen
                 RecentScans(
                     scanResults = uiState.recentScans,
                     onSeeMoreClick = {
                         navController.navigate("history_detail")
+                    },
+                    onItemClick = { scanId -> // <-- Tambahkan ini
+                        // Navigasi ke detail scan dengan membawa ID
+                        navController.navigate("scan_result?historyId=$scanId")
                     }
                 )
             }
