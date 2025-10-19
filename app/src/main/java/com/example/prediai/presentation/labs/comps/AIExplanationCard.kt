@@ -52,7 +52,7 @@ fun AIExplanationCard(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "AI Explanation & Next Steps",
+                    text = "Analisis AI & Saran Tindak Lanjut",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF2D3142)

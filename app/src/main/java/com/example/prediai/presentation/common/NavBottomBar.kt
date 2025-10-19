@@ -90,7 +90,7 @@ fun BottomNavigationBar(
                 // Labs
                 BottomNavItemView(
                     item = BottomNavItem.LABS,
-                    isSelected = currentRoute == BottomNavItem.LABS.route,
+                    isSelected = currentRoute == BottomNavItem.LABS.route || currentRoute.startsWith("lab"),
                     onClick = { onNavigate(BottomNavItem.LABS.route) }
                 )
 
