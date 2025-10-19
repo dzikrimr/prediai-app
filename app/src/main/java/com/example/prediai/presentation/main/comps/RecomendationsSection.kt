@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.main.comps
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -18,14 +19,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.prediai.presentation.main.Recommendation
+import com.example.prediai.domain.model.EducationVideo
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun RecommendationsSection(
-    recommendations: List<Recommendation>,
-    onSeeMoreClick: () -> Unit, // DIUBAH: Tambahkan parameter ini
-    onItemClick: (String) -> Unit // DIUBAH: Tambahkan parameter ini
+    recommendations: List<EducationVideo>,
+    onSeeMoreClick: () -> Unit,
+    onItemClick: (String) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -36,6 +37,7 @@ fun RecommendationsSection(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // ... (Bagian Row Header tidak berubah)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -51,10 +53,7 @@ fun RecommendationsSection(
                     color = Color(0xFF00B4A3),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    // DIUBAH: Buat teks bisa diklik (versi aman)
                     modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = remember { ripple() },
                         onClick = onSeeMoreClick
                     )
                 )
@@ -63,10 +62,14 @@ fun RecommendationsSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 recommendations.forEachIndexed { index, recommendation ->
-                    // DIUBAH: Teruskan aksi klik dengan ID video
                     RecommendationItem(
                         recommendation = recommendation,
-                        onClick = { onItemClick(recommendation.id) }
+                        // --- PERBAIKAN UTAMA ADA DI SINI ---
+                        // Logika dipindahkan kembali ke sini, di mana 'onItemClick' dikenal
+                        onClick = {
+                            Log.d("VideoDebug", "RecommendationsSection: Clicked ID -> ${recommendation.id}")
+                            onItemClick(recommendation.id)
+                        }
                     )
                     if (index < recommendations.lastIndex) {
                         HorizontalDivider(
@@ -83,18 +86,14 @@ fun RecommendationsSection(
 
 @Composable
 private fun RecommendationItem(
-    recommendation: Recommendation,
-    onClick: () -> Unit // DIUBAH: Terima parameter lambda
+    recommendation: EducationVideo,
+    onClick: () -> Unit // <-- Parameter ini adalah tombol "Lakukan Pekerjaan"
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = remember { ripple() },
-                onClick = onClick // Gunakan lambda yang diteruskan
-            ),
+            // Cukup panggil 'onClick' yang sudah diberikan
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
@@ -126,20 +125,5 @@ private fun RecommendationItem(
                 fontWeight = FontWeight.Normal
             )
         }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF0F4F7)
-@Composable
-fun RecommendationsSectionPreview() {
-    PrediAITheme {
-        RecommendationsSection(
-            recommendations = listOf(
-                Recommendation("1", "Tips agar gula darah tidak naik", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/200"),
-                Recommendation("2", "Kenali gejala diabetesmu melalui tangan", "Ilmu Dokter", "91rb x ditonton", "https://picsum.photos/201"),
-            ),
-            onSeeMoreClick = {},
-            onItemClick = {}
-        )
     }
 }

@@ -19,7 +19,6 @@ import com.example.prediai.presentation.main.education.comps.EducationCategoryFi
 import com.example.prediai.presentation.main.education.comps.EducationVideoItem
 import com.example.prediai.presentation.theme.PrediAITheme
 
-// @OptIn(ExperimentalMaterial3Api::class) // <-- Sudah tidak perlu
 @Composable
 fun EducationListScreen(
     navController: NavController,
@@ -60,12 +59,10 @@ fun EducationListScreen(
                 EducationVideoItem(
                     video = video,
                     onClick = {
-                        // --- PANGGIL FUNGSI VIEWMODEL DI SINI ---
-                        viewModel.selectVideo(video)
 
                         // Setelah video dipilih, baru navigasi
                         // (Kita tidak perlu kirim ID lagi karena ViewModel sudah tahu)
-                        navController.navigate("video_detail")
+                        navController.navigate("video_detail/${video.id}")
                     }
                 )
             }

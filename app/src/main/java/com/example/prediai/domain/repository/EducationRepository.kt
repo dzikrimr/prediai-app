@@ -9,4 +9,5 @@ interface EducationRepository {
 
     // Kita ubah ini agar mengambil query rekomendasi
     fun getRecommendations(): Flow<List<EducationVideo>>
+    fun getVideoById(videoId: String): Flow<EducationVideo?>
 }

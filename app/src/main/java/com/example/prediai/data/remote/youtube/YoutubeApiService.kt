@@ -15,8 +15,17 @@ interface YoutubeApiService {
         @Query("part") part: String = "snippet",
         @Query("type") type: String = "video",
         @Query("maxResults") maxResults: Int = 10,
-        @Query("key") apiKey: String = BuildConfig.YOUTUBE_API_KEY // Ambil dari BuildConfig
+        @Query("key") apiKey: String = BuildConfig.YOUTUBE_API_KEY
     ): YoutubeSearchResponse
+
+    // --- TAMBAHKAN FUNGSI BARU DI BAWAH INI ---
+    @GET("videos")
+    suspend fun getVideoDetails(
+        @Query("part") part: String = "snippet,statistics", // Minta snippet & statistik
+        @Query("id") videoId: String,
+        @Query("key") apiKey: String = BuildConfig.YOUTUBE_API_KEY
+    ): YoutubeVideoDetailsResponse // <-- Kita akan buat data class ini di langkah 2
+    // --- AKHIR BAGIAN BARU ---
 
     @GET("captions")
     suspend fun listCaptions(
@@ -25,11 +34,11 @@ interface YoutubeApiService {
         @Query("key") apiKey: String = BuildConfig.YOUTUBE_API_KEY
     ): YoutubeCaptionsListResponse
 
-    @GET("captions/{id}") // Path dinamis untuk ID caption
-    @Streaming // Penting untuk download file
+    @GET("captions/{id}")
+    @Streaming
     suspend fun downloadCaption(
         @Path("id") captionId: String,
-        @Query("tfmt") format: String = "srt", // Minta format SRT (atau vtt)
+        @Query("tfmt") format: String = "srt",
         @Query("key") apiKey: String = BuildConfig.YOUTUBE_API_KEY
     ): ResponseBody
 }

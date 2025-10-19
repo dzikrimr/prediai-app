@@ -1,19 +1,21 @@
 package com.example.prediai.presentation.main.education
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect // <-- IMPORT BARU
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.prediai.presentation.common.TopBar
 import com.example.prediai.presentation.main.education.comps.VideoDescription
@@ -23,18 +25,20 @@ import com.example.prediai.presentation.theme.PrediAITheme
 @Composable
 fun VideoDetailScreen(
     navController: NavController,
-    // --- GANTI CARA MENDAPATKAN VIEWMODEL ---
-    // Cara 1: Jika EducationViewModel adalah shared ViewModel untuk NavGraph ini
-    // viewModel: EducationViewModel = hiltViewModel(remember { navController.previousBackStackEntry!! })
-
-    // Cara 2: Jika ViewModel dibuat per screen (lebih sederhana untuk kasus ini)
-    viewModel: EducationViewModel = hiltViewModel()
+    viewModel: EducationViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // --- AMBIL VIDEO DARI STATE VIEWMODEL ---
     val video = uiState.selectedVideo
 
-    // --- (OPSIONAL TAPI BAGUS) Bersihkan state saat keluar ---
+    // LaunchedEffect akan memicu proses summary saat 'video' berhasil dimuat
+    LaunchedEffect(key1 = video) {
+        video?.let {
+            val youtubeUrl = "https://www.youtube.com/watch?v=${it.youtubeVideoId}"
+            Log.d("VideoDebug", "VideoDetailScreen: Summarizing URL -> $youtubeUrl")
+            viewModel.summarizeVideoFromUrl(youtubeUrl)
+        }
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             viewModel.clearSelectedVideo()
@@ -50,12 +54,13 @@ fun VideoDetailScreen(
             )
         }
     ) { paddingValues ->
-        // Tampilkan loading jika video BELUM DIPILIH di ViewModel
+        // Tampilkan loading indicator sampai detail video berhasil dimuat
         if (video == null) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                // Bisa jadi user langsung buka link detail,
-                // perlu logic tambahan di ViewModel untuk load by ID jika 'selectedVideo' null
-                Text("Pilih video dari daftar terlebih dahulu.")
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
             return@Scaffold
         }
@@ -68,13 +73,15 @@ fun VideoDetailScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Log.d("VideoDebug", "VideoDetailScreen: Playing YouTube ID -> ${video.youtubeVideoId}")
             YoutubePlayerView(youtubeVideoId = video.youtubeVideoId)
             VideoDescription(
                 video = video,
                 aiSummary = uiState.aiSummary,
                 isSummaryLoading = uiState.isSummaryLoading,
                 summaryError = uiState.summaryError,
-                transcriptError = uiState.transcriptError
+                // Hapus parameter transcriptError karena sudah tidak ada
+                transcriptError = null
             )
         }
     }
