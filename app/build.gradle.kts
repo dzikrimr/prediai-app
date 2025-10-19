@@ -94,15 +94,10 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.6")
 
     // Gemini AI
-    implementation("com.google.ai.client.generativeai:generativeai:0.2.2") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
-    }
+    implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") {
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
-    }
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
