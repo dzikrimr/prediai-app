@@ -1,8 +1,12 @@
 package com.example.prediai.presentation.profile.edit
 
+import android.app.DatePickerDialog
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -18,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,23 +30,103 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.prediai.R
 import com.example.prediai.presentation.common.TopBar
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+// Definisikan warna aksen kustom (00B4A3)
+val CustomAccentColor = Color(0xFF00B4A3)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(navController: NavController) {
-    var fullName by remember { mutableStateOf("Sarah Wijaya") }
-    var birthDate by remember { mutableStateOf("1990-05-15") }
-    var height by remember { mutableStateOf("165") }
-    var weight by remember { mutableStateOf("60") }
-    var city by remember { mutableStateOf("") }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showCityDropdown by remember { mutableStateOf(false) }
+fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    val tealColor = Color(0xFF00BFA5)
-    val purpleIcon = Color(0xFFA78BFA)
+    // Launcher for picking image from gallery
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            coroutineScope.launch {
+                viewModel.uploadProfileImage(uri, context)
+            }
+        }
+    }
+
+    // Date Picker Dialog
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = if (uiState.profile.birthDate.isNotBlank()) {
+            try {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val localDate = java.time.LocalDate.parse(uiState.profile.birthDate, formatter)
+                localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            } catch (e: Exception) {
+                Instant.now().toEpochMilli()
+            }
+        } else {
+            Instant.now().toEpochMilli()
+        }
+    )
+
+    if (uiState.showDatePicker) {
+        // --- BUNGKUS DENGAN THEME KUSTOM UNTUK MENGUBAH WARNA AKSEN DATEPICKER ---
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme.copy(
+                primary = CustomAccentColor,      // Warna latar belakang header dan pemilih
+                onPrimary = Color.White,          // Warna teks/icon pada primary color (mis. pada header)
+                primaryContainer = CustomAccentColor.copy(alpha = 0.15f), // Warna latar belakang DateInput
+                onPrimaryContainer = Color.Black // Warna teks pada DateInput
+            )
+        ) {
+            androidx.compose.material3.DatePickerDialog(
+                onDismissRequest = { viewModel.toggleDatePicker(false) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val selectedDateMillis = datePickerState.selectedDateMillis
+                            if (selectedDateMillis != null) {
+                                val selectedDate = Instant.ofEpochMilli(selectedDateMillis)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate()
+                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+                                viewModel.updateBirthDate(selectedDate)
+                            }
+                            viewModel.toggleDatePicker(false)
+                        }
+                    ) {
+                        Text("Pilih") // Menggunakan warna Primary dari kustom Theme
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.toggleDatePicker(false) }) {
+                        Text("Batal") // Menggunakan warna Primary dari kustom Theme
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+        // -----------------------------------------------------------------------
+    }
+
+    // City Dropdown States
+    var cityExpanded by remember { mutableStateOf(false) }
+    val cities = listOf("Jakarta", "Surabaya", "Bandung", "Medan", "Semarang", "Makassar", "Palembang", "Yogyakarta")
+    var selectedCityDisplay by remember { mutableStateOf(uiState.profile.city.ifBlank { "" }) }
+
+    // Sync local state with ViewModel for city
+    LaunchedEffect(uiState.profile.city) {
+        selectedCityDisplay = uiState.profile.city.ifBlank { "" }
+    }
 
     Column(
         modifier = Modifier
@@ -65,7 +150,6 @@ fun EditProfileScreen(navController: NavController) {
 
             // Profile Photo Section
             item {
-                // --- MODIFICATION START ---
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -75,53 +159,75 @@ fun EditProfileScreen(navController: NavController) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 24.dp), // Added padding for spacing inside the card
+                            .padding(vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
-                            modifier = Modifier.size(70.dp) // Changed from 120.dp
+                            modifier = Modifier.size(70.dp),
+                            contentAlignment = Alignment.Center // Tambahkan ini agar loading/icon berada di tengah
                         ) {
-                            // Profile Image
-                            Box(
-                                modifier = Modifier
-                                    .size(60.dp) // Changed from 120.dp
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFE0E0E0)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "Profile",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(50.dp) // Changed from 60.dp
+                            if (uiState.isLoading) {
+                                // 1. Loading State (jika sedang mengunggah atau menyimpan)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(60.dp),
+                                    color = CustomAccentColor,
+                                    strokeWidth = 3.dp
                                 )
-                            }
+                            } else {
+                                // 2. Tampilkan Gambar atau Placeholder
+                                val imageModifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
 
-                            // Camera Button
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp) // Changed from 36.dp
-                                    .align(Alignment.BottomEnd)
-                                    .offset(x = (-4).dp, y = (-4).dp) // Adjusted offset slightly
-                                    .clip(CircleShape)
-                                    .background(tealColor)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = LocalIndication.current,
-                                        onClick = { /* Handle photo change */ }
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CameraAlt,
-                                    contentDescription = "Change Photo",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp) // Changed from 20.dp
-                                )
+                                if (!uiState.profile.profileImageUrl.isNullOrEmpty()) {
+                                    AsyncImage(
+                                        model = uiState.profile.profileImageUrl,
+                                        contentDescription = "Profile",
+                                        modifier = imageModifier,
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    // Placeholder default
+                                    Box(
+                                        modifier = imageModifier
+                                            .background(Color(0xFFE0E0E0)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = "Profile Placeholder",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(50.dp)
+                                        )
+                                    }
+                                }
+
+                                // Camera Button (Tetap di sini, di atas gambar/placeholder/loading)
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .align(Alignment.BottomEnd)
+                                        .offset(x = (-4).dp, y = (-4).dp)
+                                        .clip(CircleShape)
+                                        .background(CustomAccentColor)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = LocalIndication.current,
+                                            onClick = { pickImageLauncher.launch("image/*") }
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CameraAlt,
+                                        contentDescription = "Change Photo",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp)) // Increased spacer a bit
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             text = "Ketuk untuk mengubah foto",
@@ -130,50 +236,111 @@ fun EditProfileScreen(navController: NavController) {
                         )
                     }
                 }
-                // --- MODIFICATION END ---
             }
-
 
             // Nama Lengkap
             item {
                 InputField(
                     label = "Nama Lengkap",
-                    value = fullName,
-                    onValueChange = { fullName = it },
+                    value = uiState.profile.name,
+                    onValueChange = { viewModel.updateName(it) },
                     placeholder = "Sarah Wijaya",
                     icon = R.drawable.ic_profile,
-                    iconTint = purpleIcon
+                    iconTint = Color(0xFFA78BFA)
                 )
             }
 
-            // Tanggal Lahir
+            // Tanggal Lahir (Menggunakan Box Clickable)
             item {
-                InputField(
-                    label = "Tanggal Lahir",
-                    value = birthDate,
-                    onValueChange = { birthDate = it },
-                    placeholder = "1990-05-15",
-                    icon = R.drawable.ic_calendar,
-                    iconTint = Color(0xFFFF9800),
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = "Calendar",
-                            tint = Color(0xFF9E9E9E),
-                            modifier = Modifier.size(20.dp)
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // --- 1. Label dan Icon Kustom ---
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        val iconTint = Color(0xFFFF9800)
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(iconTint.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_calendar),
+                                contentDescription = "Tanggal Lahir",
+                                tint = iconTint,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Tanggal Lahir",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF212121)
                         )
-                    },
-                    readOnly = true,
-                    onClick = { showDatePicker = true }
-                )
+                    }
+
+                    // --- 2. Box yang Dapat Diklik yang Membungkus TextField ---
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = LocalIndication.current,
+                                onClick = { viewModel.toggleDatePicker(true) }
+                            )
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.profile.birthDate,
+                            onValueChange = { },
+                            readOnly = true,
+                            enabled = false, // KUNCI agar klik melewati TextField ke Box
+                            placeholder = {
+                                Text(
+                                    text = "1990-05-15",
+                                    color = Color.Black,
+                                    fontSize = 14.sp
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                // Warna Enabled/Focused
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                focusedBorderColor = CustomAccentColor, // Warna aksen
+                                unfocusedBorderColor = Color(0xFFE0E0E0),
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black,
+
+                                // Warna Disabled/Click-Through (Meniru tampilan aktif)
+                                disabledContainerColor = Color.White,
+                                disabledBorderColor = Color(0xFFE0E0E0),
+                                disabledTextColor = Color.Black,
+                                disabledPlaceholderColor = Color.Black,
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = "Calendar",
+                                    tint = Color(0xFF9E9E9E),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        )
+                    }
+                }
             }
 
             // Tinggi Badan
             item {
                 InputField(
                     label = "Tinggi Badan",
-                    value = height,
-                    onValueChange = { height = it },
+                    value = uiState.profile.height,
+                    onValueChange = { viewModel.updateHeight(it) },
                     placeholder = "165",
                     icon = R.drawable.ic_ruler,
                     iconTint = Color(0xFF2196F3),
@@ -186,8 +353,8 @@ fun EditProfileScreen(navController: NavController) {
             item {
                 InputField(
                     label = "Berat Badan",
-                    value = weight,
-                    onValueChange = { weight = it },
+                    value = uiState.profile.weight,
+                    onValueChange = { viewModel.updateWeight(it) },
                     placeholder = "60",
                     icon = R.drawable.ic_weight,
                     iconTint = Color(0xFF4CAF50),
@@ -198,37 +365,110 @@ fun EditProfileScreen(navController: NavController) {
 
             // Asal Kota
             item {
-                InputField(
-                    label = "Asal Kota",
-                    value = city,
-                    onValueChange = { city = it },
-                    placeholder = "Pilih kota",
-                    icon = R.drawable.ic_location,
-                    iconTint = purpleIcon,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Dropdown",
-                            tint = Color(0xFF9E9E9E)
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFA78BFA).copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_location),
+                                contentDescription = "Asal Kota",
+                                tint = Color(0xFFA78BFA),
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Asal Kota",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF212121)
                         )
-                    },
-                    readOnly = true,
-                    onClick = { showCityDropdown = true }
-                )
+                    }
+
+                    ExposedDropdownMenuBox(
+                        expanded = cityExpanded,
+                        onExpandedChange = { cityExpanded = !cityExpanded },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = selectedCityDisplay,
+                            onValueChange = {},
+                            readOnly = true,
+                            placeholder = {
+                                Text(
+                                    text = "Pilih kota",
+                                    color = Color.Black,
+                                    fontSize = 14.sp
+                                )
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Dropdown",
+                                    tint = Color(0xFF9E9E9E)
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = CustomAccentColor, // Warna aksen
+                                unfocusedBorderColor = Color(0xFFE0E0E0),
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White,
+                                disabledContainerColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = cityExpanded,
+                            onDismissRequest = { cityExpanded = false },
+                            containerColor = Color.White
+                        ) {
+                            cities.forEach { city ->
+                                DropdownMenuItem(
+                                    text = { Text(city) },
+                                    onClick = {
+                                        selectedCityDisplay = city
+                                        cityExpanded = false
+                                        viewModel.updateCity(city)
+                                    },
+                                    colors = MenuDefaults.itemColors(
+                                        textColor = Color.Black
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
-            // Buttons
             item {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Simpan Button
                 Button(
-                    onClick = { /* Handle save */ },
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.saveProfile()
+                            navController.popBackStack()
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = tealColor
+                        containerColor = CustomAccentColor // Warna aksen
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -247,9 +487,8 @@ fun EditProfileScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Batal Button
                 OutlinedButton(
-                    onClick = { /* Handle cancel */ },
+                    onClick = { navController.popBackStack() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -298,7 +537,6 @@ fun InputField(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Label with Icon
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -326,54 +564,62 @@ fun InputField(
             )
         }
 
-        // Input Field
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    color = Color(0xFFBDBDBD),
-                    fontSize = 14.sp
-                )
-            },
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(
                     enabled = onClick != null,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = LocalIndication.current
-                ) { onClick?.invoke() },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White,
-                focusedBorderColor = Color(0xFFE0E0E0),
-                unfocusedBorderColor = Color(0xFFE0E0E0),
-            ),
-            shape = RoundedCornerShape(12.dp),
-            singleLine = true,
-            readOnly = readOnly,
-            enabled = onClick == null,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            trailingIcon = {
-                if (suffix != null) {
+                ) { onClick?.invoke() }
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = {
                     Text(
-                        text = suffix,
-                        color = Color(0xFF9E9E9E),
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(end = 8.dp)
+                        text = placeholder,
+                        color = Color.Black,
+                        fontSize = 14.sp
                     )
-                } else {
-                    trailingIcon?.invoke()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedBorderColor = CustomAccentColor, // <-- Menggunakan CustomAccentColor
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    unfocusedPlaceholderColor = Color.Black,
+                    focusedPlaceholderColor = Color.Black
+                ),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true,
+                readOnly = readOnly || onClick != null,
+                enabled = true,
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                trailingIcon = {
+                    if (suffix != null) {
+                        Text(
+                            text = suffix,
+                            color = Color(0xFF9E9E9E),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    } else {
+                        trailingIcon?.invoke()
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun EditProfileScreenPreview() {
-    EditProfileScreen(navController = NavController(LocalContext.current))
+    val navController = NavController(LocalContext.current)
+    EditProfileScreen(navController = navController)
 }

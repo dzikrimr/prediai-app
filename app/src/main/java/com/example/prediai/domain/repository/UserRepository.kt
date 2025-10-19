@@ -1,6 +1,7 @@
 package com.example.prediai.domain.repository
 
 import com.example.prediai.domain.model.UserProfile
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
@@ -12,4 +13,5 @@ interface UserRepository {
     fun getOnboardingState(): Flow<Boolean>
     suspend fun logout()
     suspend fun saveUserProfileToFirebase(uid: String, profile: UserProfile): Result<Unit>
+    fun getCurrentUser(): FirebaseUser?
 }

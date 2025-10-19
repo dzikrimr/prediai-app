@@ -58,8 +58,6 @@ fun RecentScans(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable(
                         enabled = !isHistoryEmpty, // Tombol non-aktif jika riwayat kosong
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(),
                         onClick = onSeeMoreClick
                     )
                 )

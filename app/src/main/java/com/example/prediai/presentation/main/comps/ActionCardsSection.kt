@@ -69,7 +69,7 @@ private fun ActionCard(
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(),
+                indication = remember { ripple() },
                 onClick = onClick
             ),
         shape = RoundedCornerShape(24.dp),

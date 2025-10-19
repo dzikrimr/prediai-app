@@ -54,7 +54,7 @@ fun RecommendationsSection(
                     // DIUBAH: Buat teks bisa diklik (versi aman)
                     modifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(),
+                        indication = remember { ripple() },
                         onClick = onSeeMoreClick
                     )
                 )
@@ -92,7 +92,7 @@ private fun RecommendationItem(
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,
-                indication = rememberRipple(),
+                indication = remember { ripple() },
                 onClick = onClick // Gunakan lambda yang diteruskan
             ),
         verticalAlignment = Alignment.CenterVertically

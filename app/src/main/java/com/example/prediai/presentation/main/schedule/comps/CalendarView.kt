@@ -99,8 +99,6 @@ fun RowScope.DateCell(
             .weight(1f)
             .aspectRatio(1f)
             .clickable(
-                interactionSource = interactionSource,
-                indication = rememberRipple(bounded = false), // Ripple efek lingkaran
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center

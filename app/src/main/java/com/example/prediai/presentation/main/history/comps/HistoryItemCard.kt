@@ -102,8 +102,6 @@ fun HistoryItemCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(
-                        interactionSource = interactionSource,
-                        indication = rememberRipple(), // Secara eksplisit meminta efek ripple
                         onClick = onClick
                     ),
                 verticalAlignment = Alignment.CenterVertically

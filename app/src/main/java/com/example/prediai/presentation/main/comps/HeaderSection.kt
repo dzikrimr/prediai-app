@@ -15,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -92,7 +93,7 @@ fun HeaderSection(
                         .background(color = Color(0xFF00B4A3), shape = CircleShape)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication = rememberRipple(bounded = false),
+                            indication = remember { ripple() },
                             onClick = onProfileClick
                         ),
                     contentAlignment = Alignment.Center
