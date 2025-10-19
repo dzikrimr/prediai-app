@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.prediai.domain.model.EducationVideo
 import com.example.prediai.domain.model.ScheduleType
 import com.example.prediai.domain.repository.EducationRepository
+// --- 1. IMPORT REPOSITORY BARU ---
+import com.example.prediai.domain.repository.UserRepository
 import com.example.prediai.domain.usecase.GetSchedulesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,27 +16,29 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalDateTime.now
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 // Data class untuk menampung semua state di HomeScreen
 data class MainUiState(
-    val userName: String = "Sarah",
+    // --- 2. UBAH DEFAULT NAME ---
+    val userName: String = "...", // Ganti "Sarah" menjadi "..." atau string kosong
     val riskPercentage: Int? = 32,
     val lastCheckDate: String? = "15 Jan 2024",
     val lastCheckResult: String? = "Tidak ada kemungkinan gejala",
-    val reminders: List<Reminder> = emptyList(), // Awalnya kosong
+    val reminders: List<Reminder> = emptyList(),
     val recommendations: List<EducationVideo> = emptyList()
 )
 
-// Model data sederhana untuk UI (Tidak berubah)
+// Model data sederhana untuk UI
 data class Reminder(val title: String, val time: String)
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val educationRepository: EducationRepository,
-    private val getSchedulesUseCase: GetSchedulesUseCase
+    private val getSchedulesUseCase: GetSchedulesUseCase,
+    // --- 3. INJECT USER REPOSITORY ---
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -42,7 +46,30 @@ class MainViewModel @Inject constructor(
 
     init {
         loadRecommendations()
-        loadUpcomingSchedules() // Panggil fungsi ini
+        loadUpcomingSchedules()
+        // --- 4. PANGGIL FUNGSI BARU UNTUK LOAD NAMA ---
+        loadUserProfile()
+    }
+
+    // --- 5. BUAT FUNGSI BARU INI ---
+    private fun loadUserProfile() {
+        // Ambil profil dari cache (DataStore)
+        userRepository.getCachedUserProfile()
+            .onEach { userProfile ->
+                if (userProfile.name.isNotBlank()) {
+                    // --- PERBAIKAN DI SINI ---
+                    // 1. Ambil nama lengkap, misal "Ade Nugroho"
+                    val fullName = userProfile.name
+                    // 2. Pecah berdasarkan spasi ["Ade", "Nugroho"] dan ambil yang pertama
+                    val firstName = fullName.split(" ").first()
+
+                    // 3. Simpan hanya nama pertamanya
+                    _uiState.update { it.copy(userName = firstName) }
+                } else {
+                    _uiState.update { it.copy(userName = "Pengguna") } // Fallback jika nama kosong
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun loadRecommendations() {
@@ -53,7 +80,6 @@ class MainViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    // --- 2. PERBARUI FUNGSI INI ---
     private fun loadUpcomingSchedules() {
         val today = LocalDate.now()
         val tomorrow = today.plusDays(1)
@@ -61,21 +87,20 @@ class MainViewModel @Inject constructor(
         val todayString = today.format(dateFormatter)
         val tomorrowString = tomorrow.format(dateFormatter)
 
+        val now = LocalDateTime.now()
+
         getSchedulesUseCase().onEach { allSchedules ->
             val upcomingReminders = allSchedules
                 .filter { scheduleItem ->
-                    // --- 2. PERBARUI LOGIKA FILTER ---
                     val isTodayOrTomorrow = scheduleItem.date == todayString || scheduleItem.date == tomorrowString
                     if (!isTodayOrTomorrow) {
-                        false // Bukan hari ini atau besok, buang
+                        false
                     } else {
-                        // Ini adalah hari ini atau besok,
-                        // sekarang cek apakah waktunya MASIH di masa depan
                         try {
                             val itemDateTime = LocalDateTime.parse("${scheduleItem.date}T${scheduleItem.time}")
-                            itemDateTime.isAfter(now())
+                            itemDateTime.isAfter(now) // Gunakan 'now'
                         } catch (e: Exception) {
-                            false // Format waktu salah, buang
+                            false
                         }
                     }
                 }
@@ -88,24 +113,21 @@ class MainViewModel @Inject constructor(
                         ScheduleType.MINUM_OBAT -> "Minum Obat"
                         ScheduleType.SKRINING_AI -> "Skrining AI"
                         ScheduleType.JADWAL_MAKAN -> "Jadwal Makan"
-                        ScheduleType.CEK_TENSI -> "Cek Tensi"
+                        ScheduleType.CEK_TENSI -> "Cek Tensi Darah"
                     }
 
-                    // --- 3. BUAT LOGIKA TEKS WAKTU BARU ---
                     val timeText = if (scheduleItem.date == todayString) {
-                        "Hari ini pukul ${scheduleItem.time}"
+                        "Hari ini pada ${scheduleItem.time}"
                     } else {
-                        "Besok pukul ${scheduleItem.time}"
+                        "Besok pada ${scheduleItem.time}"
                     }
 
-                    // Buat objek Reminder
                     Reminder(
                         title = title,
-                        time = timeText // <-- Masukkan teks yang baru di sini
+                        time = timeText
                     )
                 }
 
-            // Update UI state
             _uiState.update { it.copy(reminders = upcomingReminders) }
 
         }.launchIn(viewModelScope)

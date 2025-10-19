@@ -1,22 +1,9 @@
 package com.example.prediai.presentation.labs.comps
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,9 +13,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
+import com.example.prediai.domain.model.Finding
 
 @Composable
 fun AIExplanationCard(
+    summary: String,
+    findings: List<Finding>,
+    nextSteps: String,
     onConsultClick: () -> Unit
 ) {
     Card(
@@ -36,16 +27,10 @@ fun AIExplanationCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White // ganti backgroundColor -> containerColor
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp // ganti elevation = 2.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -77,15 +62,44 @@ fun AIExplanationCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Berdasarkan hasil analisis, kadar glukosa Anda menunjukkan Anda berada di rentang pradiabetes. " +
-                        "Ini adalah sebuah tanda peringatan penting, di mana kadar gula darah Anda lebih tinggi dari normal, namun belum cukup tinggi untuk didiagnosis sebagai diabetes tipe 2. Anggap ini sebagai kesempatan untuk mengambil tindakan pencegahan.\n\n" +
-                        "Kabar baiknya, kondisi ini seringkali dapat dikelola dan bahkan dikembalikan ke rentang normal melalui perubahan gaya hidup yang konsisten, seperti memperbaiki pola makan, meningkatkan aktivitas fisik, dan menjaga berat badan ideal.\n\n" +
-                        "Kami sangat menyarankan Anda untuk segera berkonsultasi dengan dokter atau tenaga kesehatan profesional. Mereka dapat memberikan diagnosis yang akurat, menyusun rencana pencegahan yang dipersonalisasi sesuai kondisi Anda, dan menentukan apakah diperlukan pemantauan atau tes lebih lanjut.",
+                text = "Ringkasan AI",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = summary,
                 fontSize = 14.sp,
                 lineHeight = 22.sp,
                 color = Color(0xFF5D5D5D)
             )
+            Spacer(modifier = Modifier.height(16.dp))
 
+            Text(
+                text = "Temuan Kunci",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                findings.forEach { finding ->
+                    KeyFindingItem(finding = finding)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Langkah Selanjutnya",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = nextSteps,
+                fontSize = 14.sp,
+                lineHeight = 22.sp,
+                color = Color(0xFF5D5D5D)
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
@@ -94,12 +108,9 @@ fun AIExplanationCard(
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00BFA5) // ganti backgroundColor -> containerColor
+                    containerColor = Color(0xFF00BFA5)
                 ),
-                shape = RoundedCornerShape(10.dp),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 0.dp // ganti elevation() -> buttonElevation()
-                )
+                shape = RoundedCornerShape(10.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_consult),
@@ -115,6 +126,54 @@ fun AIExplanationCard(
                     color = Color.White
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun KeyFindingItem(finding: Finding) {
+    val statusColor = when (finding.status.lowercase()) {
+        "tinggi" -> Color(0xFFEF4444)
+        "rendah" -> Color(0xFF3B82F6)
+        else -> Color.DarkGray
+    }
+
+    Column {
+        Text(
+            text = finding.parameter,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Nilai Anda: ${finding.value}",
+                fontSize = 13.sp,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = finding.status,
+                fontSize = 12.sp,
+                color = Color.White,
+                modifier = Modifier
+                    .background(statusColor, RoundedCornerShape(4.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+        }
+        Text(
+            text = "Rentang Normal: ${finding.normal_range}",
+            fontSize = 13.sp,
+            color = Color.Gray
+        )
+        if (finding.explanation.isNotBlank()) {
+            Text(
+                text = finding.explanation,
+                fontSize = 13.sp,
+                color = Color.Gray,
+                lineHeight = 18.sp
+            )
         }
     }
 }

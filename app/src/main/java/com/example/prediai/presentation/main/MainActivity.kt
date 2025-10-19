@@ -13,6 +13,7 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.navigation.AppNavGraph
 import com.example.prediai.presentation.theme.PrediAITheme
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        PDFBoxResourceLoader.init(applicationContext)
 
         setContent {
             PrediAITheme {

@@ -15,9 +15,7 @@ object GenerativeAiModule {
     @Singleton
     fun provideGenerativeModel(): GenerativeModel {
         return GenerativeModel(
-            // V GANTI INI V
             modelName = "gemini-2.5-flash",
-            // ^ DARI "gemini-1.5-flash" ^
             apiKey = "AIzaSyDR45Ww-yQQqrCHgKYBLA8eXt5t6vBbmqw"
         )
     }

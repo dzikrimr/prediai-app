@@ -153,21 +153,6 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(
-            route = "lab_result/{fileName}/{uploadDate}",
-            arguments = listOf(
-                navArgument("fileName") { type = NavType.StringType },
-                navArgument("uploadDate") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val fileName = backStackEntry.arguments?.getString("fileName") ?: "N/A"
-            val uploadDate = backStackEntry.arguments?.getString("uploadDate") ?: "N/A"
-            LabResultScreen(
-                fileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.toString()),
-                uploadDate = URLDecoder.decode(uploadDate, StandardCharsets.UTF_8.toString()),
-                onBackClick = { navController.popBackStack() }
-            )
-        }
         composable("edit_profile") { EditProfileScreen(navController = navController) }
         composable("security") { SecurityScreen(navController = navController) }
         composable("help_center") { HelpCenterScreen(navController = navController) }

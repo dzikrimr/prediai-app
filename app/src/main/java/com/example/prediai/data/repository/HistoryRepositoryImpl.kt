@@ -3,6 +3,7 @@ package com.example.prediai.data.repository
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.example.prediai.domain.model.LabAnalysisRecord
 import com.example.prediai.domain.model.ScanHistoryRecord
 import com.example.prediai.domain.repository.AuthRepository
 import com.example.prediai.domain.repository.HistoryRepository
@@ -22,31 +23,19 @@ class HistoryRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository
 ) : HistoryRepository {
 
+    // --- FUNGSI UNTUK UPLOAD GAMBAR (Digunakan bersama) ---
+
     override suspend fun uploadImage(image: ByteArray): Result<String> {
         return suspendCancellableCoroutine { continuation ->
-            // Menggunakan "unsigned" upload dengan preset yang Anda berikan.
-            // Ini lebih aman karena tidak memerlukan API Secret di sisi klien.
             val requestId = MediaManager.get().upload(image)
-                .unsigned("predii") // <-- Menggunakan preset Anda
+                .unsigned("predii")
                 .callback(object : UploadCallback {
-                    override fun onStart(requestId: String) {
-                        // Tidak perlu melakukan apa-apa di sini
-                    }
-
-                    override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
-                        // Bisa digunakan untuk menampilkan progress bar jika perlu
-                    }
-
                     override fun onSuccess(requestId: String, resultData: Map<*, *>) {
                         val url = resultData["secure_url"] as? String
-                        if (url != null) {
-                            if (continuation.isActive) {
-                                continuation.resume(Result.success(url))
-                            }
-                        } else {
-                            if (continuation.isActive) {
-                                continuation.resume(Result.failure(Exception("URL tidak ditemukan dari hasil upload.")))
-                            }
+                        if (url != null && continuation.isActive) {
+                            continuation.resume(Result.success(url))
+                        } else if (continuation.isActive) {
+                            continuation.resume(Result.failure(Exception("URL tidak ditemukan dari hasil upload.")))
                         }
                     }
 
@@ -56,31 +45,26 @@ class HistoryRepositoryImpl @Inject constructor(
                         }
                     }
 
-                    override fun onReschedule(requestId: String, error: ErrorInfo) {
-                        // Tidak perlu melakukan apa-apa di sini
-                    }
+                    override fun onStart(requestId: String) {}
+                    override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
+                    override fun onReschedule(requestId: String, error: ErrorInfo) {}
                 }).dispatch()
 
-            // Jika coroutine dibatalkan, batalkan juga request upload
             continuation.invokeOnCancellation {
                 MediaManager.get().cancelRequest(requestId)
             }
         }
     }
 
-    // Fungsi saveScanRecord dan getScanHistory tidak berubah
+    // --- FUNGSI-FUNGSI UNTUK RIWAYAT SCAN (YANG SUDAH ADA) ---
+
     override suspend fun saveScanRecord(record: ScanHistoryRecord): Result<Unit> {
         return try {
-            val uid = authRepository.getCurrentUser()?.uid
-                ?: throw Exception("Pengguna tidak login")
-
+            val uid = authRepository.getCurrentUser()?.uid ?: throw Exception("Pengguna tidak login")
             val documentId = UUID.randomUUID().toString()
             val recordToSave = record.copy(id = documentId, userId = uid)
 
-            firestore.collection("scan_history")
-                .document(documentId)
-                .set(recordToSave)
-                .await()
+            firestore.collection("scan_history").document(documentId).set(recordToSave).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -90,11 +74,10 @@ class HistoryRepositoryImpl @Inject constructor(
     override fun getScanHistory(): Flow<Result<List<ScanHistoryRecord>>> = callbackFlow {
         val uid = authRepository.getCurrentUser()?.uid
         if (uid == null) {
-            trySend(Result.failure(Exception("Pengguna tidak login")))
+            trySend(Result.failure(Exception("Pengguna tidak login"))).isSuccess
             close()
             return@callbackFlow
         }
-
         val listener = firestore.collection("scan_history")
             .whereEqualTo("userId", uid)
             .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -104,20 +87,61 @@ class HistoryRepositoryImpl @Inject constructor(
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    val records = snapshot.toObjects(ScanHistoryRecord::class.java)
-                    trySend(Result.success(records))
+                    trySend(Result.success(snapshot.toObjects(ScanHistoryRecord::class.java)))
                 }
             }
-
         awaitClose { listener.remove() }
     }
 
-    // Pastikan Anda juga menambahkan implementasi getScanRecordById dari langkah sebelumnya
     override suspend fun getScanRecordById(id: String): Result<ScanHistoryRecord?> {
         return try {
             val snapshot = firestore.collection("scan_history").document(id).get().await()
-            val record = snapshot.toObject(ScanHistoryRecord::class.java)
-            Result.success(record)
+            Result.success(snapshot.toObject(ScanHistoryRecord::class.java))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // --- FUNGSI-FUNGSI BARU UNTUK RIWAYAT ANALISIS LAB ---
+
+    override suspend fun saveLabAnalysisRecord(record: LabAnalysisRecord): Result<Unit> {
+        return try {
+            val uid = authRepository.getCurrentUser()?.uid ?: throw Exception("Pengguna tidak login")
+            val documentId = UUID.randomUUID().toString()
+            val recordToSave = record.copy(id = documentId, userId = uid)
+
+            firestore.collection("lab_analysis_history").document(documentId).set(recordToSave).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override fun getLabAnalysisHistory(): Flow<Result<List<LabAnalysisRecord>>> = callbackFlow {
+        val uid = authRepository.getCurrentUser()?.uid
+        if (uid == null) {
+            trySend(Result.failure(Exception("Pengguna tidak login"))).isSuccess
+            close()
+            return@callbackFlow
+        }
+        val listener = firestore.collection("lab_analysis_history")
+            .whereEqualTo("userId", uid)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(Result.failure(error))
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    trySend(Result.success(snapshot.toObjects(LabAnalysisRecord::class.java)))
+                }
+            }
+        awaitClose { listener.remove() }
+    }
+    override suspend fun getLabAnalysisRecordById(id: String): Result<LabAnalysisRecord?> {
+        return try {
+            val snapshot = firestore.collection("lab_analysis_history").document(id).get().await()
+            Result.success(snapshot.toObject(LabAnalysisRecord::class.java))
         } catch (e: Exception) {
             Result.failure(e)
         }
