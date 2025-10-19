@@ -100,8 +100,13 @@ private fun ReminderItem(reminder: Reminder) {
             imageVector = Icons.Outlined.CalendarToday,
             contentDescription = null,
             tint = primaryButtonColor,
-            modifier = Modifier.size(24.dp)
+            // --- PERUBAHAN DI SINI ---
+            modifier = Modifier
+                .size(25.dp) // 1. Ukuran diubah jadi lebih kecil
+                .align(Alignment.Start) // 2. Rata ke kanan (End)
         )
+        // --- AKHIR PERUBAHAN ---
+
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = reminder.time,
@@ -110,8 +115,9 @@ private fun ReminderItem(reminder: Reminder) {
             color = primaryButtonColor
         )
         Text(
+            modifier = Modifier.padding(top = 8.dp),
             text = reminder.title,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             color = primaryButtonColor
         )
     }

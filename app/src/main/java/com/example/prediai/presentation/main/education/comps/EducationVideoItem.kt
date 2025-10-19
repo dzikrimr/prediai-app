@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.prediai.presentation.main.education.EducationVideo
+import com.example.prediai.domain.model.EducationVideo
 
 @Composable
 fun EducationVideoItem(video: EducationVideo, onClick: () -> Unit) {

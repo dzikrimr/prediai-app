@@ -25,8 +25,7 @@ fun ChatInputField(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth(), // tidak pakai animateContentSize untuk performa
+        modifier = modifier.fillMaxWidth(), // ✅ gunakan modifier dari parameter
         shadowElevation = 8.dp,
         color = Color.White
     ) {

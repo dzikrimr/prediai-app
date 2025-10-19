@@ -1,44 +1,78 @@
 package com.example.prediai.presentation.main.education.comps
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.* // <-- Make sure this import is correct
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.prediai.presentation.main.education.EducationVideo
+import com.example.prediai.domain.model.EducationVideo
 
 @Composable
-fun VideoDescription(video: EducationVideo) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Column {
-            Text(
-                text = video.title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
-            Text(
-                text = "oleh ${video.source}",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-        }
+fun VideoDescription(
+    // --- ENSURE THESE PARAMETERS ARE EXACTLY LIKE THIS ---
+    video: EducationVideo,
+    aiSummary: String?,
+    isSummaryLoading: Boolean,
+    summaryError: String?,
+    transcriptError: String?
+    // --- END OF PARAMETERS ---
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Judul Video
+        Text(
+            text = video.title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        // Sumber Video
+        Text(
+            text = video.source,
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
 
-        Column {
-            Text(
-                text = "Ringkasan AI",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                color = Color(0xFF00B4A3)
-            )
-            Text(
-                text = "Apakah kamu sering merasa gampang lelah dan tidak segar? Video ini membahas Penyebab, Ciri-Ciri dan Pencegahan Penyakit Gula.",
-                fontSize = 14.sp,
-                color = Color.DarkGray
-            )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // --- BAGIAN RINGKASAN AI ---
+        Text(
+            text = "Ringkasan AI",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        // Tampilkan loading, error, atau hasil
+        when {
+            // 1. Prioritas utama: Sedang loading summary?
+            isSummaryLoading -> {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Membuat rangkuman...", fontSize = 14.sp, color = Color.Gray)
+                }
+            }
+            // 2. Jika tidak loading, apakah ada error saat membuat summary?
+            summaryError != null -> {
+                Text(summaryError, fontSize = 14.sp, color = MaterialTheme.colorScheme.error)
+            }
+            // 3. Jika tidak ada error summary, apakah ada error saat ambil transkrip DAN summary belum jadi?
+            transcriptError != null && aiSummary == null -> {
+                Text(transcriptError, fontSize = 14.sp, color = MaterialTheme.colorScheme.error)
+            }
+            // 4. Jika tidak ada error dan summary sudah jadi?
+            aiSummary != null -> {
+                Text(aiSummary, fontSize = 14.sp)
+            }
+            // 5. Kondisi default (tidak loading, tidak error, summary belum ada)
+            else -> {
+                Text("Rangkuman akan muncul di sini.", fontSize = 14.sp, color = Color.Gray)
+            }
         }
     }
 }
+
+// Preview mungkin perlu diperbarui untuk state baru
+// @Preview ...

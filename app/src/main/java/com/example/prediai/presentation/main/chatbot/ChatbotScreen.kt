@@ -48,8 +48,9 @@ fun ChatbotScreen(
                 onValueChange = viewModel::onInputTextChanged,
                 onSendClick = { viewModel.sendMessage(uiState.inputText) },
                 modifier = Modifier
-                    .imePadding()                // naik saat keyboard muncul
-                    .navigationBarsPadding()     // aman dari gesture bar
+                    .imePadding()                // ✅ mengikuti default Android (tanpa animasi tambahan)
+                    .navigationBarsPadding()     // ✅ hindari overlap gesture bar
+                    .fillMaxWidth()
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0) // ⚡ Hindari padding ganda

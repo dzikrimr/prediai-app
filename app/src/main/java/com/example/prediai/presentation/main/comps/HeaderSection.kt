@@ -10,12 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,15 +20,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.theme.PrediAITheme
+// --- 1. TAMBAHKAN IMPORT INI UNTUK MENGAMBIL WAKTU ---
+import java.util.Calendar
 
 @Composable
 fun HeaderSection(
     userName: String,
-    onNotificationClick: () -> Unit, // DIUBAH
-    onProfileClick: () -> Unit      // DIUBAH
+    onNotificationClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
+    // --- 2. TAMBAHKAN LOGIKA WAKTU DI SINI ---
+    // 'remember' dipakai agar kalkulasi ini tidak berjalan
+    // setiap kali terjadi recomposition (pergerakan UI).
+    val greeting = remember {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY) // Ambil jam (format 0-23)
+
+        // Tentukan ucapan berdasarkan jam
+        when (hour) {
+            in 4..9 -> "Selamat Pagi"   // 04:00 - 09:59
+            in 10..14 -> "Selamat Siang"  // 10:00 - 14:59
+            in 15..18 -> "Selamat Sore"  // 15:00 - 18:59
+            else -> "Selamat Malam"     // 19:00 - 03:59
+        }
+    }
+
+    // --- 3. TERJEMAHKAN SUBTITLE ---
+    val subtitle = "Bagaimana kabarmu hari ini?"
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,7 +56,7 @@ fun HeaderSection(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        IconButton(onClick = onNotificationClick) { // DIUBAH
+        IconButton(onClick = onNotificationClick) {
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Notifications",
@@ -73,13 +88,15 @@ fun HeaderSection(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "Good morning, ${userName}!",
+                        // --- 4. GUNAKAN TEKS YANG SUDAH DINAMIS ---
+                        text = "$greeting, $userName!",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1E293B)
                     )
                     Text(
-                        text = "How are you feeling today?",
+                        // --- 5. GUNAKAN TEKS YANG SUDAH DITERJEMAHKAN ---
+                        text = subtitle,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF1E293B)
@@ -87,13 +104,12 @@ fun HeaderSection(
                 }
 
                 Box(
-                    // DIUBAH: Tambahkan clickable
                     modifier = Modifier
                         .size(48.dp)
                         .background(color = Color(0xFF00B4A3), shape = CircleShape)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication = remember { ripple() },
+                            indication = rememberRipple(bounded = false),
                             onClick = onProfileClick
                         ),
                     contentAlignment = Alignment.Center

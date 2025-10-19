@@ -14,11 +14,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.prediai.presentation.common.TopBar
-import com.example.prediai.presentation.main.education.comps.EducationSearchBar
+// Import composable filter yang baru
+import com.example.prediai.presentation.main.education.comps.EducationCategoryFilter
 import com.example.prediai.presentation.main.education.comps.EducationVideoItem
-import com.example.prediai.presentation.main.education.comps.SearchHistoryItem
 import com.example.prediai.presentation.theme.PrediAITheme
 
+// @OptIn(ExperimentalMaterial3Api::class) // <-- Sudah tidak perlu
 @Composable
 fun EducationListScreen(
     navController: NavController,
@@ -40,27 +41,32 @@ fun EducationListScreen(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+
+            // --- GANTI UI FILTER DENGAN COMPOSABLE BARU ---
             item {
-                EducationSearchBar(
-                    searchText = uiState.searchText,
-                    onSearchChange = { /* TODO */ }
+                EducationCategoryFilter(
+                    categories = uiState.categories,
+                    selectedCategory = uiState.selectedCategory,
+                    onCategoryClick = { category ->
+                        viewModel.selectCategory(category)
+                    }
                 )
             }
-
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    uiState.searchHistory.forEach { historyText ->
-                        SearchHistoryItem(text = historyText, onClearClick = { /* TODO */ })
-                    }
-                }
-            }
+            // --- AKHIR PENGGANTIAN ---
 
             item { HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp)) }
 
             items(uiState.videos) { video ->
                 EducationVideoItem(
                     video = video,
-                    onClick = { navController.navigate("video_detail/${video.id}") }
+                    onClick = {
+                        // --- PANGGIL FUNGSI VIEWMODEL DI SINI ---
+                        viewModel.selectVideo(video)
+
+                        // Setelah video dipilih, baru navigasi
+                        // (Kita tidak perlu kirim ID lagi karena ViewModel sudah tahu)
+                        navController.navigate("video_detail")
+                    }
                 )
             }
         }
