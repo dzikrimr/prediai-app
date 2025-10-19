@@ -70,4 +70,42 @@ class ScheduleRepositoryImpl @Inject constructor(
         // Simpan data dengan ID baru yang sudah di-copy
         newScheduleRef.setValue(scheduleItem.copy(id = newId)).await()
     }
+
+    override suspend fun deleteSchedule(scheduleId: String) {
+        val userId = getCurrentUserId()
+            ?: throw IllegalStateException("User tidak login")
+
+        // Cek jika ID tidak kosong sebelum mencoba menghapus
+        if (scheduleId.isBlank()) {
+            throw IllegalArgumentException("Schedule ID tidak boleh kosong")
+        }
+
+        // Path ke item spesifik: users/{userId}/schedules/{scheduleId}
+        database.reference
+            .child("users")
+            .child(userId)
+            .child("schedules")
+            .child(scheduleId) // <-- Target ID yang akan dihapus
+            .removeValue() // <-- Hapus data
+            .await() // Tunggu sampai selesai
+    }
+
+    override suspend fun dismissScheduleNotification(scheduleId: String) {
+        val userId = getCurrentUserId()
+            ?: throw IllegalStateException("User tidak login")
+
+        if (scheduleId.isBlank()) {
+            throw IllegalArgumentException("Schedule ID tidak boleh kosong")
+        }
+
+        // Path ke field 'isDismissed' dari item spesifik
+        database.reference
+            .child("users")
+            .child(userId)
+            .child("schedules")
+            .child(scheduleId)
+            .child("isDismissed") // <-- Target field yang di-update
+            .setValue(true)       // <-- Set nilainya jadi true
+            .await()
+    }
 }
