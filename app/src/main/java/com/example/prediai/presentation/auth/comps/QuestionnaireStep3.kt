@@ -27,77 +27,82 @@ fun QuestionnaireStep3(
         "Berapa jam tidur rata-rata Anda setiap malam?" to listOf("< 5 jam", "6-7 Jam", "> 8 jam")
     )
 
+    // Column baru untuk menengahkan semua konten di bawahnya
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Bantu Kami Kenali Kesehatan Gula Darah Anda",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF2D3748)
-        )
+        // Konten asli Anda sekarang ada di dalam Column ini
+        Column(
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Bantu Kami Kenali Kesehatan Gula Darah Anda",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF2D3748)
+            )
 
-        questions.forEach { pair ->
-            val (question, options) = pair
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = question,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF4A5568)
-                )
+            questions.forEach { pair ->
+                val (question, options) = pair
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = question,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF4A5568)
+                    )
 
-                when (options.size) {
-                    4 -> {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                                ButtonOption(option = options[0], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
-                                ButtonOption(option = options[1], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                                ButtonOption(option = options[2], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
-                                ButtonOption(option = options[3], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                    when (options.size) {
+                        4 -> {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                                    ButtonOption(option = options[0], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                                    ButtonOption(option = options[1], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                                    ButtonOption(option = options[2], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                                    ButtonOption(option = options[3], question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                                }
                             }
                         }
-                    }
-                    2, 3 -> {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                            options.forEach { option ->
-                                ButtonOption(option = option, question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                        2, 3 -> {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                                options.forEach { option ->
+                                    ButtonOption(option = option, question = question, answers = answers, onAnswer = onAnswer, primaryColor)
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        Button(
-            onClick = onNextClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            enabled = !isLoading,
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = primaryColor,
-                disabledContainerColor = Color(0xFFE2E8F0)
-            )
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White,
-                    strokeWidth = 2.dp
+            Button(
+                onClick = onNextClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                enabled = !isLoading,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryColor,
+                    disabledContainerColor = Color(0xFFE2E8F0)
                 )
-            } else {
-                Text("Selesai", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Selesai", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
             }
         }
     }

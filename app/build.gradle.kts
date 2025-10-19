@@ -79,8 +79,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation("androidx.compose.material:material-icons-core:1.7.1")
-    implementation("androidx.compose.material:material-icons-extended:1.7.1")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.camera:camera-core:1.3.2")
     implementation("androidx.camera:camera-camera2:1.3.2")
@@ -88,6 +86,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.2")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material-icons-extended")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
@@ -99,7 +98,6 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -121,6 +119,8 @@ dependencies {
     implementation("com.google.firebase:firebase-database-ktx:21.0.0")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.firebase:firebase-core:21.1.1")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
@@ -135,7 +135,11 @@ dependencies {
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 
+    // Youtube
     implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+
+    // Cloudinary
+    implementation("com.cloudinary:cloudinary-android:2.4.0")
 
     implementation("com.kizitonwose.calendar:compose:2.6.1")
 }

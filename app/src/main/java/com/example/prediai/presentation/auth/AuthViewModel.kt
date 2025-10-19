@@ -1,6 +1,7 @@
 package com.example.prediai.presentation.auth
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -57,8 +58,17 @@ class AuthViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState = _uiState.asStateFlow()
+    private var _step = MutableStateFlow(1)
+    val step = _step.asStateFlow()
 
-    // --- Sisa kode Anda tetap sama ---
+    fun onNextClick() {
+        if (_step.value < 4) {
+            _step.value += 1
+        } else {
+            // Jika sudah di langkah terakhir, kirim data
+            submitQuestionnaire()
+        }
+    }
 
     fun onEmailChange(email: String) {
         _uiState.update { it.copy(email = email) }
@@ -185,12 +195,16 @@ class AuthViewModel @Inject constructor(
 
     fun submitQuestionnaire() {
         viewModelScope.launch {
+            // <-- LOG DITAMBAHKAN
+            Log.d("AuthViewModel", "submitQuestionnaire: Memulai proses submit...")
             _uiState.update { it.copy(isLoading = true, questionnaireErrorMessage = null) }
             val currentState = _uiState.value
             val uid = authRepository.getCurrentUser()?.uid
 
             if (uid == null) {
                 _uiState.update { it.copy(isLoading = false, questionnaireErrorMessage = "Pengguna tidak ditemukan.") }
+                // <-- LOG DITAMBAHKAN
+                Log.e("AuthViewModel", "submitQuestionnaire: Gagal, UID pengguna null.")
                 return@launch
             }
 
@@ -207,9 +221,11 @@ class AuthViewModel @Inject constructor(
             val result = saveUserProfileUseCase(userProfile)
 
             result.onSuccess {
+                Log.d("AuthViewModel", "submitQuestionnaire: SUKSES menyimpan data.")
                 userRepository.saveUserProfileToCache(uid, userProfile)
                 _uiState.update { it.copy(isLoading = false, isQuestionnaireSuccess = true) }
             }.onFailure { exception ->
+                Log.e("AuthViewModel", "submitQuestionnaire: GAGAL menyimpan data.", exception)
                 _uiState.update {
                     it.copy(
                         isLoading = false,

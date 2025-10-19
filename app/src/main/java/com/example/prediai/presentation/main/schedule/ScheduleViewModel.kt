@@ -2,16 +2,15 @@ package com.example.prediai.presentation.main.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.prediai.domain.model.ScheduleItem // <-- Import dari domain
-import com.example.prediai.domain.model.ScheduleType // <-- Import dari domain
-import com.example.prediai.domain.model.ScheduleStatus // <-- Import dari domain
-import com.example.prediai.domain.usecase.AddScheduleUseCase // <-- IMPORT BARU
-import com.example.prediai.domain.usecase.GetSchedulesUseCase // <-- IMPORT BARU
+import com.example.prediai.domain.model.ScheduleItem
+import com.example.prediai.domain.model.ScheduleType
+import com.example.prediai.domain.usecase.AddScheduleUseCase
+import com.example.prediai.domain.usecase.GetSchedulesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn // <-- IMPORT BARU
-import kotlinx.coroutines.flow.onEach // <-- IMPORT BARU
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -102,12 +101,11 @@ class ScheduleViewModel @Inject constructor(
 
     // 5. Buat fungsi untuk MENYIMPAN jadwal
     fun saveSchedule(
-        typeString: String, // Kita terima String dari UI
-        notes: String,      // Kita terima 'notes' sebagai deskripsi
+        typeString: String,
+        notes: String,
         time: String
     ) {
         viewModelScope.launch {
-            // Lakukan konversi String ke Enum di sini
             val scheduleType = when (typeString) {
                 "Cek Gula Darah" -> ScheduleType.CEK_GULA
                 "Konsultasi Dokter" -> ScheduleType.KONSULTASI
@@ -116,20 +114,18 @@ class ScheduleViewModel @Inject constructor(
                 "Skrining AI" -> ScheduleType.SKRINING_AI
                 "Jadwal Makan" -> ScheduleType.JADWAL_MAKAN
                 "Cek Tensi Darah" -> ScheduleType.CEK_TENSI
-                else -> return@launch // Jika tidak valid, jangan simpan
+                else -> return@launch
             }
 
             val newSchedule = ScheduleItem(
-                // id akan dibuat oleh repository
                 type = scheduleType,
-                description = notes, // 'notes' dari UI disimpan sebagai 'description'
-                date = uiState.value.selectedDate.format(dateFormatter), // Ambil tgl terpilih
+                description = notes,
+                date = uiState.value.selectedDate.format(dateFormatter),
                 time = time,
-                status = ScheduleStatus.MENDATANG
             )
             try {
                 addScheduleUseCase(newSchedule)
-                hideAddScheduleSheet() // Tutup sheet jika sukses
+                hideAddScheduleSheet()
             } catch (e: Exception) {
                 // TODO: Tampilkan error ke user
             }

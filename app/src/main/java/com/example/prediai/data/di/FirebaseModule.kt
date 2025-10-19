@@ -5,6 +5,8 @@ import com.example.prediai.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase // <-- IMPORT INI
 import com.google.firebase.database.ktx.database // <-- IMPORT INI
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase // <-- IMPORT INI
 import dagger.Module
 import dagger.Provides
@@ -20,11 +22,13 @@ object FirebaseModule {
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
-    // TAMBAHKAN BLOK INI
     @Provides
     @Singleton
     fun provideRealtimeDatabase(): FirebaseDatabase = Firebase.database
-    // -------------------
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = Firebase.firestore
 
     @Provides
     @Singleton

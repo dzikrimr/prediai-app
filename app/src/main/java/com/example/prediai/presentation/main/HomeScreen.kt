@@ -43,7 +43,7 @@ fun HomeScreenContent(
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 16.dp, top = 16.dp)
+        contentPadding = PaddingValues(bottom = 16.dp, top = 40.dp)
     ) {
         item {
             HeaderSection(
@@ -88,7 +88,6 @@ fun HomeScreenContent(
     }
 }
 
-// ... Preview tidak berubah ...
 @Preview(showBackground = true, name = "Home Screen (Filled State)")
 @Composable
 fun HomeScreenFilledPreview() {

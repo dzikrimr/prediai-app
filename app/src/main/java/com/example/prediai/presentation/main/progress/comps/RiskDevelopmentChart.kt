@@ -14,11 +14,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.presentation.main.progress.ChartFilter
-import com.example.prediai.presentation.theme.PrediAITheme
+import kotlin.math.ceil
+import kotlin.math.floor
 
 @Composable
 fun RiskDevelopmentChart(
@@ -43,9 +43,10 @@ fun RiskDevelopmentChart(
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterButton("1 Minggu", selectedFilter == ChartFilter.ONE_WEEK) { onFilterChanged(ChartFilter.ONE_WEEK) }
                 FilterButton("1 Bulan", selectedFilter == ChartFilter.ONE_MONTH) { onFilterChanged(ChartFilter.ONE_MONTH) }
-                FilterButton("3 Bulan", selectedFilter == ChartFilter.THREE_MONTHS) { onFilterChanged(ChartFilter.THREE_MONTHS) }
-                FilterButton("Semua Data", selectedFilter == ChartFilter.ALL_TIME) { onFilterChanged(ChartFilter.ALL_TIME) }
+                FilterButton("6 Bulan", selectedFilter == ChartFilter.SIX_MONTHS) { onFilterChanged(ChartFilter.SIX_MONTHS) }
+                FilterButton("Semua", selectedFilter == ChartFilter.ALL_TIME) { onFilterChanged(ChartFilter.ALL_TIME) }
             }
             Spacer(modifier = Modifier.height(24.dp))
             LineChart(data = data)
@@ -62,21 +63,31 @@ private fun FilterButton(text: String, isSelected: Boolean, onClick: () -> Unit)
             containerColor = if (isSelected) Color(0xFF00B4A3) else Color(0xFFF3F4F6),
             contentColor = if (isSelected) Color.White else Color.Gray
         ),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
     ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        )
+        Text(text = text, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
 }
 
 @Composable
 private fun LineChart(data: List<Pair<String, Float>>) {
-    val maxValue = 10f
-    val minValue = 2f
+    // --- LOGIKA DINAMIS DIMULAI DI SINI ---
     val chartColor = Color(0xFF6C63FF)
+
+    if (data.isEmpty()) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Text("Tidak ada data untuk ditampilkan", color = Color.Gray)
+        }
+        return
+    }
+
+    // Hitung nilai min/max dari data, dengan padding
+    val minValue = floor((data.minOfOrNull { it.second } ?: 0f) / 10f) * 10f
+    val maxValue = ceil((data.maxOfOrNull { it.second } ?: 100f) / 10f) * 10f
+    val valueRange = (maxValue - minValue).coerceAtLeast(1f)
+    val numHorizontalLines = 5
 
     Canvas(
         modifier = Modifier
@@ -84,8 +95,7 @@ private fun LineChart(data: List<Pair<String, Float>>) {
             .height(150.dp)
     ) {
         val horizontalPadding = 16.dp.toPx()
-        val yAxisLabelOffset = 24.dp.toPx()
-
+        val yAxisLabelOffset = 30.dp.toPx() // Beri lebih banyak ruang untuk label Y
         val chartHeight = size.height - 30.dp.toPx()
         val chartWidth = size.width - yAxisLabelOffset - horizontalPadding
 
@@ -96,18 +106,18 @@ private fun LineChart(data: List<Pair<String, Float>>) {
             textAlign = android.graphics.Paint.Align.RIGHT
         }
 
-        for (i in 0..4) {
-            val y = chartHeight * (1 - (i.toFloat() / 4f))
+        // Gambar garis dan label Y-axis secara dinamis
+        for (i in 0 until numHorizontalLines) {
+            val y = chartHeight * (1 - (i.toFloat() / (numHorizontalLines - 1)))
             drawLine(
                 color = Color.LightGray.copy(alpha = 0.3f),
                 start = Offset(yAxisLabelOffset, y),
                 end = Offset(size.width - horizontalPadding, y)
             )
-            val label = (minValue + (maxValue - minValue) * (i.toFloat() / 4f)).toInt()
+            val label = (minValue + (valueRange * (i.toFloat() / (numHorizontalLines - 1)))).toInt()
             drawIntoCanvas {
                 it.nativeCanvas.drawText(
-                    label.toString(),
-                    // DIUBAH: Menggeser teks label Y ke kanan agar tidak mepet
+                    "$label%",
                     yAxisLabelOffset - 8.dp.toPx(),
                     y + 4.dp.toPx(),
                     textPaint
@@ -115,11 +125,10 @@ private fun LineChart(data: List<Pair<String, Float>>) {
             }
         }
 
-        if (data.isEmpty()) return@Canvas
-
+        // Gambar titik dan garis data
         val points = data.mapIndexed { index, pair ->
             val x = yAxisLabelOffset + (index.toFloat() / (data.size - 1).coerceAtLeast(1)) * chartWidth
-            val y = chartHeight * (1 - ((pair.second - minValue) / (maxValue - minValue)))
+            val y = chartHeight * (1 - ((pair.second - minValue) / valueRange))
             Offset(x, y)
         }
 
@@ -141,21 +150,5 @@ private fun LineChart(data: List<Pair<String, Float>>) {
                 )
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun RiskDevelopmentChartPreview() {
-    PrediAITheme {
-        RiskDevelopmentChart(
-            selectedFilter = ChartFilter.ONE_MONTH,
-            onFilterChanged = {},
-            data = listOf(
-                "Apr '24" to 3.5f, "May '24" to 4.2f, "Jun '24" to 5.1f,
-                "Jul '24" to 6.3f, "Aug '24" to 7.0f, "Sep '24" to 7.8f, "Oct '24" to 8.5f
-            )
-        )
     }
 }

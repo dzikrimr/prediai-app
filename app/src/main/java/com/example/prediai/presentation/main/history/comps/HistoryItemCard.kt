@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.main.history.comps
 
+import android.R.attr.onClick
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,7 +28,10 @@ import com.example.prediai.presentation.main.history.ScanHistoryItem
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun HistoryItemCard(item: ScanHistoryItem) {
+fun HistoryItemCard(
+    item: ScanHistoryItem,
+    onClick: () -> Unit
+) {
     val statusColor = when (item.status) {
         HistoryStatus.NORMAL -> Color(0xFF4CAF50)
         HistoryStatus.PERINGATAN -> Color(0xFFFFC107)
@@ -100,7 +104,7 @@ fun HistoryItemCard(item: ScanHistoryItem) {
                     .clickable(
                         interactionSource = interactionSource,
                         indication = rememberRipple(), // Secara eksplisit meminta efek ripple
-                        onClick = { /* TODO: Aksi lihat detail */ }
+                        onClick = onClick
                     ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -126,10 +130,12 @@ fun HistoryItemCardPreview() {
     PrediAITheme {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             HistoryItemCard(
-                item = ScanHistoryItem("Risiko Tinggi", "Hari ini, 14:30", timeAgo = "2 menit yang lalu", percentage = 85, status = HistoryStatus.TINGGI)
+                item = ScanHistoryItem("1", "Risiko Tinggi", "Hari ini, 14:30", timeAgo = "2 menit yang lalu", percentage = 85, status = HistoryStatus.TINGGI),
+                onClick = {}
             )
             HistoryItemCard(
-                item = ScanHistoryItem("Peringatan", "Kemarin, 09:15", timeAgo = "1 hari yang lalu", percentage = 65, status = HistoryStatus.PERINGATAN)
+                item = ScanHistoryItem("2", "Peringatan", "Kemarin, 09:15", timeAgo = "1 hari yang lalu", percentage = 65, status = HistoryStatus.PERINGATAN),
+                onClick = {}
             )
         }
     }

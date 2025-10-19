@@ -17,31 +17,51 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
 import com.example.prediai.domain.model.ScheduleItem
-import com.example.prediai.domain.model.ScheduleStatus
+// HAPUS import 'ScheduleStatus'
 import com.example.prediai.domain.model.ScheduleType
 import com.example.prediai.presentation.theme.PrediAITheme
+// --- IMPORT BARU UNTUK WAKTU ---
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun ScheduleItemCard(
     item: ScheduleItem,
-    index: Int // <-- 1. TAMBAHKAN PARAMETER INDEX
+    index: Int
 ) {
-    // --- 1. LOGIKA STATUS (Tetap Sama) ---
-    val (statusText, statusBgColor, statusTextColor) = when (item.status) {
-        ScheduleStatus.MENDATANG -> Triple("Mendatang", Color(0xFFE0F2F1), Color(0xFF00B4A3))
-        ScheduleStatus.SELESAI -> Triple("Selesai", Color(0xFFE8F5E9), Color(0xFF4CAF50))
-        ScheduleStatus.TERLEWAT -> Triple("Terlewat", Color(0xFFFFEBEE), Color(0xFFE53935))
+    // --- 1. LOGIKA KALKULASI STATUS BARU ---
+    // Logika ini menghitung status berdasarkan waktu sekarang.
+    val (statusText, statusBgColor, statusTextColor) = try {
+        // Parse tanggal ("yyyy-MM-dd") dan waktu ("HH:mm")
+        val itemDate = LocalDate.parse(item.date, DateTimeFormatter.ISO_LOCAL_DATE)
+        val itemTime = LocalTime.parse(item.time, DateTimeFormatter.ISO_LOCAL_TIME)
+
+        val itemDateTime = LocalDateTime.of(itemDate, itemTime)
+        val now = LocalDateTime.now()
+
+        if (itemDateTime.isBefore(now)) {
+            // Waktu sudah lewat -> Selesai
+            Triple("Selesai", Color(0xFFDCFCE7), Color(0xFF16A34A))
+        } else {
+            // Waktu di masa depan -> Mendatang
+            Triple("Mendatang", Color(0xFFDBEAFE), Color(0xFF2563EB))
+        }
+    } catch (e: Exception) {
+        // Fallback jika format data salah
+        Triple("Error", Color(0xFFFFEBEE), Color(0xFFE53935))
     }
 
-    // --- 2. LOGIKA IKON & NAMA TIPE (Tetap Sama) ---
+    // --- 2. LOGIKA IKON & NAMA TIPE (Tambahkan tipe baru) ---
     val iconId = when (item.type) {
         ScheduleType.CEK_GULA -> R.drawable.ic_blood_drop
         ScheduleType.KONSULTASI -> R.drawable.ic_consultation
         ScheduleType.OLAHRAGA -> R.drawable.ic_exercise
         ScheduleType.MINUM_OBAT -> R.drawable.ic_pills
         ScheduleType.SKRINING_AI -> R.drawable.ic_camera // (Asumsi nama ikon)
-        ScheduleType.JADWAL_MAKAN -> R.drawable.ic_food_avoid // <-- TAMBAHKAN INI (Ganti dgn ikonmu)
-        ScheduleType.CEK_TENSI -> R.drawable.ic_blood_pressure // <-- TAMBAHKAN INI (Ganti dgn ikonmu)
+        ScheduleType.JADWAL_MAKAN -> R.drawable.ic_food_avoid // (Asumsi nama ikon)
+        ScheduleType.CEK_TENSI -> R.drawable.ic_blood_pressure // (Asumsi nama ikon)
     }
 
     val typeDisplayName = when (item.type) {
@@ -50,27 +70,19 @@ fun ScheduleItemCard(
         ScheduleType.OLAHRAGA -> "Olahraga"
         ScheduleType.MINUM_OBAT -> "Minum Obat"
         ScheduleType.SKRINING_AI -> "Skrining AI"
-        ScheduleType.JADWAL_MAKAN -> "Jadwal Makan" // <-- TAMBAHKAN INI
-        ScheduleType.CEK_TENSI -> "Cek Tensi Darah" // <-- TAMBAHKAN INI
+        ScheduleType.JADWAL_MAKAN -> "Jadwal Makan"
+        ScheduleType.CEK_TENSI -> "Cek Tensi Darah"
     }
 
-    // --- 3. LOGIKA WARNA BERURUTAN (Perubahan di sini) ---
-
-    // Daftar warna kustom yang kamu berikan
+    // --- 3. LOGIKA WARNA BERURUTAN (Tetap Sama) ---
     val colorPairs = remember {
         listOf(
-            // 1. 00B4A3 (Teal)
             Pair(Color(0xFF00B4A3), Color(0xFFE0F2F1)),
-            // 2. A78BFA (Purple)
             Pair(Color(0xFFA78BFA), Color(0xFFF5F3FF)),
-            // 3. FB923C (Orange)
             Pair(Color(0xFFFB923C), Color(0xFFFFEEDF)),
-            // 4. C084FC (Pink-Purple)
             Pair(Color(0xFFC084FC), Color(0xFFFAF5FF))
         )
     }
-
-    // Ambil warna berdasarkan index % ukuran list (misal index 4 jadi 0, 5 jadi 1, dst.)
     val (typeColor, iconBgColor) = colorPairs[index % colorPairs.size]
 
     // --- 4. LAYOUT CARD ---
@@ -86,49 +98,49 @@ fun ScheduleItemCard(
                 .height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Bar Vertikal di Kiri (Warna berurutan)
+            // Bar Vertikal di Kiri
             Box(
                 modifier = Modifier
-                    .width(6.dp) // <-- 4. GARIS LEBIH TIPIS (sebelumnya 8.dp)
+                    .width(6.dp)
                     .fillMaxHeight()
                     .background(
-                        typeColor, // <-- Menggunakan warna berurutan
+                        typeColor,
                         shape = RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
                     )
             )
 
-            // Konten Utama (Ikon + Teks)
+            // Konten Utama
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp) // Padding vertikal kecil
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
                     .weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Kotak Ikon (Warna berurutan)
+                // Kotak Ikon
                 Box(
                     modifier = Modifier
                         .size(48.dp)
-                        .background(iconBgColor, shape = RoundedCornerShape(12.dp)), // <-- Latar berurutan
+                        .background(iconBgColor, shape = RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = iconId), // <-- Ikon tetap sesuai Tipe
+                        painter = painterResource(id = iconId),
                         contentDescription = typeDisplayName,
-                        tint = typeColor, // <-- Warna ikon berurutan
+                        tint = typeColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }
 
                 Spacer(Modifier.width(16.dp))
 
-                // Kolom Teks (Tidak berubah)
+                // Kolom Teks
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = typeDisplayName, // <-- Nama tetap sesuai Tipe
-                        fontWeight = FontWeight.Bold,
+                        text = typeDisplayName,
+                        fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
                         color = Color.Black
                     )
@@ -154,16 +166,17 @@ fun ScheduleItemCard(
                             color = Color.Gray
                         )
                         Spacer(Modifier.width(16.dp))
-                        // Chip Status
+
+                        // --- 5. CHIP STATUS DENGAN WARNA BARU ---
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(statusBgColor)
+                                .background(statusBgColor) // <- Warna baru
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = statusText,
-                                color = statusTextColor,
+                                text = statusText, // <- Teks baru
+                                color = statusTextColor, // <- Warna baru
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -171,43 +184,6 @@ fun ScheduleItemCard(
                     }
                 }
             }
-        }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun ScheduleItemCardPreview() {
-    PrediAITheme {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            ScheduleItemCard(
-                item = ScheduleItem(
-                    type = ScheduleType.CEK_GULA,
-                    description = "Pagi hari",
-                    time = "07:00",
-                    status = ScheduleStatus.MENDATANG
-                ),
-                index = 0 // Contoh index 0 (Teal)
-            )
-            ScheduleItemCard(
-                item = ScheduleItem(
-                    type = ScheduleType.OLAHRAGA,
-                    description = "Sore hari",
-                    time = "16:00",
-                    status = ScheduleStatus.SELESAI
-                ),
-                index = 1 // Contoh index 1 (Purple)
-            )
-            ScheduleItemCard(
-                item = ScheduleItem(
-                    type = ScheduleType.MINUM_OBAT,
-                    description = "Malam hari",
-                    time = "20:00",
-                    status = ScheduleStatus.TERLEWAT
-                ),
-                index = 2 // Contoh index 2 (Orange)
-            )
         }
     }
 }

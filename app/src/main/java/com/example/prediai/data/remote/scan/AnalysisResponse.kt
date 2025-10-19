@@ -12,10 +12,4 @@ data class AnalysisResponse(
     @SerializedName("risk_factors_identified")
     val riskFactors: List<String>,
 
-    // Properti lain bisa ditambahkan jika ada di response
-    // @SerializedName("lidah_result")
-    // val lidahResult: PredictionResult?,
-    //
-    // @SerializedName("kuku_result")
-    // val kukuResult: PredictionResult?
 )

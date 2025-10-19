@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.quistionere.comps
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,8 +22,8 @@ import androidx.compose.ui.unit.sp
 fun SectionCard(
     title: String,
     questions: List<Pair<String, List<String>>>,
-    answers: MutableMap<String, String>,
-    keyPrefix: String
+    answers: Map<String, String>, // Diubah ke Map agar lebih stabil
+    onAnswerChange: (question: String, answer: String) -> Unit // Parameter baru
 ) {
     Card(
         modifier = Modifier
@@ -54,16 +55,17 @@ fun SectionCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Questions
-            questions.forEachIndexed { index, (question, options) ->
-                if (index > 0) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
+            questions.forEach { (question, options) ->
+                Spacer(modifier = Modifier.height(16.dp))
                 QuestionItem(
                     question = question,
                     options = options,
-                    selectedOption = answers["$keyPrefix${index + 1}"],
-                    onOptionSelected = { answers["$keyPrefix${index + 1}"] = it }
+                    // Mengambil jawaban menggunakan teks pertanyaan sebagai kunci
+                    selectedOption = answers[question],
+                    // Mengirim event perubahan dengan teks pertanyaan sebagai kunci
+                    onOptionSelected = { selectedAnswer ->
+                        onAnswerChange(question, selectedAnswer)
+                    }
                 )
             }
         }

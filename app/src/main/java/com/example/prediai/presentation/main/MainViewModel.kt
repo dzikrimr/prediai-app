@@ -3,7 +3,6 @@ package com.example.prediai.presentation.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prediai.domain.model.EducationVideo
-import com.example.prediai.domain.model.ScheduleStatus
 import com.example.prediai.domain.model.ScheduleType
 import com.example.prediai.domain.repository.EducationRepository
 import com.example.prediai.domain.usecase.GetSchedulesUseCase
@@ -14,6 +13,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalDateTime.now
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -54,27 +55,32 @@ class MainViewModel @Inject constructor(
 
     // --- 2. PERBARUI FUNGSI INI ---
     private fun loadUpcomingSchedules() {
-        // Tentukan tanggal "hari ini" dan "besok"
         val today = LocalDate.now()
         val tomorrow = today.plusDays(1)
-
-        // Buat string formatternya
-        val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE // "yyyy-MM-dd"
+        val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
         val todayString = today.format(dateFormatter)
         val tomorrowString = tomorrow.format(dateFormatter)
 
         getSchedulesUseCase().onEach { allSchedules ->
             val upcomingReminders = allSchedules
-                .filter {
-                    // Filter 1: Ambil jadwal hari ini ATAU besok
-                    (it.date == todayString || it.date == tomorrowString) &&
-                            // Filter 2: Ambil hanya yang statusnya MENDATANG
-                            it.status == ScheduleStatus.MENDATANG
+                .filter { scheduleItem ->
+                    // --- 2. PERBARUI LOGIKA FILTER ---
+                    val isTodayOrTomorrow = scheduleItem.date == todayString || scheduleItem.date == tomorrowString
+                    if (!isTodayOrTomorrow) {
+                        false // Bukan hari ini atau besok, buang
+                    } else {
+                        // Ini adalah hari ini atau besok,
+                        // sekarang cek apakah waktunya MASIH di masa depan
+                        try {
+                            val itemDateTime = LocalDateTime.parse("${scheduleItem.date}T${scheduleItem.time}")
+                            itemDateTime.isAfter(now())
+                        } catch (e: Exception) {
+                            false // Format waktu salah, buang
+                        }
+                    }
                 }
-                // Urutkan berdasarkan tanggal, lalu berdasarkan jam
                 .sortedWith(compareBy({ it.date }, { it.time }))
                 .map { scheduleItem ->
-                    // Buat judul (title)
                     val title = when (scheduleItem.type) {
                         ScheduleType.CEK_GULA -> "Cek Gula"
                         ScheduleType.KONSULTASI -> "Konsultasi"
