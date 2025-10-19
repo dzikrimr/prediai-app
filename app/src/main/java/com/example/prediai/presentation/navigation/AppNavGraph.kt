@@ -9,18 +9,14 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.example.prediai.presentation.auth.AuthViewModel
 import com.example.prediai.presentation.auth.LoginScreen
-import com.example.prediai.presentation.auth.QuestionnaireRoot
 import com.example.prediai.presentation.auth.QuestionnaireScreen
 import com.example.prediai.presentation.auth.RegisterScreen
 import com.example.prediai.presentation.auth.RegistrationSuccessScreen
 import com.example.prediai.presentation.doctor.DoctorScreen
-import com.example.prediai.presentation.labs.LabResultScreen
 import com.example.prediai.presentation.main.MainScreen
 import com.example.prediai.presentation.main.chatbot.ChatbotScreen // IMPORT INI
 import com.example.prediai.presentation.main.education.EducationListScreen
@@ -36,8 +32,6 @@ import com.example.prediai.presentation.profile.help.HelpCenterScreen
 import com.example.prediai.presentation.profile.security.SecurityScreen
 import com.example.prediai.presentation.quistionere.QuistionereScreen
 import com.example.prediai.presentation.splash.SplashScreen
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -48,7 +42,6 @@ fun AppNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = "splash"
     ) {
-        // Alur Pra-Login
         composable("splash") { SplashScreen(navController = navController) }
         composable("onboarding") {
             val viewModel: OnboardingViewModel = hiltViewModel()
@@ -72,11 +65,9 @@ fun AppNavGraph(navController: NavHostController) {
             val state by viewModel.uiState.collectAsState()
             val step by viewModel.step.collectAsState()
 
-            // TAMBAHKAN BLOK INI UNTUK MENDENGARKAN HASIL SUKSES
             LaunchedEffect(key1 = state.isQuestionnaireSuccess) {
                 if (state.isQuestionnaireSuccess) {
                     navController.navigate("registration_success") {
-                        // Hapus halaman kuesioner dari backstack
                         popUpTo("questionnaire") { inclusive = true }
                     }
                 }
@@ -100,7 +91,6 @@ fun AppNavGraph(navController: NavHostController) {
         composable("registration_success") {
             RegistrationSuccessScreen(
                 onStartClick = {
-                    // Navigasi ke halaman utama dan hapus semua backstack sebelumnya
                     navController.navigate("main") {
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true
@@ -110,12 +100,10 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        // Alur Utama Setelah Login
         composable("main") {
             MainScreen(rootNavController = navController)
         }
 
-        // Rute-rute lain di luar alur utama (tidak punya bottom nav bar)
         composable("notification") {
             NotificationScreen(navController = navController)
         }
@@ -123,7 +111,6 @@ fun AppNavGraph(navController: NavHostController) {
             ScheduleScreen(navController = navController)
         }
 
-        // BARU: Menambahkan rute untuk ChatbotScreen
         composable("chatbot") {
             ChatbotScreen(navController = navController)
         }
@@ -131,13 +118,16 @@ fun AppNavGraph(navController: NavHostController) {
         composable("education_list") {
             EducationListScreen(navController = navController, viewModel = educationViewModel)
         }
-        composable("video_detail/{videoId}") { backStackEntry ->
-            val videoId = backStackEntry.arguments?.getString("videoId")
-            val video = educationUiState.videos.find { it.id == videoId }
-            VideoDetailScreen(navController = navController, video = video)
+
+        composable(
+            route = "video_detail" // Hapus argumen {videoId} dari route
+        ) {
+            VideoDetailScreen(
+                navController = navController,
+                viewModel = educationViewModel // Berikan instance ViewModel yang sama
+            )
         }
 
-        // Rute-rute dari MainNavGraph yang perlu diakses oleh rootNavController
         composable("doctor") {
             DoctorScreen(navController = navController)
         }

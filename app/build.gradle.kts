@@ -15,6 +15,8 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+val youtubeApiKey = localProperties.getProperty("YOUTUBE_API_KEY") ?: ""
+
 
 android {
     namespace = "com.example.prediai"
@@ -29,6 +31,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\""
+        )
     }
 
     buildTypes {

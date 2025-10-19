@@ -59,7 +59,14 @@ fun EducationListScreen(
             items(uiState.videos) { video ->
                 EducationVideoItem(
                     video = video,
-                    onClick = { navController.navigate("video_detail/${video.id}") }
+                    onClick = {
+                        // --- PANGGIL FUNGSI VIEWMODEL DI SINI ---
+                        viewModel.selectVideo(video)
+
+                        // Setelah video dipilih, baru navigasi
+                        // (Kita tidak perlu kirim ID lagi karena ViewModel sudah tahu)
+                        navController.navigate("video_detail")
+                    }
                 )
             }
         }
