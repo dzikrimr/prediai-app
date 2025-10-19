@@ -25,6 +25,7 @@ fun MainScreen(rootNavController: NavHostController) {
         BottomNavItem.BERANDA.route,
         BottomNavItem.RIWAYAT.route,
         BottomNavItem.LABS.route,
+        "labs_upload",
         BottomNavItem.PROFIL.route,
         BottomNavItem.GUIDE.route
     )

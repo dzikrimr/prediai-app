@@ -63,7 +63,7 @@ private fun FilterButton(text: String, isSelected: Boolean, onClick: () -> Unit)
             containerColor = if (isSelected) Color(0xFF00B4A3) else Color(0xFFF3F4F6),
             contentColor = if (isSelected) Color.White else Color.Gray
         ),
-        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
+        contentPadding = PaddingValues(horizontal = 14.dp)
     ) {
         Text(text = text, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
@@ -71,8 +71,7 @@ private fun FilterButton(text: String, isSelected: Boolean, onClick: () -> Unit)
 
 @Composable
 private fun LineChart(data: List<Pair<String, Float>>) {
-    // --- LOGIKA DINAMIS DIMULAI DI SINI ---
-    val chartColor = Color(0xFF6C63FF)
+    val chartColor = Color(0xFF00B4A3)
 
     if (data.isEmpty()) {
         Box(modifier = Modifier
@@ -83,7 +82,6 @@ private fun LineChart(data: List<Pair<String, Float>>) {
         return
     }
 
-    // Hitung nilai min/max dari data, dengan padding
     val minValue = floor((data.minOfOrNull { it.second } ?: 0f) / 10f) * 10f
     val maxValue = ceil((data.maxOfOrNull { it.second } ?: 100f) / 10f) * 10f
     val valueRange = (maxValue - minValue).coerceAtLeast(1f)
@@ -95,7 +93,7 @@ private fun LineChart(data: List<Pair<String, Float>>) {
             .height(150.dp)
     ) {
         val horizontalPadding = 16.dp.toPx()
-        val yAxisLabelOffset = 30.dp.toPx() // Beri lebih banyak ruang untuk label Y
+        val yAxisLabelOffset = 30.dp.toPx()
         val chartHeight = size.height - 30.dp.toPx()
         val chartWidth = size.width - yAxisLabelOffset - horizontalPadding
 

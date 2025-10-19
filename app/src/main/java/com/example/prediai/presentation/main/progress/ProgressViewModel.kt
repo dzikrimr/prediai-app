@@ -79,7 +79,6 @@ class ProgressViewModel @Inject constructor(
                 recentScans = recentScans
             )
         }
-        // Panggil update chart setelah data dasar di-update
         updateChartData()
     }
 
@@ -92,7 +91,6 @@ class ProgressViewModel @Inject constructor(
         val calendar = Calendar.getInstance()
         val selectedFilter = _uiState.value.selectedFilter
 
-        // 1. Filter record berdasarkan rentang waktu yang dipilih
         val recordsToProcess = when (selectedFilter) {
             ChartFilter.ONE_WEEK -> {
                 calendar.add(Calendar.WEEK_OF_YEAR, -1)
@@ -114,32 +112,25 @@ class ProgressViewModel @Inject constructor(
             return
         }
 
-        // 2. Tentukan format label berdasarkan filter (untuk sumbu-X grafik)
-        val (groupByFormat, sortFormat) = when (selectedFilter) {
-            ChartFilter.ONE_WEEK -> "EEE" to "yyyy-MM-dd" // Label: Sen, Sel, Rab...
-            ChartFilter.ONE_MONTH -> "dd MMM" to "yyyy-MM-dd" // Label: 25 Okt, 26 Okt...
-            else -> "MMM ''yy" to "yyyy-MM" // Label: Okt '25, Nov '25...
+        val groupByFormat = when (selectedFilter) {
+            ChartFilter.ONE_WEEK -> "EEE"
+            ChartFilter.ONE_MONTH -> "dd MMM"
+            else -> "MMM ''yy"
         }
         val groupFormatter = SimpleDateFormat(groupByFormat, Locale.forLanguageTag("id-ID"))
-        val sortFormatter = SimpleDateFormat(sortFormat, Locale.forLanguageTag("id-ID"))
 
+        val sortedRecords = recordsToProcess.filter { it.timestamp != null }.sortedBy { it.timestamp }
 
-        // 3. Kelompokkan data, hitung rata-rata, dan urutkan
-        val chartData = recordsToProcess
-            .filter { it.timestamp != null }
-            .groupBy { groupFormatter.format(it.timestamp!!) }
-            .mapValues { entry -> entry.value.map { it.riskPercentage }.average().toFloat() }
-            .map { it.key to it.value }
-            .sortedBy { (dateStr, _) ->
-                // Gunakan format yang bisa diurutkan untuk memastikan kronologi
-                if (selectedFilter == ChartFilter.ONE_WEEK) {
-                    // Pengurutan khusus untuk hari dalam seminggu
-                    val dayOfWeek = Calendar.getInstance().apply { time = groupFormatter.parse(dateStr)!! }
-                    dayOfWeek.get(Calendar.DAY_OF_WEEK).toLong()
-                } else {
-                    sortFormatter.parse(dateStr)?.time ?: 0L
-                }
-            }
+        val groupedData = sortedRecords.groupBy { groupFormatter.format(it.timestamp!!) }
+
+        val sortedLabels = sortedRecords.map { groupFormatter.format(it.timestamp!!) }.distinct()
+
+        val chartData = sortedLabels.map { label ->
+            val recordsInGroup = groupedData[label] ?: emptyList()
+            val averageRisk = recordsInGroup.map { it.riskPercentage }.average().toFloat()
+            label to averageRisk
+        }
+
         _uiState.update { it.copy(chartData = chartData) }
     }
 

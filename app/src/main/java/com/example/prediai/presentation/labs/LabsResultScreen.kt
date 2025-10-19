@@ -1,25 +1,21 @@
 package com.example.prediai.presentation.labs
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.prediai.domain.model.LabAnalysisResult
 import com.example.prediai.presentation.common.TopBar
 import com.example.prediai.presentation.labs.comps.AIExplanationCard
 import com.example.prediai.presentation.labs.comps.FileInfoCard
@@ -28,10 +24,12 @@ import com.example.prediai.presentation.labs.comps.FileInfoCard
 fun LabResultScreen(
     fileName: String,
     uploadDate: String,
-    onBackClick: () -> Unit = {},
-    onConsultClick: () -> Unit = {},
-    onAskAIClick: () -> Unit = {}
+    navController: NavController,
+    viewModel: LabsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val analysisResult = uiState.analysisResult
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -39,29 +37,52 @@ fun LabResultScreen(
     ) {
         TopBar(
             title = "Lab Analysis",
-            onBackClick = onBackClick
+            onBackClick = { navController.popBackStack() }
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            FileInfoCard(
+        if (uiState.isLoading || analysisResult == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("AI sedang menganalisis dokumen Anda...")
+                }
+            }
+        } else {
+            ResultContent(
                 fileName = fileName,
-                uploadDate = uploadDate
+                uploadDate = uploadDate,
+                analysisResult = analysisResult,
+                onConsultClick = { navController.navigate("doctor") }
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AIExplanationCard(
-                onConsultClick = onConsultClick
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
         }
+    }
+}
+
+@Composable
+private fun ResultContent(
+    fileName: String,
+    uploadDate: String,
+    analysisResult: LabAnalysisResult,
+    onConsultClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        FileInfoCard(fileName = fileName, uploadDate = uploadDate)
+        Spacer(modifier = Modifier.height(16.dp))
+        AIExplanationCard(
+            summary = analysisResult.summary,
+            findings = analysisResult.key_findings,
+            nextSteps = analysisResult.next_steps,
+            onConsultClick = onConsultClick
+        )
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }

@@ -88,16 +88,21 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material-icons-extended")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // Navigation - Updated version
     implementation("androidx.navigation:navigation-compose:2.7.6")
 
     // Gemini AI
-    implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
+    implementation("com.google.ai.client.generativeai:generativeai:0.2.2") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
+    }
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+    }
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -140,4 +145,14 @@ dependencies {
 
     // Cloudinary
     implementation("com.cloudinary:cloudinary-android:2.4.0")
+
+    // PDFbox
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3")
+    }
 }

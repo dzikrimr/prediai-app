@@ -21,13 +21,13 @@ import com.example.prediai.presentation.labs.LabResultScreen
 import com.example.prediai.presentation.main.history.HistoryScreen
 import com.example.prediai.presentation.main.HomeScreen
 import com.example.prediai.presentation.labs.LabsScreen
+import com.example.prediai.presentation.labs.LabsViewModel
 import com.example.prediai.presentation.main.progress.ProgressScreen
 import com.example.prediai.presentation.profile.ProfileScreen
 import com.example.prediai.presentation.profile.about.AboutScreen
 import com.example.prediai.presentation.profile.edit.EditProfileScreen
 import com.example.prediai.presentation.profile.help.HelpCenterScreen
 import com.example.prediai.presentation.profile.security.SecurityScreen
-import com.example.prediai.presentation.quistionere.QuistionereScreen
 import com.example.prediai.presentation.scan.ScanResultScreen
 import com.example.prediai.presentation.scan.ScanResultViewModel
 import com.example.prediai.presentation.scan.ScanScreen
@@ -83,7 +83,9 @@ fun MainNavGraph(
                     onContinueClick = { analysisResult, nailPhoto, tonguePhoto ->
                         if (nailPhoto != null && tonguePhoto != null) {
                             scanResultViewModel.setData(analysisResult, nailPhoto, tonguePhoto)
-                            mainNavController.navigate("scan_result")
+                            mainNavController.navigate("scan_result") {
+                                popUpTo("scan") { inclusive = true }
+                            }
                         }
                     }
                 )
@@ -116,16 +118,54 @@ fun MainNavGraph(
             }
         }
 
-        composable("labs") {
-            LabsScreen(
-                onBackClick = { mainNavController.popBackStack() },
-                onNavigateToResult = { fileName, uploadDate ->
-                    val encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString())
-                    val encodedDate = URLEncoder.encode(uploadDate, StandardCharsets.UTF_8.toString())
-                    rootNavController.navigate("lab_result/$encodedFileName/$encodedDate")
+        navigation(
+            startDestination = "labs_upload",
+            route = "labs"
+        ) {
+            composable("labs_upload") { backStackEntry ->
+                // Buat ViewModel yang akan dibagikan dalam alur "labs"
+                val parentEntry = remember(backStackEntry) {
+                    mainNavController.getBackStackEntry("labs")
                 }
-            )
+                val labsViewModel: LabsViewModel = hiltViewModel(parentEntry)
+
+                LabsScreen(
+                    viewModel = labsViewModel,
+                    onBackClick = { mainNavController.popBackStack() },
+                    onNavigateToResult = { fileName, uploadDate ->
+                        val encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString())
+                        val encodedDate = URLEncoder.encode(uploadDate, StandardCharsets.UTF_8.toString())
+                        mainNavController.navigate("lab_result/$encodedFileName/$encodedDate")
+                    }
+                )
+            }
+
+            composable(
+                route = "lab_result/{fileName}/{uploadDate}",
+                arguments = listOf(
+                    navArgument("fileName") { type = NavType.StringType },
+                    navArgument("uploadDate") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    mainNavController.getBackStackEntry("labs")
+                }
+                val labsViewModel: LabsViewModel = hiltViewModel(parentEntry)
+
+                val fileName = backStackEntry.arguments?.getString("fileName") ?: "N/A"
+                val uploadDate = backStackEntry.arguments?.getString("uploadDate") ?: "N/A"
+                val decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8.toString())
+                val decodedDate = URLDecoder.decode(uploadDate, StandardCharsets.UTF_8.toString())
+
+                LabResultScreen(
+                    fileName = decodedFileName,
+                    uploadDate = decodedDate,
+                    navController = mainNavController,
+                    viewModel = labsViewModel
+                )
+            }
         }
+
         composable("profil") {
             ProfileScreen(navController = rootNavController)
         }

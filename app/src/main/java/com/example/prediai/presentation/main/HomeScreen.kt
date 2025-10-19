@@ -3,13 +3,16 @@ package com.example.prediai.presentation.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,9 +44,13 @@ fun HomeScreenContent(
     mainNavController: NavHostController, // "Peta Kota"
     rootNavController: NavHostController  // "Peta Dunia"
 ) {
+
+    val statusBarPadding = with(LocalDensity.current) {
+        WindowInsets.statusBars.getTop(this).toDp()
+    }
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 16.dp, top = 16.dp)
+        contentPadding = PaddingValues(bottom = 16.dp, top = 16.dp + statusBarPadding,)
     ) {
         item {
             HeaderSection(

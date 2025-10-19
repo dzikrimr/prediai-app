@@ -1,21 +1,15 @@
 package com.example.prediai.presentation.labs.comps
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,21 +24,23 @@ import com.example.prediai.domain.model.AnalysisItem
 import com.example.prediai.domain.model.AnalysisType
 
 @Composable
-fun AnalysisItemCard(item: AnalysisItem) {
-    Box(
+fun AnalysisItemCard(
+    item: AnalysisItem,
+    onClick: () -> Unit
+) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(
-                width = 1.dp,
-                color = Color(0xFFF3F4F6),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(12.dp)
+            .clickable(onClick = onClick), // <-- 1. AKSI KLIK DITERAPKAN DI SINI
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF3F4F6))
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -84,7 +80,9 @@ fun AnalysisItemCard(item: AnalysisItem) {
                     text = item.fileName,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    color = Color.Black,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -94,21 +92,15 @@ fun AnalysisItemCard(item: AnalysisItem) {
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                TextButton(
-                    onClick = { /* View analysis */ },
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier.height(32.dp)
-                ) {
-                    Text(
-                        text = "View Analysis",
-                        fontSize = 12.sp,
-                        color = Color(0xFF00B4A3)
-                    )
-                }
             }
+
+            // 2. Ganti TextButton dengan ikon panah untuk UX yang lebih baik
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "View Analysis",
+                tint = Color.Gray
+            )
         }
     }
 }

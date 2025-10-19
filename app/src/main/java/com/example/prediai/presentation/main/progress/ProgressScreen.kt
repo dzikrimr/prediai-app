@@ -1,6 +1,8 @@
 package com.example.prediai.presentation.main.progress
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
@@ -60,11 +62,13 @@ fun ProgressScreen(
                     onSeeMoreClick = {
                         navController.navigate("history_detail")
                     },
-                    onItemClick = { scanId -> // <-- Tambahkan ini
-                        // Navigasi ke detail scan dengan membawa ID
+                    onItemClick = { scanId ->
                         navController.navigate("scan_result?historyId=$scanId")
                     }
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
