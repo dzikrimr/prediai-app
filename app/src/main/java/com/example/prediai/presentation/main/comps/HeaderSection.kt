@@ -108,8 +108,6 @@ fun HeaderSection(
                         .size(48.dp)
                         .background(color = Color(0xFF00B4A3), shape = CircleShape)
                         .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = rememberRipple(bounded = false),
                             onClick = onProfileClick
                         ),
                     contentAlignment = Alignment.Center

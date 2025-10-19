@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.main.comps
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -18,15 +19,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-// 1. GANTI IMPORT INI:
-// import com.example.prediai.presentation.main.Recommendation // <-- HAPUS
-import com.example.prediai.domain.model.EducationVideo // <-- IMPORT MODEL BARU
-import com.example.prediai.domain.model.VideoCategories // <-- Import untuk Preview
+import com.example.prediai.domain.model.EducationVideo
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
 fun RecommendationsSection(
-    // 2. GANTI TIPE DATA DI PARAMETER INI:
     recommendations: List<EducationVideo>,
     onSeeMoreClick: () -> Unit,
     onItemClick: (String) -> Unit
@@ -40,6 +37,7 @@ fun RecommendationsSection(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // ... (Bagian Row Header tidak berubah)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -48,7 +46,7 @@ fun RecommendationsSection(
                 Text(
                     text = "Cocok Untukmu",
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp
+                    fontSize = 16.sp
                 )
                 Text(
                     text = "Lihat Lainnya",
@@ -56,8 +54,6 @@ fun RecommendationsSection(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(),
                         onClick = onSeeMoreClick
                     )
                 )
@@ -66,13 +62,18 @@ fun RecommendationsSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 recommendations.forEachIndexed { index, recommendation ->
-                    // 'recommendation' sekarang adalah tipe EducationVideo
                     RecommendationItem(
                         recommendation = recommendation,
-                        onClick = { onItemClick(recommendation.id) }
+                        // --- PERBAIKAN UTAMA ADA DI SINI ---
+                        // Logika dipindahkan kembali ke sini, di mana 'onItemClick' dikenal
+                        onClick = {
+                            Log.d("VideoDebug", "RecommendationsSection: Clicked ID -> ${recommendation.id}")
+                            onItemClick(recommendation.id)
+                        }
                     )
                     if (index < recommendations.lastIndex) {
                         HorizontalDivider(
+                            modifier = Modifier.padding(top = 12.dp),
                             thickness = 1.dp,
                             color = Color.Gray.copy(alpha = 0.1f)
                         )
@@ -85,25 +86,17 @@ fun RecommendationsSection(
 
 @Composable
 private fun RecommendationItem(
-    // 3. GANTI TIPE DATA DI PARAMETER INI JUGA:
     recommendation: EducationVideo,
-    onClick: () -> Unit
+    onClick: () -> Unit // <-- Parameter ini adalah tombol "Lakukan Pekerjaan"
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = interactionSource,
-                indication = rememberRipple(),
-                onClick = onClick
-            ),
+            // Cukup panggil 'onClick' yang sudah diberikan
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            // Nama properti (imageUrl, title, source, views)
-            // sama antara Recommendation dan EducationVideo,
-            // jadi tidak ada perubahan di sini.
             model = recommendation.imageUrl,
             contentDescription = recommendation.title,
             modifier = Modifier
@@ -132,37 +125,5 @@ private fun RecommendationItem(
                 fontWeight = FontWeight.Normal
             )
         }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF0F4F7)
-@Composable
-fun RecommendationsSectionPreview() {
-    PrediAITheme {
-        // 4. PERBARUI PREVIEW AGAR MENGGUNAKAN DATA DUMMY EducationVideo
-        RecommendationsSection(
-            recommendations = listOf(
-                EducationVideo(
-                    id = "1",
-                    title = "Tips agar gula darah tidak naik",
-                    source = "Ilmu Dokter",
-                    views = "91rb x ditonton",
-                    imageUrl = "https://picsum.photos/200",
-                    youtubeVideoId = "dummy_id_1",
-                    category = VideoCategories.NUTRISI
-                ),
-                EducationVideo(
-                    id = "2",
-                    title = "Kenali gejala diabetesmu melalui tangan",
-                    source = "Ilmu Dokter",
-                    views = "91rb x ditonton",
-                    imageUrl = "https.picsum.photos/201",
-                    youtubeVideoId = "dummy_id_2",
-                    category = VideoCategories.GEJALA
-                ),
-            ),
-            onSeeMoreClick = {},
-            onItemClick = {}
-        )
     }
 }

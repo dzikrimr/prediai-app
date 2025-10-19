@@ -108,7 +108,7 @@ private fun DirectDoctorButton(onClick: () -> Unit) {
             .padding(horizontal = 16.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(),
+                indication = remember { ripple() },
                 onClick = onClick
             ),
         shape = RoundedCornerShape(16.dp),

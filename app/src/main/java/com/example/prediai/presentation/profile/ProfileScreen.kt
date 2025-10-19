@@ -13,20 +13,29 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.prediai.R
 import com.example.prediai.presentation.common.TopBar
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class ProfileMenuItem(
     val title: String,
@@ -86,26 +95,55 @@ val supportMenuItems = listOf(
 )
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel()) {
+
+    LaunchedEffect(Unit) {
+        viewModel.loadUserProfile()
+    }
+
+    val uiState by viewModel.uiState.collectAsState()
+
     val tealColor = Color(0xFF00BFA5)
     val lightTealBg = Color(0xFFB2F5EA)
+
+    // Format Tanggal Lahir (DD/MM/YYYY ke "DD MMMM YYYY")
+    val displayDate = remember(uiState.profile.birthDate) {
+        // Asumsi format data dari Firebase RTDB adalah "DD/MM/YYYY"
+        if (uiState.profile.birthDate.length >= 10) {
+            try {
+                // Gunakan SimpleDateFormat jika tanggal tidak sesuai ISO 8601 (YYYY-MM-DD)
+                val inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                val date = LocalDate.parse(uiState.profile.birthDate, inputFormatter)
+
+                // Format output menggunakan Locale Indonesia
+                val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy",
+                    Locale("id", "ID")
+                )
+                date.format(outputFormatter)
+            } catch (e: Exception) {
+                // Tampilkan error jika parsing gagal (misal: data kosong, atau format rusak)
+                "Tanggal tidak valid"
+            }
+        } else {
+            "Tanggal belum diisi"
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC)) // Latar belakang sedikit abu-abu
+            .background(Color(0xFFF8FAFC))
     ) {
         // Top Bar
         TopBar(
             title = "Profil",
-            onBackClick = { navController.popBackStack() } // Aksi kembali ke halaman sebelumnya
+            onBackClick = { navController.popBackStack() }
         )
 
         // Profile Header Card
         Card(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(bottomEnd = 36.dp), // Shape lebih halus
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(bottomEnd = 36.dp),
             colors = CardDefaults.cardColors(containerColor = lightTealBg.copy(alpha = 0.5f)),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
@@ -115,53 +153,70 @@ fun ProfileScreen(navController: NavController) {
                     .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Profile Image
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile",
-                        tint = tealColor,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
-                    Text(
-                        text = "John Santoso",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0F766E) // Warna lebih gelap
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "john.santoso@gmail.com",
-                        fontSize = 14.sp,
-                        color = Color(0xFF0F766E).copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(80.dp), color = tealColor)
+                } else {
+                    // 1. FOTO PROFIL DINAMIS
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Date",
-                            tint = Color(0xFF0F766E),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        if (!uiState.profile.profileImageUrl.isNullOrEmpty()) {
+                            AsyncImage(
+                                model = uiState.profile.profileImageUrl,
+                                contentDescription = "Profile Photo",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            // Placeholder default
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Profile",
+                                tint = tealColor,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        // 2. NAMA DINAMIS
                         Text(
-                            text = "16 Agustus 2000",
-                            fontSize = 12.sp,
+                            text = uiState.profile.name.ifBlank { "Nama Belum Diisi" },
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F766E)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        // 3. EMAIL DINAMIS
+                        Text(
+                            text = uiState.email,
+                            fontSize = 14.sp,
                             color = Color(0xFF0F766E).copy(alpha = 0.8f)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Date",
+                                tint = Color(0xFF0F766E),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            // 4. TANGGAL LAHIR DINAMIS
+                            Text(
+                                text = displayDate,
+                                fontSize = 12.sp,
+                                color = Color(0xFF0F766E).copy(alpha = 0.8f)
+                            )
+                        }
                     }
                 }
             }

@@ -5,6 +5,7 @@ import com.example.prediai.data.datastore.UserPreferencesManager
 import com.example.prediai.domain.model.UserProfile
 import com.example.prediai.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
@@ -59,5 +60,9 @@ class UserRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    override fun getCurrentUser(): FirebaseUser? {
+        return auth.currentUser
     }
 }

@@ -69,14 +69,14 @@ fun FileInfoCard(
 
             Column {
                 Text(
-                    text = "File : $fileName",
+                    text = "Berkas : $fileName",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF2D3142)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Uploaded on $uploadDate",
+                    text = "Diunggah pada $uploadDate",
                     fontSize = 13.sp,
                     color = Color(0xFF9E9E9E)
                 )

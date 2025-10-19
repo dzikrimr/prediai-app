@@ -1,78 +1,80 @@
+// File: MainViewModel.kt
+
 package com.example.prediai.presentation.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prediai.domain.model.EducationVideo
+import com.example.prediai.domain.model.ScanHistoryRecord
 import com.example.prediai.domain.model.ScheduleType
-import com.example.prediai.domain.repository.EducationRepository
-// --- 1. IMPORT REPOSITORY BARU ---
-import com.example.prediai.domain.repository.UserRepository
-import com.example.prediai.domain.usecase.GetSchedulesUseCase
+import com.example.prediai.domain.model.ScheduleItem // Asumsi: Import ini diperlukan untuk ScheduleType
+import com.example.prediai.domain.repository.EducationRepository // <<< PASTIKAN INI DIIMPOR
+import com.example.prediai.domain.repository.HistoryRepository // <<< PASTIKAN INI DIIMPOR
+import com.example.prediai.domain.repository.UserRepository // <<< PASTIKAN INI DIIMPOR
+import com.example.prediai.domain.usecase.GetSchedulesUseCase // <<< PASTIKAN INI DIIMPOR
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
-
-// Data class untuk menampung semua state di HomeScreen
-data class MainUiState(
-    // --- 2. UBAH DEFAULT NAME ---
-    val userName: String = "...", // Ganti "Sarah" menjadi "..." atau string kosong
-    val riskPercentage: Int? = 32,
-    val lastCheckDate: String? = "15 Jan 2024",
-    val lastCheckResult: String? = "Tidak ada kemungkinan gejala",
-    val reminders: List<Reminder> = emptyList(),
-    val recommendations: List<EducationVideo> = emptyList()
-)
 
 // Model data sederhana untuk UI
 data class Reminder(val title: String, val time: String)
 
+// Menambahkan properti 'id'
+data class Recommendation(
+    val id: String,
+    val title: String,
+    val source: String,
+    val views: String,
+    val imageUrl: String
+)
+
+// Data class untuk menampung semua state di HomeScreen
+data class MainUiState(
+    val isLoading: Boolean = true, // Tambahkan loading state
+    val userName: String = "Pengguna", // Default diubah agar dipopulasi dari Repo
+    val riskPercentage: Int? = null, // null jika belum ada data
+    val lastCheckDate: String? = null, // null jika belum ada data
+    val lastCheckResult: String? = null, // null jika belum ada data
+    // --- MENGGUNAKAN LIST MODEL YANG BENAR ---
+    val reminders: List<Reminder> = emptyList(), // Diambil dari schedules
+    val recommendations: List<EducationVideo> = emptyList(), // Diambil dari EducationRepository
+    val errorMessage: String? = null // Tambahkan error state
+)
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val educationRepository: EducationRepository,
-    private val getSchedulesUseCase: GetSchedulesUseCase,
-    // --- 3. INJECT USER REPOSITORY ---
-    private val userRepository: UserRepository
+    // Inject repository dan use case baru
+    private val historyRepository: HistoryRepository,
+    private val userRepository: UserRepository,
+    private val educationRepository: EducationRepository, // <<< TAMBAH INI
+    private val getSchedulesUseCase: GetSchedulesUseCase // <<< TAMBAH INI
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     init {
+        loadUserData()
+        loadScanSummary()
+        // --- MEMUAT DATA BARU ---
         loadRecommendations()
         loadUpcomingSchedules()
-        // --- 4. PANGGIL FUNGSI BARU UNTUK LOAD NAMA ---
-        loadUserProfile()
     }
 
-    // --- 5. BUAT FUNGSI BARU INI ---
-    private fun loadUserProfile() {
-        // Ambil profil dari cache (DataStore)
-        userRepository.getCachedUserProfile()
-            .onEach { userProfile ->
-                if (userProfile.name.isNotBlank()) {
-                    // --- PERBAIKAN DI SINI ---
-                    // 1. Ambil nama lengkap, misal "Ade Nugroho"
-                    val fullName = userProfile.name
-                    // 2. Pecah berdasarkan spasi ["Ade", "Nugroho"] dan ambil yang pertama
-                    val firstName = fullName.split(" ").first()
-
-                    // 3. Simpan hanya nama pertamanya
-                    _uiState.update { it.copy(userName = firstName) }
-                } else {
-                    _uiState.update { it.copy(userName = "Pengguna") } // Fallback jika nama kosong
-                }
-            }
-            .launchIn(viewModelScope)
-    }
-
+    // --- FUNGSI BARU DARI KODE ASLI (untuk rekomendasi) ---
     private fun loadRecommendations() {
+        // Menggunakan EducationVideo, bukan Recommendation kustom Anda
         educationRepository.getRecommendations()
             .onEach { recommendedVideos ->
                 _uiState.update { it.copy(recommendations = recommendedVideos) }
@@ -80,6 +82,7 @@ class MainViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    // --- FUNGSI BARU DARI KODE ASLI (untuk jadwal/reminders) ---
     private fun loadUpcomingSchedules() {
         val today = LocalDate.now()
         val tomorrow = today.plusDays(1)
@@ -98,7 +101,7 @@ class MainViewModel @Inject constructor(
                     } else {
                         try {
                             val itemDateTime = LocalDateTime.parse("${scheduleItem.date}T${scheduleItem.time}")
-                            itemDateTime.isAfter(now) // Gunakan 'now'
+                            itemDateTime.isAfter(now)
                         } catch (e: Exception) {
                             false
                         }
@@ -131,5 +134,96 @@ class MainViewModel @Inject constructor(
             _uiState.update { it.copy(reminders = upcomingReminders) }
 
         }.launchIn(viewModelScope)
+    }
+
+    // --- FUNGSI YANG SUDAH ADA (untuk nama pengguna) ---
+    private fun loadUserData() {
+        viewModelScope.launch {
+            userRepository.getCachedUserProfile().collect { profile ->
+                // Mengambil nama depan (asumsi userProfile.name adalah nama lengkap)
+                val fullName = profile?.name.orEmpty()
+                val firstName = if (fullName.isNotBlank()) fullName.split(" ").first() else "Pengguna"
+
+                _uiState.update {
+                    it.copy(userName = firstName)
+                }
+            }
+        }
+    }
+
+    // --- FUNGSI YANG SUDAH ADA (untuk ringkasan scan) ---
+    private fun loadScanSummary() {
+        viewModelScope.launch {
+            historyRepository.getScanHistory().collect { result ->
+                result.onSuccess { records ->
+                    processRecords(records)
+                }.onFailure { error ->
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        errorMessage = "Gagal memuat riwayat: ${error.message}",
+                        // Reset data risiko jika gagal
+                        riskPercentage = null,
+                        lastCheckDate = null,
+                        lastCheckResult = null
+                    )}
+                }
+            }
+        }
+    }
+
+    // --- FUNGSI YANG SUDAH ADA (Helper) ---
+    private fun processRecords(records: List<ScanHistoryRecord>) {
+        val validRecords = records.filter { it.timestamp != null && it.riskPercentage > 0 }
+
+        if (validRecords.isEmpty()) {
+            _uiState.update { it.copy(
+                isLoading = false,
+                riskPercentage = 0,
+                lastCheckDate = "Belum Ada",
+                lastCheckResult = "Belum Ada Pemeriksaan",
+                errorMessage = null
+            )}
+            return
+        }
+
+        val averageRisk = validRecords.map { it.riskPercentage }.average().toInt()
+        val lastRecord = validRecords.sortedByDescending { it.timestamp!! }.firstOrNull()
+
+        if (lastRecord == null) {
+            _uiState.update { it.copy(
+                isLoading = false,
+                riskPercentage = averageRisk,
+                lastCheckDate = "Data tidak valid",
+                lastCheckResult = "Data pemeriksaan terakhir tidak lengkap"
+            )}
+            return
+        }
+
+        val lastScanSummary = mapRecordToSummary(lastRecord)
+
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                riskPercentage = averageRisk,
+                lastCheckDate = lastScanSummary.date,
+                lastCheckResult = lastScanSummary.result,
+                errorMessage = null
+            )
+        }
+    }
+
+    private data class LastScanSummary(val date: String, val result: String)
+
+    private fun mapRecordToSummary(record: ScanHistoryRecord): LastScanSummary {
+        val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.forLanguageTag("id-ID"))
+        val dateString = record.timestamp?.let { dateFormat.format(it) } ?: "N/A"
+
+        val resultText = when {
+            record.riskPercentage > 75 -> "Risiko tinggi. Wajib konsultasi dokter!"
+            record.riskPercentage > 50 -> "Terdeteksi beberapa indikator. Disarankan konsultasi dokter."
+            else -> "Tidak ada kemungkinan gejala serius terdeteksi."
+        }
+
+        return LastScanSummary(dateString, resultText)
     }
 }

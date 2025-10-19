@@ -7,5 +7,6 @@ data class UserProfile(
     val weight: String = "",
     val city: String = "",
     val symptomsAndHistory: Map<String, Boolean> = emptyMap(),
-    val lifestyle: Map<String, String> = emptyMap()
+    val lifestyle: Map<String, String> = emptyMap(),
+    val profileImageUrl: String? = null
 )

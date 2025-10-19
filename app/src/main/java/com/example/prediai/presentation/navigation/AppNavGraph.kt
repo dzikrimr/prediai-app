@@ -9,8 +9,10 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.prediai.presentation.auth.AuthViewModel
 import com.example.prediai.presentation.auth.LoginScreen
 import com.example.prediai.presentation.auth.QuestionnaireScreen
@@ -120,11 +122,22 @@ fun AppNavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "video_detail" // Hapus argumen {videoId} dari route
-        ) {
+            route = "video_detail/{videoId}",
+            arguments = listOf(navArgument("videoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+
+            val videoId = backStackEntry.arguments?.getString("videoId")
+            Log.d("VideoDebug", "AppNavGraph: Navigated with ID -> $videoId")
+
+            LaunchedEffect(key1 = videoId) {
+                if (videoId != null) {
+                    educationViewModel.loadVideoById(videoId)
+                }
+            }
+
             VideoDetailScreen(
                 navController = navController,
-                viewModel = educationViewModel // Berikan instance ViewModel yang sama
+                viewModel = educationViewModel
             )
         }
 

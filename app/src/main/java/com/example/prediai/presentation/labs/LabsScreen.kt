@@ -86,11 +86,11 @@ fun LabsScreen(
                 ) {
                     Image(painter = painterResource(id = R.drawable.bg_lab), contentDescription = null, modifier = Modifier.align(Alignment.CenterEnd).size(180.dp).offset(x = 40.dp), alpha = 0.8f)
                     Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
-                        Text(text = "Upload Your Lab Results", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(text = "Unngah Hasil Lab Anda", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Smart Lab Analysis", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                        Text(text = "Analisis Lab Cerdas", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "Upload your lab results and get AI powered insights to better understand your health data", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f), lineHeight = 18.sp)
+                        Text(text = "Unggah hasil lab dan dapatkan wawasan berbasis AI untuk lebih memahami data kesehatan Anda", fontSize = 12.sp, color = Color.White.copy(alpha = 0.9f), lineHeight = 18.sp)
                     }
                 }
             }
@@ -148,7 +148,7 @@ fun LabsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(painter = painterResource(id = R.drawable.ic_upload), contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Upload File", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(text = "Unggah Berkas", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Color.White.copy(alpha = 0.2f)).padding(horizontal = 8.dp, vertical = 2.dp)) {
@@ -192,9 +192,9 @@ fun LabsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Recent Analysis", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                        Text(text = "Analisis Terakhir", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         TextButton(onClick = { /* TODO: Navigasi ke halaman riwayat lab lengkap */ }) {
-                            Text(text = "View All", fontSize = 14.sp, color = Color(0xFF00B4A3))
+                            Text(text = "Lihat Semua", fontSize = 14.sp, color = Color(0xFF00B4A3))
                         }
                     }
                 }
