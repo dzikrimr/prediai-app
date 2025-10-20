@@ -1,6 +1,6 @@
 package com.example.prediai.presentation.navigation
 
-import ContactUsScreen
+import com.example.prediai.presentation.profile.contact.ContactUsScreen
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,7 +20,7 @@ import com.example.prediai.presentation.auth.RegisterScreen
 import com.example.prediai.presentation.auth.RegistrationSuccessScreen
 import com.example.prediai.presentation.doctor.DoctorScreen
 import com.example.prediai.presentation.main.MainScreen
-import com.example.prediai.presentation.main.chatbot.ChatbotScreen // IMPORT INI
+import com.example.prediai.presentation.main.chatbot.ChatbotScreen
 import com.example.prediai.presentation.main.education.EducationListScreen
 import com.example.prediai.presentation.main.education.EducationViewModel
 import com.example.prediai.presentation.main.education.VideoDetailScreen

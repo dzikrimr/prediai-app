@@ -193,9 +193,6 @@ fun LabsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = "Analisis Terakhir", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        TextButton(onClick = { /* TODO: Navigasi ke halaman riwayat lab lengkap */ }) {
-                            Text(text = "Lihat Semua", fontSize = 14.sp, color = Color(0xFF00B4A3))
-                        }
                     }
                 }
 

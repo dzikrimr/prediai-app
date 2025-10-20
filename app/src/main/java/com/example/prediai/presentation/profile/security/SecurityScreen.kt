@@ -28,6 +28,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.prediai.R
 import com.example.prediai.presentation.common.TopBar
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 // Fungsi pembantu untuk membuka halaman pengaturan aplikasi
 fun openAppSettings(context: Context) {
@@ -37,23 +40,50 @@ fun openAppSettings(context: Context) {
     context.startActivity(intent)
 }
 
+// Fungsi Baru: Cek Izin Kamera
+fun isCameraPermissionGranted(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
+}
+
+// Fungsi Baru: Cek Izin Lokasi
+fun isLocationPermissionGranted(context: Context): Boolean {
+    return (ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED) ||
+            (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED)
+}
+
 @Composable
 fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Launcher untuk meminta izin Kamera
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        // Setelah permintaan, kita harus memuat ulang status izin dari sistem
-        viewModel.updateCameraPermissionState(isGranted)
+    // Launcher untuk kembali dari Settings
+    val permissionResultLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        // Setelah kembali dari settings, muat ulang status izin
+        val isCameraEnabled = isCameraPermissionGranted(context)
+        val isLocationEnabled = isLocationPermissionGranted(context)
+        viewModel.updateCameraPermissionState(isCameraEnabled)
+        viewModel.updateLocationState(isLocationEnabled)
     }
 
-    // Perlu ada fungsi di ViewModel atau Repository untuk mendapatkan status izin awal
-    // Karena kita tidak memiliki akses ke sistem Android di ViewModel, kita lakukan pengecekan saat komposisi awal
-    // Logika ini hanya untuk simulasi/tampilan, aksi switch akan membuka settings
+    // LaunchedEffect untuk memuat status izin saat pertama kali
+    LaunchedEffect(Unit) {
+        // Panggil fungsi cek izin real-time dan update ViewModel
+        val isCameraEnabled = isCameraPermissionGranted(context)
+        val isLocationEnabled = isLocationPermissionGranted(context)
+        viewModel.loadInitialPermissions(isCameraEnabled, isLocationEnabled)
+    }
 
     // LaunchedEffect untuk menampilkan Snackbar setelah reset password
     LaunchedEffect(uiState.message, uiState.isSuccess) {
@@ -65,9 +95,6 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
             )
         }
     }
-
-    // Catatan: Karena mendapatkan status izin notifikasi/kamera secara real-time di Composable kompleks (membutuhkan permission checker),
-    // kita akan membiarkan nilai default ViewModel dan fokus pada aksi switch yang membuka settings.
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -89,12 +116,11 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(paddingValues) // Penting untuk Scaffolding
+                    .padding(paddingValues)
                     .padding(16.dp)
             ) {
                 // Reset Password Section
                 Card(
-                    // ... (Card modifier dan style tidak berubah)
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -102,7 +128,7 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            // ... (Icon dan Text "Reset Password" tidak berubah)
+                            // ... (Icon dan Text "Reset Password") ...
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
@@ -175,9 +201,8 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // App Permissions Section
+                // App Permissions Section (MEMPERTAHANKAN STYLE CARD INI)
                 Card(
-                    // ... (Card modifier dan style tidak berubah)
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -185,7 +210,7 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            // ... (Icon dan Text "Izin Aplikasi" tidak berubah)
+                            // ... (Icon dan Text "Izin Aplikasi") ...
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
@@ -221,8 +246,12 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
                                     description = "Diperlukan untuk melakukan scan kuku dan lidah.",
                                     isEnabled = uiState.isCameraPermissionEnabled,
                                     onToggle = {
-                                        // Aksi: Buka pengaturan aplikasi agar pengguna mengubah izin
-                                        openAppSettings(context)
+                                        // Aksi: Buka pengaturan aplikasi
+                                        permissionResultLauncher.launch(
+                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                data = Uri.fromParts("package", context.packageName, null)
+                                            }
+                                        )
                                     }
                                 )
                             }
@@ -230,7 +259,7 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Notification Permission Item
+                        // 🔑 LOKASI Permission Item (Menggantikan Notifikasi)
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),
@@ -239,14 +268,18 @@ fun SecurityScreen(navController: NavController, viewModel: SecurityViewModel = 
                         ) {
                             Box(modifier = Modifier.padding(16.dp)) {
                                 PermissionItem(
-                                    icon = R.drawable.ic_notification,
-                                    iconTint = Color(0xFFFFA726),
-                                    title = "Notifikasi",
-                                    description = "Terima pengingat untuk pemeriksaan rutin.",
-                                    isEnabled = uiState.isNotificationEnabled,
+                                    icon = R.drawable.ic_location,
+                                    iconTint = Color(0xFF1E88E5),
+                                    title = "Izin Lokasi",
+                                    description = "Diperlukan untuk mencari fasilitas kesehatan terdekat.",
+                                    isEnabled = uiState.isLocationEnabled,
                                     onToggle = {
-                                        // Aksi: Buka pengaturan aplikasi agar pengguna mengubah izin
-                                        openAppSettings(context)
+                                        // Aksi: Buka pengaturan aplikasi
+                                        permissionResultLauncher.launch(
+                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                data = Uri.fromParts("package", context.packageName, null)
+                                            }
+                                        )
                                     }
                                 )
                             }
@@ -304,7 +337,7 @@ private fun PermissionItem(
 
         Switch(
             checked = isEnabled,
-            onCheckedChange = onToggle, // onToggle sekarang membuka settings
+            onCheckedChange = onToggle, // onToggle membuka settings
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = Color(0xFF00BFA5),
@@ -320,3 +353,6 @@ private fun PermissionItem(
 private fun SecurityScreenPreview() {
     SecurityScreen(navController = NavController(LocalContext.current))
 }
+// Catatan: Fungsi isCameraPermissionGranted, isLocationPermissionGranted, dan openAppSettings
+// yang baru dibuat harus berada di luar Composable atau di file yang sama (seperti di atas)
+// untuk resolusi yang benar.

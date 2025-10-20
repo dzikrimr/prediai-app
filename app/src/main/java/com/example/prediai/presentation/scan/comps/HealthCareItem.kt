@@ -1,6 +1,7 @@
 package com.example.prediai.presentation.scan.comps
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,10 +30,13 @@ import com.example.prediai.R
 @Composable
 fun HealthcareItem(
     name: String,
-    specialty: String
+    specialty: String,
+    onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = Color.White,
         shadowElevation = 1.dp

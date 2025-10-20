@@ -1,10 +1,7 @@
 package com.example.prediai.presentation.navigation
 
-import ContactUsScreen
-import android.util.Log
+import com.example.prediai.presentation.profile.contact.ContactUsScreen
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -13,8 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.example.prediai.presentation.auth.AuthViewModel
-import com.example.prediai.presentation.auth.QuestionnaireScreen
 import com.example.prediai.presentation.doctor.DoctorScreen
 import com.example.prediai.presentation.guide.GuideScreen
 import com.example.prediai.presentation.labs.LabResultScreen

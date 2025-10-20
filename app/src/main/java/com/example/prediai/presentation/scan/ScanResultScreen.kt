@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.scan
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +50,6 @@ fun ScanResultScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Header with Tabs
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Color(0xFF00B4A3),
@@ -62,7 +62,6 @@ fun ScanResultScreen(
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .padding(bottom = 16.dp)
             ) {
-                // Top bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -93,7 +92,6 @@ fun ScanResultScreen(
                     }
                 }
 
-                // Tab Navigation
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -112,7 +110,10 @@ fun ScanResultScreen(
                             TabButton(
                                 text = title,
                                 isSelected = selectedTab == index,
-                                onClick = { selectedTab = index },
+                                onClick = {
+                                    selectedTab = index
+                                    Log.d("ScanResultScreen", "Tab changed to: $title")
+                                },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -121,6 +122,7 @@ fun ScanResultScreen(
             }
         }
 
+        Log.d("ScanResultScreen", "Rendering tab: ${tabs[selectedTab]}, nearbyPlaces: ${uiState.nearbyPlaces.size}")
         when (selectedTab) {
             0 -> OverviewScreen(uiState.analysisData, uiState.nailImage, uiState.tongueImage, onExportClick)
             1 -> DetailsScreen(uiState.analysisData)

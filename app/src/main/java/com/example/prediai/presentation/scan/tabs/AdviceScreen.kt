@@ -1,5 +1,9 @@
 package com.example.prediai.presentation.scan.tabs
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -17,8 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,15 +43,41 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
+import com.example.prediai.domain.model.NearbyPlace
 import com.example.prediai.presentation.scan.ScanResultViewModel
 import com.example.prediai.presentation.scan.comps.HealthcareItem
+import com.example.prediai.presentation.scan.comps.MapsConfirmationDialog
+
+fun openGoogleMaps(context: Context, name: String, address: String) {
+    val searchUri = Uri.parse("geo:0,0?q=$name, $address")
+    val mapIntent = Intent(Intent.ACTION_VIEW, searchUri).apply {
+        setPackage("com.google.android.apps.maps")
+    }
+
+    if (mapIntent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(mapIntent)
+    } else {
+        // URI fallback sedikit diperbaiki untuk stabilitas
+        val webUri = Uri.parse("https://maps.google.com/?q=$name, $address")
+        val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+        context.startActivity(webIntent)
+    }
+}
 
 @Composable
 fun AdviceScreen(viewModel: ScanResultViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    var showMapsDialog by remember { mutableStateOf(false) }
+    var selectedPlaceForMaps by remember { mutableStateOf<NearbyPlace?>(null) }
 
-    // Launcher untuk meminta izin lokasi
+    // 🔑 1. DEKLARASI SCROLL STATE
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(uiState.nearbyPlaces) {
+        Log.d("AdviceScreen", "nearbyPlaces changed: ${uiState.nearbyPlaces.size} - ${uiState.nearbyPlaces}")
+    }
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -54,16 +85,14 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
             permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             viewModel.findNearbyHealthcare()
         } else {
-            // Beri tahu ViewModel bahwa izin ditolak
             viewModel.onLocationPermissionDenied()
         }
     }
 
-    // Panggil launcher saat screen pertama kali dibuka
     LaunchedEffect(Unit) {
         locationPermissionLauncher.launch(arrayOf(
-            android.Manifest.permission.ACCESS_FINE_LOCATION, // Akurasi tinggi
-            android.Manifest.permission.ACCESS_COARSE_LOCATION // Akurasi rendah
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
         ))
     }
 
@@ -71,12 +100,11 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
+            .verticalScroll(scrollState)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Professional Consultation Card
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -110,7 +138,7 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Professional Consultation Recommended",
+                            text = "Konsultasi Profesional Direkomendasikan",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF212121),
@@ -120,7 +148,7 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "Based on your analysis results, we recommend consulting with a healthcare professional for proper evaluation and personalized care.",
+                            text = "Kami merekomendasikan Anda untuk konsultasi dengan profesional kesehatan agar evaluasi yang tepat dan perawatan yang dipersonalisasi.",
                             fontSize = 14.sp,
                             color = Color(0xFF757575),
                             lineHeight = 20.sp
@@ -131,7 +159,11 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { viewModel.findNearbyHealthcare() },
+                    onClick = {
+                        if (uiState.nearbyPlaces.isEmpty() && !uiState.isLocationLoading) {
+                            viewModel.findNearbyHealthcare()
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -141,13 +173,14 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Location",
+                        painter = painterResource(id = R.drawable.ic_consult),
+                        contentDescription = "Consult",
+                        tint = Color.White,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Cari dokter terdekat",
+                        text = "Konsultasi ke dokter langsung",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -157,52 +190,69 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Nearby Healthcare Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Nearby Healthcare",
+                text = "Fasilitas Kesehatan Terdekat",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF212121)
-            )
-            Text(
-                text = "View All",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF00B4A3)
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        Log.d("AdviceScreen", "Nearby places: ${uiState.nearbyPlaces.size} - ${uiState.nearbyPlaces}")
         when {
             uiState.isLocationLoading -> {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
             uiState.locationError != null -> {
-                Text(text = uiState.locationError!!, color = Color.Red)
+                Text(
+                    text = uiState.locationError!!,
+                    color = Color.Red,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                )
             }
-            uiState.nearbyPlaces.isNotEmpty() -> {
-                // Gunakan LazyColumn jika daftar bisa panjang
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    uiState.nearbyPlaces.take(3).forEach { place -> // Ambil 3 teratas
+            else -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    uiState.nearbyPlaces.forEach { place ->
                         HealthcareItem(
                             name = place.name,
-                            specialty = place.address, // Gunakan specialty untuk alamat
-                            // Anda bisa menambahkan parameter jarak jika perlu
+                            specialty = place.address,
+                            onClick = {
+                                selectedPlaceForMaps = place
+                                showMapsDialog = true
+                            }
                         )
                     }
                 }
             }
-            else -> {
-                Text(text = "Tidak ada rumah sakit/klinik terdekat yang ditemukan.")
-            }
         }
+    }
+    if (showMapsDialog && selectedPlaceForMaps != null) {
+        val place = selectedPlaceForMaps!!
+        MapsConfirmationDialog(
+            onConfirm = {
+                openGoogleMaps(context, place.name, place.address)
+                showMapsDialog = false
+                selectedPlaceForMaps = null
+            },
+            onDismiss = {
+                showMapsDialog = false
+                selectedPlaceForMaps = null
+            }
+        )
     }
 }

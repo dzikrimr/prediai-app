@@ -1,5 +1,6 @@
 package com.example.prediai.presentation.auth.comps
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,9 +8,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -161,12 +164,25 @@ fun DataFormStep(
                         focusedBorderColor = primaryColor,
                         unfocusedBorderColor = Color(0xFFE2E8F0),
                         focusedTextColor = Color(0xFF2D3748),
-                        unfocusedTextColor = Color(0xFF2D3748)
+                        unfocusedTextColor = Color(0xFF2D3748),
+                        // 🔑 Pastikan warna latar belakang inputnya putih
+                        // Ini penting karena menu akan diletakkan di bawah input.
+                        // Jika input tidak terlihat, mungkin ada masalah dengan warna container.
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
                     )
                 )
+
+                // 🔑 ExposedDropdownMenu (Ini mewarisi warna surface/container secara default)
+                // Kita bisa membungkusnya dengan Card untuk memastikan warna putih & elevation
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    // ExposedDropdownMenu di M3 secara default menggunakan warna background dari MaterialTheme.surface
+                    // atau DropdownMenuDefault.tonalElevation. Untuk memaksanya putih:
+                    modifier = Modifier
+                        .background(Color.White)
+                        .clip(RoundedCornerShape(12.dp))
                 ) {
                     cityOptions.forEach { option ->
                         DropdownMenuItem(
@@ -174,7 +190,7 @@ fun DataFormStep(
                             onClick = {
                                 onCityChange(option)
                                 expanded = false
-                            }
+                            },
                         )
                     }
                 }

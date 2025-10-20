@@ -29,16 +29,22 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun PrediAITheme(
+    // Nilai ini diabaikan dan diatur ke false di dalam fungsi untuk menolak tema gelap
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    // Tetapkan `useDarkTheme` secara eksplisit ke false
+    val useDarkTheme = false
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            // Gunakan skema warna terang dinamis
+            dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
+        // Selalu gunakan LightColorScheme karena useDarkTheme selalu false
+        useDarkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 

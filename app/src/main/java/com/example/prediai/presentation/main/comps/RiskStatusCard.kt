@@ -82,20 +82,20 @@ fun RiskStatusCard(
                             Text(
                                 "Rata - Rata Risiko",
                                 color = Color.White,
-                                fontSize = 16.sp,
+                                fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 "Terakhir diperiksa",
                                 color = Color.White,
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 fontStyle = FontStyle.Italic
                             )
                             Text(
                                 displayDate,
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold,
-                                fontSize = 10.sp
+                                fontSize = 14.sp
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))

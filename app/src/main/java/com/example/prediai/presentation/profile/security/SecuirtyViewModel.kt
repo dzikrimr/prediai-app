@@ -2,7 +2,7 @@ package com.example.prediai.presentation.profile.security
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.prediai.domain.repository.AuthRepository // Asumsi: Anda memiliki AuthRepository
+import com.example.prediai.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,17 +15,18 @@ data class SecurityUiState(
     val message: String? = null,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
-    val isCameraPermissionEnabled: Boolean = false, // Status izin nyata harus di-fetch dari sistem
-    val isNotificationEnabled: Boolean = false     // Status izin nyata harus di-fetch dari sistem
+    val isCameraPermissionEnabled: Boolean = false,
+    val isLocationEnabled: Boolean = false     // 🔑 Perubahan: Mengganti Notifikasi menjadi Lokasi
 )
 
 @HiltViewModel
 class SecurityViewModel @Inject constructor(
-    private val authRepository: AuthRepository // Asumsi: AuthRepository memiliki fungsi resetPassword
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SecurityUiState())
     val uiState = _uiState.asStateFlow()
+    // ... (updateEmail dan sendPasswordReset tidak berubah) ...
 
     fun updateEmail(email: String) {
         _uiState.update { it.copy(emailInput = email, message = null, isSuccess = false) }
@@ -62,24 +63,21 @@ class SecurityViewModel @Inject constructor(
         }
     }
 
-    // Fungsi untuk mensimulasikan pembaruan status izin di UI,
-    // tetapi aksi membuka pengaturan akan ditangani oleh Composable
     fun updateCameraPermissionState(isEnabled: Boolean) {
         _uiState.update { it.copy(isCameraPermissionEnabled = isEnabled) }
     }
 
-    fun updateNotificationState(isEnabled: Boolean) {
-        _uiState.update { it.copy(isNotificationEnabled = isEnabled) }
+    // 🔑 Perubahan: Fungsi pembaruan status lokasi
+    fun updateLocationState(isEnabled: Boolean) {
+        _uiState.update { it.copy(isLocationEnabled = isEnabled) }
     }
 
-    // Fungsi yang HARUS DIPANGGIL oleh Composable saat halaman dibuka
-    // untuk mendapatkan status izin yang sebenarnya dari sistem Android
-    fun loadInitialPermissions(isCameraEnabled: Boolean, isNotificationEnabled: Boolean) {
+    // 🔑 Perubahan: Mengganti Notifikasi menjadi Lokasi di fungsi loading awal
+    fun loadInitialPermissions(isCameraEnabled: Boolean, isLocationEnabled: Boolean) {
         _uiState.update {
             it.copy(
                 isCameraPermissionEnabled = isCameraEnabled,
-                isNotificationEnabled = isNotificationEnabled,
-                // Prefill email with current user's email if available (optional)
+                isLocationEnabled = isLocationEnabled, // Diperbarui
                 emailInput = authRepository.getCurrentUser()?.email ?: ""
             )
         }

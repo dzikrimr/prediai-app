@@ -1,3 +1,8 @@
+package com.example.prediai.presentation.profile.contact
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,19 +27,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.prediai.R
-// Ganti dengan path TopBar Anda jika berbeda
 import com.example.prediai.presentation.common.TopBar
+import kotlinx.coroutines.launch
+
+fun sendEmailSafe(context: Context, subject: String, body: String) {
+    val recipientEmail = "abdisyukur10@gmail.com"
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:$recipientEmail")
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, body)
+    }
+    val chooser = Intent.createChooser(intent, "Kirim email melalui:")
+    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(chooser)
+}
 
 @Composable
 fun ContactUsScreen(navController: NavController) {
-    // State untuk menyimpan input dari pengguna
     var subject by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    // Warna utama yang digunakan di halaman
     val primaryColor = Color(0xFF0D9488)
     val lightGreenBg = Color(0xFFCCFBF1)
-    val lightGreyBg = Color(0xFFF8FAFC)
     val textFieldBg = Color(0xFFFDFDFD)
     val textColor = Color(0xFF334155)
     val subtitleColor = Color(0xFF64748B)
@@ -44,13 +61,8 @@ fun ContactUsScreen(navController: NavController) {
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        // 1. Top Bar
-        TopBar(
-            title = "Hubungi Kami",
-            onBackClick = { navController.popBackStack() }
-        )
+        TopBar(title = "Hubungi Kami", onBackClick = { navController.popBackStack() })
 
-        // 2. Konten yang bisa di-scroll
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -59,8 +71,6 @@ fun ContactUsScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Header Icon
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -77,8 +87,6 @@ fun ContactUsScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Teks Judul dan Subjudul
             Text(
                 text = "Ada Keluhan atau Pertanyaan?",
                 fontWeight = FontWeight.Bold,
@@ -95,11 +103,9 @@ fun ContactUsScreen(navController: NavController) {
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-
-            // Input Judul Keluhan
+            // Input Judul
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // ✅ UPDATE: ic_pencil dengan background
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -133,11 +139,9 @@ fun ContactUsScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Input Deskripsi Keluhan
+            // Input Deskripsi
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // ✅ UPDATE: ic_description dengan background
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -172,12 +176,11 @@ fun ContactUsScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
             // Kotak Tips
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)), // Warna disesuaikan dengan BG ikon
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
                 elevation = CardDefaults.cardElevation(0.dp)
             ) {
                 Row(
@@ -185,7 +188,6 @@ fun ContactUsScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // ✅ UPDATE: ic_lamp dengan background
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -215,18 +217,26 @@ fun ContactUsScreen(navController: NavController) {
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // 3. Tombol Kirim yang menempel di bawah
+        // Tombol Kirim
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
             Button(
-                onClick = { /* Handle submit */ },
+                onClick = {
+                    sendEmailSafe(context, subject, description)
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Silakan kirim pesan melalui aplikasi email.",
+                            actionLabel = "OK",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

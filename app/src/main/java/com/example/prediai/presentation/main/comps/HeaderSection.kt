@@ -21,7 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.presentation.theme.PrediAITheme
-// --- 1. TAMBAHKAN IMPORT INI UNTUK MENGAMBIL WAKTU ---
 import java.util.Calendar
 
 @Composable
@@ -30,23 +29,27 @@ fun HeaderSection(
     onNotificationClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    // --- 2. TAMBAHKAN LOGIKA WAKTU DI SINI ---
-    // 'remember' dipakai agar kalkulasi ini tidak berjalan
-    // setiap kali terjadi recomposition (pergerakan UI).
     val greeting = remember {
         val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY) // Ambil jam (format 0-23)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
 
-        // Tentukan ucapan berdasarkan jam
         when (hour) {
-            in 4..9 -> "Selamat Pagi"   // 04:00 - 09:59
-            in 10..14 -> "Selamat Siang"  // 10:00 - 14:59
-            in 15..18 -> "Selamat Sore"  // 15:00 - 18:59
-            else -> "Selamat Malam"     // 19:00 - 03:59
+            in 4..9 -> "Selamat Pagi"
+            in 10..14 -> "Selamat Siang"
+            in 15..18 -> "Selamat Sore"
+            else -> "Selamat Malam"
         }
     }
 
-    // --- 3. TERJEMAHKAN SUBTITLE ---
+    val fullTitle = "$greeting, $userName!"
+    val maxLength = 21
+
+    val trimmedTitle = if (fullTitle.length > maxLength) {
+        fullTitle.take(maxLength - 3) + "..."
+    } else {
+        fullTitle
+    }
+
     val subtitle = "Bagaimana kabarmu hari ini?"
 
     Row(
@@ -88,14 +91,13 @@ fun HeaderSection(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        // --- 4. GUNAKAN TEKS YANG SUDAH DINAMIS ---
-                        text = "$greeting, $userName!",
+                        // 🔑 GUNAKAN trimmedTitle
+                        text = trimmedTitle,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1E293B)
                     )
                     Text(
-                        // --- 5. GUNAKAN TEKS YANG SUDAH DITERJEMAHKAN ---
                         text = subtitle,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,

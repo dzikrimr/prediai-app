@@ -3,6 +3,7 @@ package com.example.prediai.presentation.scan
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
+import android.location.Geocoder
 import android.location.LocationManager
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
@@ -23,12 +24,14 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -36,16 +39,19 @@ data class ScanResultUiState(
     val analysisData: AnalysisResponse? = null,
     val nailImage: ByteArray? = null,
     val tongueImage: ByteArray? = null,
-    val nearbyPlaces: List<NearbyPlace> = emptyList(), // <-- TAMBAHKAN INI
-    val isLocationLoading: Boolean = false, // <-- TAMBAHKAN INI
-    val locationError: String? = null // <-- TAMBAHKAN INI
+    val nearbyPlaces: List<NearbyPlace> = emptyList(),
+    val isLocationLoading: Boolean = false,
+    val locationError: String? = null
 ) {
-    // ... (equals dan hashCode tetap sama)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as ScanResultUiState
         if (analysisData != other.analysisData) return false
+        if (nearbyPlaces != other.nearbyPlaces) return false // <--- BARIS KRITIS DITAMBAHKAN
+        if (isLocationLoading != other.isLocationLoading) return false // <--- BARIS KRITIS DITAMBAHKAN
+        if (locationError != other.locationError) return false // <--- BARIS KRITIS DITAMBAHKAN
+
         if (nailImage != null) {
             if (other.nailImage == null) return false
             if (!nailImage.contentEquals(other.nailImage)) return false
@@ -59,6 +65,9 @@ data class ScanResultUiState(
 
     override fun hashCode(): Int {
         var result = analysisData?.hashCode() ?: 0
+        result = 31 * result + (nearbyPlaces.hashCode()) // <--- BARIS KRITIS DITAMBAHKAN
+        result = 31 * result + isLocationLoading.hashCode() // <--- BARIS KRITIS DITAMBAHKAN
+        result = 31 * result + (locationError?.hashCode() ?: 0) // <--- BARIS KRITIS DITAMBAHKAN
         result = 31 * result + (nailImage?.contentHashCode() ?: 0)
         result = 31 * result + (tongueImage?.contentHashCode() ?: 0)
         return result
@@ -102,34 +111,42 @@ class ScanResultViewModel @Inject constructor(
     fun onLocationPermissionDenied() {
         _uiState.update { it.copy(locationError = "Izin lokasi diperlukan untuk menemukan fasilitas kesehatan terdekat.") }
     }
-    // --- AKHIR FUNGSI BARU ---
 
     @SuppressLint("MissingPermission")
     fun findNearbyHealthcare() {
+        if (uiState.value.isLocationLoading || uiState.value.nearbyPlaces.isNotEmpty()) {
+            Log.d("ScanResultVM", "findNearbyHealthcare dibatalkan: sedang memuat atau data sudah ada")
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLocationLoading = true, locationError = null) }
 
-            // --- TAMBAHKAN PENGECEKAN GPS DI SINI ---
             if (!isLocationEnabled()) {
-                _uiState.update { it.copy(locationError = "Layanan lokasi (GPS) tidak aktif. Mohon aktifkan untuk melanjutkan.", isLocationLoading = false) }
+                _uiState.update { it.copy(locationError = "Layanan lokasi (GPS) tidak aktif.", isLocationLoading = false) }
                 return@launch
             }
-            // --- AKHIR PENGECEKAN ---
 
             try {
                 val location = fusedLocationClient.lastLocation.await()
                 if (location != null) {
                     val userLatLng = LatLng(location.latitude, location.longitude)
+                    val cityName = getCityNameFromLatLng(userLatLng)
+                    if (cityName.isNullOrBlank()) {
+                        _uiState.update { it.copy(locationError = "Gagal mendapatkan nama kota.", isLocationLoading = false) }
+                        return@launch
+                    }
 
-                    placesRepository.findNearbyHospitals(userLatLng)
+                    placesRepository.findNearbyHospitalsByCity(cityName)
                         .onSuccess { places ->
-                            _uiState.update { it.copy(nearbyPlaces = places, isLocationLoading = false) }
+                            Log.d("ScanResultVM", "Nearby places updated: ${places.size} places - $places")
+                            _uiState.update { it.copy(nearbyPlaces = places.toList(), isLocationLoading = false) }
                         }
                         .onFailure { exception ->
+                            Log.e("ScanResultVM", "Failed to fetch places: ${exception.message}")
                             _uiState.update { it.copy(locationError = "Gagal mencari tempat: ${exception.message}", isLocationLoading = false) }
                         }
                 } else {
-                    _uiState.update { it.copy(locationError = "Gagal mendapatkan lokasi saat ini. Coba lagi beberapa saat.", isLocationLoading = false) }
+                    _uiState.update { it.copy(locationError = "Gagal mendapatkan lokasi saat ini.", isLocationLoading = false) }
                 }
             } catch (e: SecurityException) {
                 _uiState.update { it.copy(locationError = "Izin lokasi ditolak.", isLocationLoading = false) }
@@ -138,8 +155,37 @@ class ScanResultViewModel @Inject constructor(
             }
         }
     }
+    @Suppress("DEPRECATION")
+    private fun getCityNameFromLatLng(latLng: LatLng): String? {
+        return try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
 
-    private fun loadHistoryRecord(id: String) { // <-- Diubah di sini
+            addresses?.firstOrNull()?.let { address ->
+
+                val subAdminArea = address.subAdminArea
+                val locality = address.locality
+                val adminArea = address.adminArea
+                val finalCityName = subAdminArea
+                    ?: if (locality != null && locality.startsWith("Kecamatan", ignoreCase = true)) {
+                        locality.substringAfter("Kecamatan").trim()
+                    } else {
+                        locality
+                    }
+                    ?: adminArea
+
+                Log.d("Location", "Geocoder memilih lokasi: $finalCityName (setelah dibersihkan)")
+
+                return finalCityName
+
+            }
+        } catch (e: Exception) {
+            Log.e("Location", "Geocoding failed", e)
+            null
+        }
+    }
+
+    private fun loadHistoryRecord(id: String) {
         viewModelScope.launch {
             Log.d("ScanResultVM", "Menjalankan getScanRecordById untuk ID: $id")
             historyRepository.getScanRecordById(id).onSuccess { record ->
@@ -171,10 +217,10 @@ class ScanResultViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadImageAsByteArray(url: String): ByteArray? { // <-- Diubah di sini
+    private suspend fun loadImageAsByteArray(url: String): ByteArray? {
         if (url.isBlank()) return null
         return try {
-            val request = ImageRequest.Builder(context) // Menggunakan context dari constructor
+            val request = ImageRequest.Builder(context)
                 .data(url)
                 .allowHardware(false)
                 .build()
@@ -204,7 +250,7 @@ class ScanResultViewModel @Inject constructor(
             val combinedAnalysis = if (userProfile != null) {
                 calculateCombinedRisk(analysis, userProfile)
             } else {
-                analysis // Jika profil tidak ditemukan, gunakan hasil scan asli
+                analysis
             }
 
             _uiState.update {
@@ -230,7 +276,6 @@ class ScanResultViewModel @Inject constructor(
                     throw Exception("Data tidak lengkap untuk disimpan")
                 }
 
-                // Upload gambar secara paralel
                 val nailUrlDeferred = async { historyRepository.uploadImage(nailBytes) }
                 val tongueUrlDeferred = async { historyRepository.uploadImage(tongueBytes) }
 
@@ -246,13 +291,11 @@ class ScanResultViewModel @Inject constructor(
                         tongueImageUrl = tongueResult.getOrThrow()
                     )
                     historyRepository.saveScanRecord(record).getOrThrow()
-                    // Di sini Anda bisa menambahkan state untuk notifikasi "Berhasil Disimpan"
                 } else {
                     throw Exception("Gagal mengunggah gambar")
                 }
 
             } catch (e: Exception) {
-                // Di sini Anda bisa menambahkan state untuk notifikasi error
             } finally {
                 _isSaving.value = false
             }
@@ -266,20 +309,17 @@ class ScanResultViewModel @Inject constructor(
         var questionnaireScore = 0f
         val questionnaireRiskFactors = mutableListOf<String>()
 
-        // 1. Hitung skor dari Gejala dan Riwayat Medis
         userProfile.symptomsAndHistory.forEach { (question, answer) ->
-            if (answer) { // Jika jawabannya "Ya" (true)
-                questionnaireScore += 8 // Tambah 8 poin untuk setiap gejala/riwayat
+            if (answer) {
+                questionnaireScore += 8
                 when {
                     question.contains("diabetes") -> questionnaireRiskFactors.add("Riwayat diabetes dalam keluarga")
                     question.contains("lelah") -> questionnaireRiskFactors.add("Sering merasa mudah lelah")
                     question.contains("haus") -> questionnaireRiskFactors.add("Sering merasa haus berlebihan")
-                    // Tambahkan deskripsi lain jika perlu
                 }
             }
         }
 
-        // 2. Hitung skor dari Gaya Hidup
         userProfile.lifestyle.forEach { (question, answer) ->
             when {
                 question.contains("aktivitas fisik") && answer == "Jarang" -> {
@@ -301,24 +341,19 @@ class ScanResultViewModel @Inject constructor(
             }
         }
 
-        // Batasi skor kuesioner maksimal 100
         questionnaireScore = min(questionnaireScore, 100f)
 
-        // 3. Logika Kombinasi Skor
         val originalScanPercent = scanResult.riskPercentage
         var adjustedPercent = originalScanPercent
 
-        if (questionnaireScore < 30) { // Risiko kuesioner RENDAH -> Melemahkan hasil scan
-            adjustedPercent *= 0.7f // Kurangi persentase scan sebesar 30%
-        } else if (questionnaireScore > 60) { // Risiko kuesioner TINGGI -> Menguatkan hasil scan
-            adjustedPercent = (adjustedPercent * 0.6f) + (questionnaireScore * 0.4f) // Rata-rata terbobot
+        if (questionnaireScore < 30) {
+            adjustedPercent *= 0.7f
+        } else if (questionnaireScore > 60) {
+            adjustedPercent = (adjustedPercent * 0.6f) + (questionnaireScore * 0.4f)
         }
-        // Jika risiko kuesioner SEDANG, kita biarkan persentase scan lebih dominan (tidak ada perubahan signifikan)
 
-        // Pastikan persentase tidak melebihi 99%
         adjustedPercent = min(adjustedPercent, 99.0f)
 
-        // 4. Tentukan Risk Level baru dan gabungkan Risk Factors
         val newRiskLevel = when {
             adjustedPercent > 70 -> "Tinggi"
             adjustedPercent > 50 -> "Sedang"
@@ -326,7 +361,6 @@ class ScanResultViewModel @Inject constructor(
         }
         val combinedRiskFactors = (scanResult.riskFactors + questionnaireRiskFactors).distinct()
 
-        // 5. Kembalikan hasil analisis yang baru
         return AnalysisResponse(
             riskLevel = newRiskLevel,
             riskPercentage = adjustedPercent,

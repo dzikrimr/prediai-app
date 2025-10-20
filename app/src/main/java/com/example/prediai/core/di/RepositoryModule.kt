@@ -27,7 +27,6 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindUserRepository(
-        // PASTIKAN NAMA IMPLEMENTASI INI BENAR
         impl: UserRepositoryImpl
     ): UserRepository
 

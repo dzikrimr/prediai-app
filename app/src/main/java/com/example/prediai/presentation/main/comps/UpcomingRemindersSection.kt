@@ -135,7 +135,7 @@ private fun EmptyReminders(onAddScheduleClick: () -> Unit) {
         Icon(
             painter = painterResource(id = R.drawable.ic_calendar_empty),
             contentDescription = null,
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(80.dp),
             tint = Color.LightGray
         )
         Text(
