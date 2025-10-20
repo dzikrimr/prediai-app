@@ -11,9 +11,10 @@ enum class ScheduleType {
 }
 
 data class ScheduleItem(
-    val id: String = "", // ID unik, bisa dibuat dari push() Firebase
-    val type: ScheduleType = ScheduleType.CEK_GULA,
-    val description: String = "",
-    val date: String = "", // Simpan sebagai String (misal "yyyy-MM-dd")
-    val time: String = "", // Simpan sebagai String (misal "HH:mm")
+    @JvmField val id: String = "",
+    @JvmField val type: ScheduleType = ScheduleType.CEK_GULA,
+    @JvmField val description: String = "",
+    @JvmField val date: String = "",
+    @JvmField val time: String = "",
+    @JvmField val isDismissed: Boolean = false
 )

@@ -14,4 +14,8 @@ interface ScheduleRepository {
     // (Opsional) Fungsi lain yang mungkin kamu butuh
     // suspend fun updateSchedule(scheduleItem: ScheduleItem)
     // suspend fun deleteSchedule(scheduleId: String)
+
+    suspend fun deleteSchedule(scheduleId: String)
+
+    suspend fun dismissScheduleNotification(scheduleId: String)
 }

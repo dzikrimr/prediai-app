@@ -5,11 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+// --- IMPORT BARU ---
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +21,11 @@ import com.example.prediai.presentation.main.notification.NotificationItemData
 import com.example.prediai.presentation.theme.PrediAITheme
 
 @Composable
-fun NotificationItem(item: NotificationItemData) {
+fun NotificationItem(
+    item: NotificationItemData,
+    // --- 1. TAMBAHKAN PARAMETER LAMBDA INI ---
+    onDeleteClick: (String) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -30,9 +33,10 @@ fun NotificationItem(item: NotificationItemData) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), // Kurangi padding vertikal sedikit
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Ikon Kiri (Tidak berubah)
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -48,7 +52,8 @@ fun NotificationItem(item: NotificationItemData) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column {
+            // Kolom Teks (Tidak berubah)
+            Column(modifier = Modifier.weight(1f)) { // Beri weight agar tombol hapus bisa di ujung
                 Text(
                     text = item.title,
                     fontWeight = FontWeight.SemiBold,
@@ -58,6 +63,18 @@ fun NotificationItem(item: NotificationItemData) {
                     text = item.dateTime,
                     color = Color.Gray,
                     fontSize = 14.sp
+                )
+            }
+
+            // --- 2. TAMBAHKAN TOMBOL HAPUS DI SINI ---
+            IconButton(
+                onClick = { onDeleteClick(item.id) }, // Panggil lambda dengan ID item
+                modifier = Modifier.size(24.dp) // Ukuran tombol
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close, // Ikon 'X'
+                    contentDescription = "Hapus Notifikasi",
+                    tint = Color.Gray // Warna ikon
                 )
             }
         }
@@ -70,9 +87,11 @@ fun NotificationItemPreview() {
     PrediAITheme {
         NotificationItem(
             item = NotificationItemData(
+                id = "dummy-id", // Tambah ID dummy
                 title = "Ayo pergi ke dokter untuk kontrol gula darah",
                 dateTime = "17 Agustus • 4:00 PM"
-            )
+            ),
+            onDeleteClick = {} // Tambahkan lambda kosong untuk preview
         )
     }
 }
