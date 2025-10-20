@@ -234,7 +234,12 @@ fun LoginForm(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("G", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_google), // Ganti dengan nama file ikon Anda
+                            contentDescription = "Google Logo",
+                            modifier = Modifier.size(20.dp), // Sesuaikan ukuran ikon jika perlu
+                            tint = Color.Unspecified // Penting agar warna asli ikon ditampilkan
+                        )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text("Masuk dengan Google", color = Color(0xFF2D3748), fontSize = 14.sp, fontWeight = FontWeight.Medium)
                     }

@@ -138,7 +138,7 @@ class AuthViewModel @Inject constructor(
                 if (uid != null) {
                     loadUserAndCache(uid)
                 }
-                navController.navigate("home") {
+                navController.navigate("main") {
                     popUpTo("login") { inclusive = true }
                 }
             } else {
@@ -179,7 +179,7 @@ class AuthViewModel @Inject constructor(
                     val userProfile = userRepository.getUserProfileFromFirebase(user.uid)
                     if (userProfile != null) {
                         userRepository.saveUserProfileToCache(user.uid, userProfile)
-                        navController.navigate("home") { popUpTo("login") { inclusive = true } }
+                        navController.navigate("main") { popUpTo("login") { inclusive = true } }
                     } else {
                         val newProfile = UserProfile(name = user.displayName ?: "", city = "") // Buat profil dasar
                         userRepository.saveUserProfileToCache(user.uid, newProfile)

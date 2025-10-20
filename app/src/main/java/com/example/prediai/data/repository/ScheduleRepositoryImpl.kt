@@ -1,5 +1,6 @@
 package com.example.prediai.data.repository
 
+import android.util.Log
 import com.example.prediai.domain.model.ScheduleItem
 import com.example.prediai.domain.repository.AuthRepository // <-- Ini kuncinya
 import com.example.prediai.domain.repository.ScheduleRepository
@@ -29,31 +30,31 @@ class ScheduleRepositoryImpl @Inject constructor(
     }
 
     override fun getAllSchedules(): Flow<List<ScheduleItem>> = callbackFlow {
-        val userId = getCurrentUserId() // <-- Pemanggilan ini sekarang 100% benar
+        val userId = getCurrentUserId()
         if (userId == null) {
-            close(IllegalStateException("User tidak login"))
+            trySend(emptyList())
+            close()
             return@callbackFlow
         }
 
-        // Struktur RTDB: users/{userId}/schedules
         val ref = database.reference.child("users").child(userId).child("schedules")
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val schedules = snapshot.children.mapNotNull {
-                    // Pastikan model ScheduleItem di domain/model cocok
                     it.getValue(ScheduleItem::class.java)
                 }
-                trySend(schedules) // Kirim data ke Flow
+                trySend(schedules)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
+                // Log the error instead of throwing it
+                Log.e("ScheduleRepository", "Failed to fetch schedules: ${error.message}")
+                trySend(emptyList())
             }
         }
         ref.addValueEventListener(listener)
 
-        // Hapus listener saat flow ditutup
         awaitClose { ref.removeEventListener(listener) }
     }
 

@@ -1,6 +1,7 @@
 package com.example.prediai.presentation.auth
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,11 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    BackHandler(enabled = true) {
+        (context as? Activity)?.finish()
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -41,29 +47,29 @@ fun LoginScreen(
         }
     }
 
-        Scaffold { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                LoginForm(
-                    email = uiState.email,
-                    password = uiState.password,
-                    onEmailChange = viewModel::onEmailChange,
-                    onPasswordChange = viewModel::onPasswordChange,
-                    onLoginClick = { viewModel.login(navController) },
-                    isLoading = uiState.isLoading,
-                    errorMessage = uiState.authErrorMessage,
-                    onDismissError = viewModel::clearError,
-                    onForgotPasswordClick = {},
-                    onRegisterClick = { navController.navigate("register") },
-                    onGoogleSignInClick = {
-                        val signInIntent = viewModel.googleSignInClient.signInIntent
-                        launcher.launch(signInIntent)
-                    }
-                )
-            }
+    Scaffold { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            LoginForm(
+                email = uiState.email,
+                password = uiState.password,
+                onEmailChange = viewModel::onEmailChange,
+                onPasswordChange = viewModel::onPasswordChange,
+                onLoginClick = { viewModel.login(navController) },
+                isLoading = uiState.isLoading,
+                errorMessage = uiState.authErrorMessage,
+                onDismissError = viewModel::clearError,
+                onForgotPasswordClick = {},
+                onRegisterClick = { navController.navigate("register") },
+                onGoogleSignInClick = {
+                    val signInIntent = viewModel.googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
+            )
+        }
     }
 }

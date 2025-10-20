@@ -17,5 +17,6 @@ data class EducationVideo(
     val views: String,
     val imageUrl: String,
     val youtubeVideoId: String,
-    val category: String
+    val category: String,
+    val description: String
 )

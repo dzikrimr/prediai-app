@@ -29,10 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.prediai.R
 import com.example.prediai.presentation.common.TopBar
+import com.example.prediai.presentation.profile.comps.LogoutConfirmationDialog
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -95,10 +97,31 @@ val supportMenuItems = listOf(
 )
 
 @Composable
-fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel()) {
+fun ProfileScreen(
+    mainNavController: NavController,
+    rootNavController: NavController,
+    viewModel: ProfileViewModel = hiltViewModel()
+) {
 
     LaunchedEffect(Unit) {
         viewModel.loadUserProfile()
+    }
+
+    LaunchedEffect(key1 = true) {
+        viewModel.navigationEvent.collect { event ->
+            when (event) {
+                is NavigationEvent.NavigateTo -> {
+                    rootNavController.navigate(event.route) {
+                        // Clear the entire back stack and set the login screen as the root
+                        popUpTo(rootNavController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                        restoreState = false // Prevent restoring previous state
+                    }
+                }
+            }
+        }
     }
 
     val uiState by viewModel.uiState.collectAsState()
@@ -129,6 +152,13 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
         }
     }
 
+    if (uiState.showLogoutDialog) {
+        LogoutConfirmationDialog(
+            onConfirm = { viewModel.onConfirmLogout() },
+            onDismiss = { viewModel.onDismissLogoutDialog() }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -137,7 +167,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
         // Top Bar
         TopBar(
             title = "Profil",
-            onBackClick = { navController.popBackStack() }
+            onBackClick = { mainNavController.popBackStack() }
         )
 
         // Profile Header Card
@@ -255,7 +285,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
                                 icon = item.icon,
                                 iconColor = item.iconColor,
                                 iconBgColor = item.iconBgColor,
-                                onClick = { navController.navigate(item.route) }
+                                onClick = { rootNavController.navigate(item.route) }
                             )
                             if (index < accountMenuItems.lastIndex) {
                                 HorizontalDivider(
@@ -297,7 +327,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
                                 icon = item.icon,
                                 iconColor = item.iconColor,
                                 iconBgColor = item.iconBgColor,
-                                onClick = { navController.navigate(item.route) }
+                                onClick = { rootNavController.navigate(item.route) }
                             )
                             if (index < supportMenuItems.lastIndex) {
                                 HorizontalDivider(
@@ -314,7 +344,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
             item {
                 Spacer(modifier = Modifier.height(32.dp))
                 Button(
-                    onClick = { /* Handle logout */ },
+                    onClick = { viewModel.onLogoutClicked() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -411,6 +441,8 @@ fun SimpleMenuItem(
 @Preview(showBackground = true)
 @Composable
 private fun ProfileScreenPreview() {
-    val navController = rememberNavController()
-    ProfileScreen(navController = navController)
+    ProfileScreen(
+        mainNavController = rememberNavController(),
+        rootNavController = rememberNavController()
+    )
 }

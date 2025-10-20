@@ -2,9 +2,11 @@ package com.example.prediai.core.di
 
 import com.example.prediai.data.repository.ChatRepositoryImpl
 import com.example.prediai.data.repository.HistoryRepositoryImpl
+import com.example.prediai.data.repository.PlacesRepositoryImpl
 import com.example.prediai.data.repository.UserRepositoryImpl // PASTIKAN IMPORT INI BENAR
 import com.example.prediai.domain.repository.ChatRepository
 import com.example.prediai.domain.repository.HistoryRepository
+import com.example.prediai.domain.repository.PlacesRepository
 import com.example.prediai.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -34,4 +36,10 @@ abstract class RepositoryModule {
     abstract fun bindHistoryRepository(
         historyRepositoryImpl: HistoryRepositoryImpl
     ): HistoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPlacesRepository(
+        placesRepositoryImpl: PlacesRepositoryImpl
+    ): PlacesRepository
 }

@@ -167,7 +167,10 @@ fun MainNavGraph(
         }
 
         composable("profil") {
-            ProfileScreen(navController = rootNavController)
+            ProfileScreen(
+                mainNavController = mainNavController,
+                rootNavController = rootNavController
+            )
         }
 
         composable("edit_profile") { EditProfileScreen(navController = rootNavController) }

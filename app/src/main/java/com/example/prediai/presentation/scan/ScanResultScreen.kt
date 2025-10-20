@@ -124,7 +124,7 @@ fun ScanResultScreen(
         when (selectedTab) {
             0 -> OverviewScreen(uiState.analysisData, uiState.nailImage, uiState.tongueImage, onExportClick)
             1 -> DetailsScreen(uiState.analysisData)
-            2 -> AdviceScreen()
+            2 -> AdviceScreen(viewModel = viewModel)
         }
     }
 }

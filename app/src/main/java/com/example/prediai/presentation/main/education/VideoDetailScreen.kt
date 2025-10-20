@@ -31,11 +31,11 @@ fun VideoDetailScreen(
     val video = uiState.selectedVideo
 
     // LaunchedEffect akan memicu proses summary saat 'video' berhasil dimuat
-    LaunchedEffect(key1 = video) {
-        video?.let {
-            val youtubeUrl = "https://www.youtube.com/watch?v=${it.youtubeVideoId}"
-            Log.d("VideoDebug", "VideoDetailScreen: Summarizing URL -> $youtubeUrl")
-            viewModel.summarizeVideoFromUrl(youtubeUrl)
+    LaunchedEffect(key1 = video) { // Kunci bisa tetap 'video'
+        // Hanya panggil jika video ada DAN summary masih kosong
+        if (video != null && uiState.aiSummary == null) {
+            // Panggil fungsi baru yang menggunakan metadata
+            viewModel.summarizeFromMetadata(video)
         }
     }
 

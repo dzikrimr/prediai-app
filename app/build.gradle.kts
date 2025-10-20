@@ -16,6 +16,7 @@ if (localPropertiesFile.exists()) {
 }
 val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
 val youtubeApiKey = localProperties.getProperty("YOUTUBE_API_KEY") ?: ""
+val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
 
 android {
@@ -31,8 +32,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
-        buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\""
-        )
+        buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\"")
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -149,6 +151,10 @@ dependencies {
 
     // PDFbox
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+
+    // Maps
+    implementation("com.google.android.libraries.places:places:3.4.0")
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 
 }
 

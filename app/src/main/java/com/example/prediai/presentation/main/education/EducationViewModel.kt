@@ -32,8 +32,7 @@ data class EducationUiState(
 @HiltViewModel
 class EducationViewModel @Inject constructor(
     private val educationRepository: EducationRepository,
-    // Minta Hilt untuk menyediakan GenerativeModel dari Module Anda
-    private val generativeModel: GenerativeModel
+    private val generativeModel: GenerativeModel,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EducationUiState())
@@ -66,24 +65,33 @@ class EducationViewModel @Inject constructor(
     }
 
     // FUNGSI UTAMA YANG BARU UNTUK MERANGKUM VIDEO
-    fun summarizeVideoFromUrl(videoUrl: String) {
+    fun summarizeFromMetadata(video: EducationVideo) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSummaryLoading = true, summaryError = null, aiSummary = null) }
             try {
-                // --- GUNAKAN PROMPT YANG LEBIH SPESIFIK INI ---
+                // --- GANTI PROMPT LAMA DENGAN VERSI BARU INI ---
                 val prompt = """
-                Tolong analisis dan berikan rangkuman **isi utama dan poin-poin penting yang dibicarakan** dalam video YouTube ini. 
-                Fokuskan pada informasi **dari narasi atau dialog di video**, serta **aksi visual kunci** yang mendukung penjelasan.
-                Berikan rangkuman dalam bahasa Indonesia dengan format **poin-poin bernomor**.
-                URL Video: $videoUrl
-            """.trimIndent()
-                // --- AKHIR PROMPT YANG LEBIH SPESIFIK ---
+                    Tugas: Buat rangkuman informatif dari data video YouTube berikut dalam format poin-poin.
 
-                val response = generativeModel.generateContent(prompt)
+                    Data Input:
+                    Judul: ${video.title}
+                    Deskripsi: ${video.description}
+
+                    Aturan & Alur Logika:
+                    1.  Buat rangkuman utama berdasarkan Judul dan Deskripsi yang diberikan.
+                    2.  **Analisis hasil rangkumanmu.** Jika rangkuman tersebut terasa terlalu singkat, umum, atau kurang informatif karena deskripsinya kosong atau tidak lengkap, tambahkan penjelasan tambahan".
+                    3.  Penjelasan tambahan berisi 2-3 poin informasi umum atau fakta penting terkait topik utama video (berdasarkan judulnya) menggunakan pengetahuanmu sendiri.
+                    4.  Jangan gunakan markdown (*) dan jangan sertakan kalimat pembuka atau penutup.
+                """.trimIndent()
+
+                val geminiResponse = generativeModel.generateContent(prompt)
+
+                // Membersihkan teks dari markdown yang mungkin masih tersisa
+                val cleanText = geminiResponse.text?.replace(Regex("[*]"), "")?.trim()
 
                 _uiState.update {
                     it.copy(
-                        aiSummary = response.text,
+                        aiSummary = cleanText, // Gunakan teks yang sudah dibersihkan
                         isSummaryLoading = false
                     )
                 }

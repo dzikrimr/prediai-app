@@ -18,7 +18,8 @@ data class VideoId(
 data class Snippet(
     val title: String,
     val channelTitle: String, // Ini akan jadi 'source'
-    val thumbnails: Thumbnails
+    val thumbnails: Thumbnails,
+    val description: String
 )
 
 data class Thumbnails(

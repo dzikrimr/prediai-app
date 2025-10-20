@@ -82,7 +82,8 @@ private fun YoutubeSearchItem.toEducationVideo(): EducationVideo {
         views = "",
         imageUrl = this.snippet.thumbnails.medium.url,
         youtubeVideoId = this.id.videoId,
-        category = ""
+        category = "",
+        description = this.snippet.description
     )
 }
 
@@ -96,7 +97,8 @@ private fun YoutubeVideoItem.toEducationVideo(): EducationVideo {
         views = this.statistics.viewCount,
         imageUrl = this.snippet.thumbnails.medium.url,
         youtubeVideoId = this.id,
-        category = this.snippet.tags?.firstOrNull() ?: ""
+        category = this.snippet.tags?.firstOrNull() ?: "",
+        description = this.snippet.description
     )
 }
 // --- AKHIR BAGIAN BARU ---

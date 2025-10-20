@@ -12,12 +12,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.prediai.R
 
 /**
  * Komponen formulir register dengan input email, password, konfirmasi password, dan tombol submit.
@@ -260,7 +262,12 @@ fun RegisterForm(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("G", color = Color(0xFF4285F4), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_google), // Ganti dengan nama file ikon Anda
+                        contentDescription = "Google Logo",
+                        modifier = Modifier.size(20.dp), // Sesuaikan ukuran ikon jika perlu
+                        tint = Color.Unspecified // Penting agar warna asli ikon ditampilkan
+                    )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("Masuk dengan Google", color = Color(0xFF2D3748), fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 }

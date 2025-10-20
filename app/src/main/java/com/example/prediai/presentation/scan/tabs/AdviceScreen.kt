@@ -1,5 +1,7 @@
 package com.example.prediai.presentation.scan.tabs
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,22 +21,52 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.prediai.R
+import com.example.prediai.presentation.scan.ScanResultViewModel
 import com.example.prediai.presentation.scan.comps.HealthcareItem
 
 @Composable
-fun AdviceScreen() {
+fun AdviceScreen(viewModel: ScanResultViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    // Launcher untuk meminta izin lokasi
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            viewModel.findNearbyHealthcare()
+        } else {
+            // Beri tahu ViewModel bahwa izin ditolak
+            viewModel.onLocationPermissionDenied()
+        }
+    }
+
+    // Panggil launcher saat screen pertama kali dibuka
+    LaunchedEffect(Unit) {
+        locationPermissionLauncher.launch(arrayOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION, // Akurasi tinggi
+            android.Manifest.permission.ACCESS_COARSE_LOCATION // Akurasi rendah
+        ))
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,7 +131,7 @@ fun AdviceScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { },
+                    onClick = { viewModel.findNearbyHealthcare() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -147,26 +179,30 @@ fun AdviceScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Healthcare List
-        HealthcareItem(
-            name = "City General Hospital",
-            specialty = "Internal Medicine"
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        HealthcareItem(
-            name = "HealthCare Plus Clinic",
-            specialty = "Family Medicine"
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        HealthcareItem(
-            name = "Dr. Sarah Medical Center",
-            specialty = "Specialist Care"
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
+        when {
+            uiState.isLocationLoading -> {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            uiState.locationError != null -> {
+                Text(text = uiState.locationError!!, color = Color.Red)
+            }
+            uiState.nearbyPlaces.isNotEmpty() -> {
+                // Gunakan LazyColumn jika daftar bisa panjang
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    uiState.nearbyPlaces.take(3).forEach { place -> // Ambil 3 teratas
+                        HealthcareItem(
+                            name = place.name,
+                            specialty = place.address, // Gunakan specialty untuk alamat
+                            // Anda bisa menambahkan parameter jarak jika perlu
+                        )
+                    }
+                }
+            }
+            else -> {
+                Text(text = "Tidak ada rumah sakit/klinik terdekat yang ditemukan.")
+            }
+        }
     }
 }

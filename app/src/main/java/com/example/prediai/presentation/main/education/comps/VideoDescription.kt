@@ -58,15 +58,15 @@ fun VideoDescription(
             summaryError != null -> {
                 Text(summaryError, fontSize = 14.sp, color = MaterialTheme.colorScheme.error)
             }
-            // 3. Jika tidak ada error summary, apakah ada error saat ambil transkrip DAN summary belum jadi?
-            transcriptError != null && aiSummary == null -> {
-                Text(transcriptError, fontSize = 14.sp, color = MaterialTheme.colorScheme.error)
-            }
-            // 4. Jika tidak ada error dan summary sudah jadi?
             aiSummary != null -> {
-                Text(aiSummary, fontSize = 14.sp)
+                // --- INI PERUBAHANNYA ---
+                // 1. Pecah string summary menjadi daftar (List) berdasarkan tanda hubung dan baris baru
+                val points = aiSummary.split(Regex("[\\-\\n]")).filter { it.isNotBlank() }
+
+                // 2. Tampilkan daftar tersebut menggunakan Composable baru kita
+                BulletedList(points = points)
+                // --- AKHIR PERUBAHAN ---
             }
-            // 5. Kondisi default (tidak loading, tidak error, summary belum ada)
             else -> {
                 Text("Rangkuman akan muncul di sini.", fontSize = 14.sp, color = Color.Gray)
             }

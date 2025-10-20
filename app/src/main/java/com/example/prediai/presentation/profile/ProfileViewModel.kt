@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.prediai.domain.model.UserProfile
 import com.example.prediai.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
@@ -17,8 +19,13 @@ data class ProfileUiState(
     val profile: UserProfile = UserProfile(),
     val email: String = "",
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val showLogoutDialog: Boolean = false
 )
+
+sealed class NavigationEvent {
+    data class NavigateTo(val route: String) : NavigationEvent()
+}
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -27,9 +34,32 @@ class ProfileViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ProfileUiState(isLoading = true))
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
 
     init {
         loadUserProfile()
+    }
+
+    fun onLogoutClicked() {
+        // Tampilkan dialog saat tombol logout diklik
+        _uiState.update { it.copy(showLogoutDialog = true) }
+    }
+
+    fun onDismissLogoutDialog() {
+        // Sembunyikan dialog jika pengguna membatalkan
+        _uiState.update { it.copy(showLogoutDialog = false) }
+    }
+
+    fun onConfirmLogout() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(showLogoutDialog = false) }
+            userRepository.logout()
+
+            // --- KIRIM EVENT YANG LEBIH LENGKAP ---
+            _navigationEvent.emit(NavigationEvent.NavigateTo("login"))
+            // --- AKHIR PERUBAHAN ---
+        }
     }
 
     fun loadUserProfile() {

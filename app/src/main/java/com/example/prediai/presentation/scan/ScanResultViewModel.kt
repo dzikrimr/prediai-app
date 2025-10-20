@@ -1,7 +1,9 @@
 package com.example.prediai.presentation.scan
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
+import android.location.LocationManager
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -9,11 +11,15 @@ import androidx.lifecycle.viewModelScope
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.example.prediai.data.remote.scan.AnalysisResponse
+import com.example.prediai.domain.model.NearbyPlace
 import com.example.prediai.domain.model.ScanHistoryRecord
 import com.example.prediai.domain.model.UserProfile
 import com.example.prediai.domain.repository.AuthRepository
 import com.example.prediai.domain.repository.HistoryRepository
+import com.example.prediai.domain.repository.PlacesRepository
 import com.example.prediai.domain.repository.UserRepository
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
@@ -21,15 +27,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 import kotlin.math.min
 
-// Data class tidak perlu diubah, biarkan seperti ini
 data class ScanResultUiState(
     val analysisData: AnalysisResponse? = null,
     val nailImage: ByteArray? = null,
-    val tongueImage: ByteArray? = null
+    val tongueImage: ByteArray? = null,
+    val nearbyPlaces: List<NearbyPlace> = emptyList(), // <-- TAMBAHKAN INI
+    val isLocationLoading: Boolean = false, // <-- TAMBAHKAN INI
+    val locationError: String? = null // <-- TAMBAHKAN INI
 ) {
     // ... (equals dan hashCode tetap sama)
     override fun equals(other: Any?): Boolean {
@@ -62,6 +71,7 @@ class ScanResultViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val historyRepository: HistoryRepository,
+    private val placesRepository: PlacesRepository,
     savedStateHandle: SavedStateHandle,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -71,6 +81,8 @@ class ScanResultViewModel @Inject constructor(
     private val _isSaving = MutableStateFlow(false)
     val isSaving = _isSaving.asStateFlow()
 
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
     init {
         Log.d("ScanResultVM", "ViewModel initialized.")
         savedStateHandle.get<String>("historyId")?.let { historyId ->
@@ -79,6 +91,52 @@ class ScanResultViewModel @Inject constructor(
                 loadHistoryRecord(historyId) // <-- Diubah di sini, context sudah menjadi properti kelas
             }
         } ?: Log.d("ScanResultVM", "Tidak ada History ID. Menunggu setData() dari scan baru.")
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    fun onLocationPermissionDenied() {
+        _uiState.update { it.copy(locationError = "Izin lokasi diperlukan untuk menemukan fasilitas kesehatan terdekat.") }
+    }
+    // --- AKHIR FUNGSI BARU ---
+
+    @SuppressLint("MissingPermission")
+    fun findNearbyHealthcare() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLocationLoading = true, locationError = null) }
+
+            // --- TAMBAHKAN PENGECEKAN GPS DI SINI ---
+            if (!isLocationEnabled()) {
+                _uiState.update { it.copy(locationError = "Layanan lokasi (GPS) tidak aktif. Mohon aktifkan untuk melanjutkan.", isLocationLoading = false) }
+                return@launch
+            }
+            // --- AKHIR PENGECEKAN ---
+
+            try {
+                val location = fusedLocationClient.lastLocation.await()
+                if (location != null) {
+                    val userLatLng = LatLng(location.latitude, location.longitude)
+
+                    placesRepository.findNearbyHospitals(userLatLng)
+                        .onSuccess { places ->
+                            _uiState.update { it.copy(nearbyPlaces = places, isLocationLoading = false) }
+                        }
+                        .onFailure { exception ->
+                            _uiState.update { it.copy(locationError = "Gagal mencari tempat: ${exception.message}", isLocationLoading = false) }
+                        }
+                } else {
+                    _uiState.update { it.copy(locationError = "Gagal mendapatkan lokasi saat ini. Coba lagi beberapa saat.", isLocationLoading = false) }
+                }
+            } catch (e: SecurityException) {
+                _uiState.update { it.copy(locationError = "Izin lokasi ditolak.", isLocationLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(locationError = "Terjadi error: ${e.message}", isLocationLoading = false) }
+            }
+        }
     }
 
     private fun loadHistoryRecord(id: String) { // <-- Diubah di sini

@@ -14,7 +14,8 @@ data class VideoSnippet(
     val title: String,
     val channelTitle: String,
     val thumbnails: Thumbnails, // Bisa pakai 'Thumbnails' yang sudah ada
-    val tags: List<String>?
+    val tags: List<String>?,
+    val description: String
 )
 
 data class VideoStatistics(
