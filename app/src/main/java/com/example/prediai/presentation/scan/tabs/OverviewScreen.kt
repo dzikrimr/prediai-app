@@ -190,33 +190,6 @@ fun OverviewScreen(
                 .fillMaxWidth() // Tambahkan fillMaxWidth agar textAlign berfungsi
                 .padding(bottom = 16.dp)
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // --- TOMBOL EKSPOR HASIL DIUPDATE DENGAN IKON ---
-        Button(
-            onClick = onExportClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF00B4A3)
-            )
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_download),
-                contentDescription = "Ekspor Hasil",
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Ekspor Hasil",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
     }
 }

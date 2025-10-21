@@ -92,23 +92,21 @@ fun MainNavGraph(
                     nullable = true
                 })
             ) { backStackEntry ->
-                // --- LOGIKA BARU UNTUK MEMILIH VIEWMODEL YANG TEPAT ---
                 val historyId = backStackEntry.arguments?.getString("historyId")
 
                 val scanResultViewModel: ScanResultViewModel = if (historyId == null) {
-                    // Mode Scan Baru: Ambil ViewModel yang sama dari "scan_flow" (Papan Tulis A)
                     val parentEntry = remember(backStackEntry) {
                         mainNavController.getBackStackEntry("scan_flow")
                     }
                     hiltViewModel(parentEntry)
                 } else {
-                    // Mode Lihat Riwayat: Buat ViewModel baru yang akan memuat data dari Firestore
                     hiltViewModel()
                 }
 
                 ScanResultScreen(
                     viewModel = scanResultViewModel,
-                    onBackClick = { mainNavController.popBackStack() }
+                    onBackClick = { mainNavController.popBackStack() },
+                    onNavigateToDoctor = { mainNavController.navigate("doctor") }
                 )
             }
         }

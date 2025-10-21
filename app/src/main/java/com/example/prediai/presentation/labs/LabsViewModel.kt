@@ -54,14 +54,14 @@ class LabsViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        loadRecentAnalyses()
+        refreshAnalyses()
     }
 
-    private fun loadRecentAnalyses() {
+    fun refreshAnalyses() {
         viewModelScope.launch {
             historyRepository.getLabAnalysisHistory().collect { result ->
                 result.onSuccess { records ->
-                    val items = records.take(5).map { mapRecordToAnalysisItem(it) }
+                    val items = records.map { mapRecordToAnalysisItem(it) }
                     _uiState.update { it.copy(recentAnalyses = items) }
                 }.onFailure { error ->
                     Log.e("LabsViewModel", "Gagal memuat riwayat analisis lab", error)
@@ -69,6 +69,7 @@ class LabsViewModel @Inject constructor(
             }
         }
     }
+
 
     fun viewHistoricalAnalysis(recordId: String) {
         viewModelScope.launch {

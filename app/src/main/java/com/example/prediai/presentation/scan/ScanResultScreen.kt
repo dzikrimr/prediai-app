@@ -42,6 +42,7 @@ fun ScanResultScreen(
     viewModel: ScanResultViewModel,
     onBackClick: () -> Unit = {},
     onExportClick: () -> Unit = {},
+    onNavigateToDoctor: () -> Unit,
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Details", "Advice")
@@ -126,7 +127,10 @@ fun ScanResultScreen(
         when (selectedTab) {
             0 -> OverviewScreen(uiState.analysisData, uiState.nailImage, uiState.tongueImage, onExportClick)
             1 -> DetailsScreen(uiState.analysisData)
-            2 -> AdviceScreen(viewModel = viewModel)
+            2 -> AdviceScreen(
+                viewModel = viewModel,
+                onNavigateToDoctor = onNavigateToDoctor
+            )
         }
     }
 }

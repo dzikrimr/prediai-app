@@ -65,7 +65,10 @@ fun openGoogleMaps(context: Context, name: String, address: String) {
 }
 
 @Composable
-fun AdviceScreen(viewModel: ScanResultViewModel) {
+fun AdviceScreen(
+    viewModel: ScanResultViewModel,
+    onNavigateToDoctor: () -> Unit
+) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showMapsDialog by remember { mutableStateOf(false) }
@@ -159,11 +162,8 @@ fun AdviceScreen(viewModel: ScanResultViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = {
-                        if (uiState.nearbyPlaces.isEmpty() && !uiState.isLocationLoading) {
-                            viewModel.findNearbyHealthcare()
-                        }
-                    },
+                    // GANTI aksi menjadi panggilan callback navigasi
+                    onClick = onNavigateToDoctor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

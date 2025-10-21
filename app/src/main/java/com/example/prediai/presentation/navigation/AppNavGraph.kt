@@ -76,8 +76,8 @@ fun AppNavGraph(navController: NavHostController) {
             }
 
             QuestionnaireScreen(
-                step = step,           // Now 'step' is an Int
-                state = state,         // And 'state' is an AuthUiState
+                step = step,
+                state = state,
                 onNameChange = viewModel::onNameChange,
                 onBirthDateChange = viewModel::onBirthDateChange,
                 onHeightChange = viewModel::onHeightChange,

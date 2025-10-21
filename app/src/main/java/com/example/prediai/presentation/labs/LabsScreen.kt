@@ -49,6 +49,10 @@ fun LabsScreen(
         onResult = { uri -> viewModel.onFileSelected(uri) }
     )
 
+    LaunchedEffect(Unit) {
+        viewModel.refreshAnalyses()
+    }
+
     LaunchedEffect(uiState.analysisComplete) {
         if (uiState.analysisComplete) {
             val currentDate = LocalDate.now().format(
@@ -184,44 +188,40 @@ fun LabsScreen(
             }
 
             // --- BAGIAN RECENT ANALYSIS DITAMBAHKAN KEMBALI ---
-            if (uiState.recentAnalyses.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Analisis Terakhir", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                    }
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Analisis Terakhir", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 }
+            }
 
-                // 2. Tampilkan daftar atau pesan "kosong" secara kondisional
-                if (uiState.recentAnalyses.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Belum ada riwayat analisis.",
-                                color = Color.Gray,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                } else {
-                    items(uiState.recentAnalyses) { item ->
-                        // 3. Panggil AnalysisItemCard dengan aksi klik
-                        AnalysisItemCard(
-                            item = item,
-                            onClick = {
-                                // Panggil fungsi ViewModel untuk memuat data riwayat
-                                // dan memicu navigasi via LaunchedEffect
-                                viewModel.viewHistoricalAnalysis(item.id)
-                            }
+// 2. Tampilkan daftar atau pesan "kosong" secara kondisional
+            if (uiState.recentAnalyses.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Belum ada riwayat analisis.",
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
                         )
                     }
+                }
+            } else {
+                items(uiState.recentAnalyses) { item ->
+                    // 3. Panggil AnalysisItemCard dengan aksi klik
+                    AnalysisItemCard(
+                        item = item,
+                        onClick = {
+                            viewModel.viewHistoricalAnalysis(item.id)
+                        }
+                    )
                 }
             }
         }
