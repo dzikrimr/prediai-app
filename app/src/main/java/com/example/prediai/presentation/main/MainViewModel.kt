@@ -137,7 +137,7 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun loadUserData() {
+    fun loadUserData() {
         viewModelScope.launch {
 
             // --- 1. Ambil UID pengguna saat ini ---
