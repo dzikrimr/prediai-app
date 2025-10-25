@@ -306,59 +306,111 @@ class ScanResultViewModel @Inject constructor(
         scanResult: AnalysisResponse,
         userProfile: UserProfile
     ): AnalysisResponse {
+
         var questionnaireScore = 0f
         val questionnaireRiskFactors = mutableListOf<String>()
 
+        // Tetapkan batas skor maksimum berdasarkan justifikasi bobot hibrida kita
+        // (3+2+2+1) + (4*5) + (3+4+3+1) = 8 + 20 + 11 = 39
+        val MAX_QUESTIONNAIRE_SCORE = 39f
+
+        // --- 1. Hitung Skor Kuesioner (Bobot Baru) ---
+
+        // Loop 1: Gejala Fisik dan Riwayat Medis (dari 'symptomsAndHistory')
         userProfile.symptomsAndHistory.forEach { (question, answer) ->
-            if (answer) {
-                questionnaireScore += 8
+            if (answer) { // Hanya jika jawabannya "Ya" / true
                 when {
-                    question.contains("diabetes") -> questionnaireRiskFactors.add("Riwayat diabetes dalam keluarga")
-                    question.contains("lelah") -> questionnaireRiskFactors.add("Sering merasa mudah lelah")
-                    question.contains("haus") -> questionnaireRiskFactors.add("Sering merasa haus berlebihan")
+                    // --- Gejala Fisik (Bobot 4 per gejala) ---
+                    question.contains("lelah") -> {
+                        questionnaireScore += 4
+                        questionnaireRiskFactors.add("Sering merasa mudah lelah")
+                    }
+                    question.contains("luka") -> {
+                        questionnaireScore += 4
+                        questionnaireRiskFactors.add("Luka lama sembuh")
+                    }
+                    question.contains("kabur") -> {
+                        questionnaireScore += 4
+                        questionnaireRiskFactors.add("Penglihatan kabur")
+                    }
+                    question.contains("kesemutan") -> {
+                        questionnaireScore += 4
+                        questionnaireRiskFactors.add("Sering kesemutan")
+                    }
+                    question.contains("haus") -> {
+                        questionnaireScore += 4
+                        questionnaireRiskFactors.add("Sering merasa haus berlebihan")
+                    }
+
+                    // --- Riwayat Medis (Bobot 3, 2, 2, 1) ---
+                    question.contains("diabetes") -> {
+                        questionnaireScore += 3
+                        questionnaireRiskFactors.add("Riwayat diabetes dalam keluarga")
+                    }
+                    question.contains("tekanan darah tinggi") -> {
+                        questionnaireScore += 2
+                        questionnaireRiskFactors.add("Riwayat tekanan darah tinggi")
+                    }
+                    question.contains("kolesterol tinggi atau obesitas") -> {
+                        questionnaireScore += 2
+                        questionnaireRiskFactors.add("Riwayat kolesterol tinggi/obesitas")
+                    }
+                    question.contains("obat tertentu") -> {
+                        questionnaireScore += 1
+                        questionnaireRiskFactors.add("Konsumsi obat tertentu (steroid, dll)")
+                    }
                 }
             }
         }
 
+        // Loop 2: Gaya Hidup (dari 'lifestyle')
         userProfile.lifestyle.forEach { (question, answer) ->
             when {
+                // Bobot 3 (Sesuai FINDRISC)
                 question.contains("aktivitas fisik") && answer == "Jarang" -> {
-                    questionnaireScore += 10
+                    questionnaireScore += 3
                     questionnaireRiskFactors.add("Jarang melakukan aktivitas fisik")
                 }
+                // Bobot 4 (Diperberat)
                 question.contains("gula") && (answer == "Sering" || answer == "Setiap Hari") -> {
-                    questionnaireScore += 10
+                    questionnaireScore += 4
                     questionnaireRiskFactors.add("Sering mengonsumsi makanan/minuman tinggi gula")
                 }
+                // Bobot 3 (Faktor risiko kuat)
                 question.contains("merokok") && answer == "Ya" -> {
-                    questionnaireScore += 10
+                    questionnaireScore += 3
                     questionnaireRiskFactors.add("Memiliki kebiasaan merokok atau minum alkohol")
                 }
+                // Bobot 1 (Faktor risiko minor)
                 question.contains("tidur") && answer == "< 5 jam" -> {
-                    questionnaireScore += 5
+                    questionnaireScore += 1
                     questionnaireRiskFactors.add("Waktu tidur rata-rata kurang dari 5 jam")
                 }
             }
         }
 
-        questionnaireScore = min(questionnaireScore, 100f)
+        // --- 2. Normalisasi Skor Kuesioner ---
+        // Normalisasi skor (misal 15 dari 39) menjadi persentase (0-100%)
+        val questionnairePercentage = (questionnaireScore / MAX_QUESTIONNAIRE_SCORE) * 100f
 
+        // --- 3. Gabungkan Risiko (Weighted Average) ---
         val originalScanPercent = scanResult.riskPercentage
-        var adjustedPercent = originalScanPercent
 
-        if (questionnaireScore < 30) {
-            adjustedPercent *= 0.7f
-        } else if (questionnaireScore > 60) {
-            adjustedPercent = (adjustedPercent * 0.6f) + (questionnaireScore * 0.4f)
-        }
+        // Tetapkan Bobot: 60% dari Scan AI, 40% dari Kuesioner
+        val SCAN_WEIGHT = 0.60f
+        val QUESTIONNAIRE_WEIGHT = 0.40f
+
+        var adjustedPercent = (originalScanPercent * SCAN_WEIGHT) + (questionnairePercentage * QUESTIONNAIRE_WEIGHT)
 
         adjustedPercent = min(adjustedPercent, 99.0f)
 
+        // --- 4. Tentukan Level Risiko Baru ---
         val newRiskLevel = when {
-            adjustedPercent > 70 -> "Tinggi"
-            adjustedPercent > 50 -> "Sedang"
+            adjustedPercent >= 70f -> "Tinggi"
+            adjustedPercent >= 50f -> "Sedang"
             else -> "Rendah"
         }
+
         val combinedRiskFactors = (scanResult.riskFactors + questionnaireRiskFactors).distinct()
 
         return AnalysisResponse(

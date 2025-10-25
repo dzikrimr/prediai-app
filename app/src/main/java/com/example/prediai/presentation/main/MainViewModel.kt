@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -43,10 +44,10 @@ data class Recommendation(
 data class MainUiState(
     val isLoading: Boolean = true, // Tambahkan loading state
     val userName: String = "Pengguna", // Default diubah agar dipopulasi dari Repo
+    val profileImageUrl: String? = null, // URL Foto Profil
     val riskPercentage: Int? = null, // null jika belum ada data
     val lastCheckDate: String? = null, // null jika belum ada data
     val lastCheckResult: String? = null, // null jika belum ada data
-    // --- MENGGUNAKAN LIST MODEL YANG BENAR ---
     val reminders: List<Reminder> = emptyList(), // Diambil dari schedules
     val recommendations: List<EducationVideo> = emptyList(), // Diambil dari EducationRepository
     val errorMessage: String? = null // Tambahkan error state
@@ -136,22 +137,55 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    // --- FUNGSI YANG SUDAH ADA (untuk nama pengguna) ---
     private fun loadUserData() {
         viewModelScope.launch {
-            userRepository.getCachedUserProfile().collect { profile ->
-                // Mengambil nama depan (asumsi userProfile.name adalah nama lengkap)
-                val fullName = profile?.name.orEmpty()
-                val firstName = if (fullName.isNotBlank()) fullName.split(" ").first() else "Pengguna"
 
-                _uiState.update {
-                    it.copy(userName = firstName)
+            // --- 1. Ambil UID pengguna saat ini ---
+            val firebaseUser = userRepository.getCurrentUser()
+            val uid = firebaseUser?.uid ?: return@launch // Jika tidak ada user, hentikan
+
+            // --- 2. Ambil data dari cache (untuk tampilan cepat) ---
+            userRepository.getCachedUserProfile()
+                .take(1) // Ambil nilai pertama dari cache, lalu hentikan koleksi
+                .collect { cachedProfile ->
+
+                    // Proses dan tampilkan data cache
+                    val fullNameCache = cachedProfile?.name.orEmpty()
+                    val firstNameCache = if (fullNameCache.isNotBlank()) fullNameCache.split(" ")
+                        .first() else "Pengguna"
+                    val imageUrlCache = cachedProfile?.profileImageUrl
+
+                    // Update UI dengan data cache (jika ada)
+                    if (firstNameCache != "Pengguna" || !imageUrlCache.isNullOrEmpty()) {
+                        _uiState.update {
+                            it.copy(
+                                userName = firstNameCache,
+                                profileImageUrl = imageUrlCache
+                            )
+                        }
+                    }
+
+                    val firebaseProfile = userRepository.getUserProfileFromFirebase(uid)
+
+                    if (firebaseProfile != null) {
+                        userRepository.saveUserProfileToCache(uid, firebaseProfile)
+
+                        val fullNameFirebase = firebaseProfile.name.orEmpty()
+                        val firstNameFirebase =
+                            if (fullNameFirebase.isNotBlank()) fullNameFirebase.split(" ")
+                                .first() else "Pengguna"
+                        val imageUrlFirebase = firebaseProfile.profileImageUrl
+
+                        _uiState.update {
+                            it.copy(
+                                userName = firstNameFirebase,
+                                profileImageUrl = imageUrlFirebase
+                            )
+                        }
+                    }
                 }
-            }
         }
     }
-
-    // --- FUNGSI YANG SUDAH ADA (untuk ringkasan scan) ---
     private fun loadScanSummary() {
         viewModelScope.launch {
             historyRepository.getScanHistory().collect { result ->

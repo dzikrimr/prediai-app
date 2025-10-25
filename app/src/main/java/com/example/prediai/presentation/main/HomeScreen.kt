@@ -76,6 +76,7 @@ fun HomeScreenContent(
             item {
                 HeaderSection(
                     userName = uiState.userName,
+                    profileImageUrl = uiState.profileImageUrl,
                     onNotificationClick = { rootNavController.navigate("notification") },
                     onProfileClick = { mainNavController.navigate("profil") }
                 )

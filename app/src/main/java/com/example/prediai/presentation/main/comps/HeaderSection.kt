@@ -15,17 +15,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.prediai.presentation.theme.PrediAITheme
 import java.util.Calendar
 
 @Composable
 fun HeaderSection(
     userName: String,
+    profileImageUrl: String?,
     onNotificationClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
@@ -111,15 +115,28 @@ fun HeaderSection(
                         .background(color = Color(0xFF00B4A3), shape = CircleShape)
                         .clickable(
                             onClick = onProfileClick
-                        ),
+                        )
+                        // --- KLIP UNTUK MEMASTIKAN GAMBAR BERBENTUK LINGKARAN ---
+                        .clip(CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
+                    // --- LOGIKA DINAMIS UNTUK FOTO PROFIL ---
+                    if (!profileImageUrl.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = profileImageUrl,
+                            contentDescription = "Profile Photo",
+                            modifier = Modifier.fillMaxSize(), // Isi seluruh Box
+                            contentScale = ContentScale.Crop // Memastikan gambar mengisi area
+                        )
+                    } else {
+                        // Placeholder default jika URL kosong atau null
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
         }
@@ -133,7 +150,8 @@ fun HeaderSectionPreview() {
         HeaderSection(
             userName = "Sarah",
             onNotificationClick = {},
-            onProfileClick = {}
+            onProfileClick = {},
+            profileImageUrl = null,
         )
     }
 }
