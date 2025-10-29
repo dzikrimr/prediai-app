@@ -13,7 +13,7 @@ Built using **Jetpack Compose, Firebase**, and **FastAPI**, PrediAI turns medica
 
 ## ✨ Features (MVP)
 
-The initial MVP of WeaveOn includes five core features:
+The initial MVP of PrediAI includes five core features:
 - 🩺 AI Screening : Upload tongue and nail photos for instant diabetes risk prediction.
 - 📜 Examination History : Track your past screening results with timestamps and confidence levels.
 - 🧠 AI Health Assistant : AI Chat-based assistant that provides personalized lifestyle and nutrition tips.
@@ -41,7 +41,10 @@ The trained model achieves:
 - 👅 Accuracy (Tongue) : 91.07%
 - 💅🏻 Accuracy (Nail) : 94.98%
 - 📈 F1-Score : Above 0.90 for both datasets
-🔗 [View Repository](https://github.com/muktiabdii/weaveon-api)
+
+🔗 [YOLO Service](https://github.com/dzikrimr/YOLO-TongueNail-Service)
+🔗 [Tongue & Nail Model](https://github.com/dzikrimr/YOLO-TongueNail-Service)
+
 
 
 
@@ -56,8 +59,8 @@ The trained model achieves:
 
 
 
-## 👥 Group Sapipel Pliser
-
-- [@Safira](https://www.linkedin.com/in/antikerahmasafira/) — Product Manager
-- [@Azzel](https://www.linkedin.com/in/noorazizahzp/) — UI/ UX Designer 
-- [@Abdi](https://www.linkedin.com/in/muktiabdii/) — Fullstack Developer
+## 👥 Group Takeover
+ 
+- [@Abdi](https://www.linkedin.com/in/muktiabdii/) — Product Manager
+- [@Dzikri](https://www.linkedin.com/in/dzikri-murtadlo/) — Backend Developer
+- [@Ade](https://www.linkedin.com/in/adenugroho/) — Frontend Developer
