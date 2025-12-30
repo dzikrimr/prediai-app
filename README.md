@@ -43,7 +43,7 @@ The trained model achieves:
 - 📈 F1-Score : Above 0.90 for both datasets
 
 🔗 [YOLO Service](https://github.com/dzikrimr/YOLO-TongueNail-Service)
-🔗 [Tongue & Nail Model](https://github.com/dzikrimr/YOLO-TongueNail-Service)
+🔗 [Tongue & Nail Model](https://github.com/dzikrimr/prediai-tonguenail-service)
 
 
 
