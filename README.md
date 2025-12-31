@@ -36,7 +36,18 @@ The initial MVP of PrediAI includes five core features:
 
 ## 🧠 AI Model Repository
 
+### 🛠️ Model Training & Research
+These repositories contain the datasets, preprocessing scripts, and training notebooks for our core deep learning models.
+- 💅🏻 [Nail Classification (CNN)](https://github.com/dzikrimr/prediai-nail-cnn) — Deep learning model training for nail-based diabetes risk detection.
+- 👅 [Tongue Classification (CNN)](https://github.com/dzikrimr/prediai-tongue-cnn) — Deep learning model training for tongue-based diabetes risk detection.
+- 📈 [Integrated Model Training](https://github.com/dzikrimr/prediai-tonguenail-train) — Centralized training pipeline for hyperparameter tuning and model evaluation.
+
+### 🚀 Backend & Deployment Services
+Production-ready services that handle real-time inference and data processing.
+- ⚡ [AI Inference Service (FastAPI)](https://github.com/dzikrimr/prediai-tonguenail-service) — Main API service for model deployment and mobile app integration.
+- 🎯 [YOLO Detection Service](https://github.com/dzikrimr/tonguenail-yolo) — Object detection service to ensure precise localization of tongue and nails before classification.
 The diabetes risk analysis API, built with FastAPI and powered by a fine-tuned MobileNetV2 model, processes tongue and nail images using preprocessing pipelines.
+
 The trained model achieves:
 - 👅 Accuracy (Tongue) : 91.07%
 - 💅🏻 Accuracy (Nail) : 94.98%
